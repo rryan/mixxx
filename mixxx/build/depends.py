@@ -499,7 +499,9 @@ class MixxxCore(Feature):
                    "waveform/waveformrendermark.cpp",
                    "waveform/waveformrendermarkrange.cpp",
                    "waveform/waveformrenderbeat.cpp",
-
+                   
+                   "qml/qmlengine.cpp",
+                   
                    "skin/imginvert.cpp",
                    "skin/imgloader.cpp",
                    "skin/imgcolor.cpp",
