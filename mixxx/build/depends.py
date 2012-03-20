@@ -126,13 +126,13 @@ class Qt(Dependence):
                                         'QtSql',
                                         'QtScript',
                                         'QtXmlPatterns',
-                                        'QtWebKit'
+                                        'QtWebKit',
                                         #'QtUiTools',
                                         #'QtDesigner',
                                         ],
                                        debug=False)
         elif build.platform_is_osx:
-            build.env.Append(LINKFLAGS = '-framework QtCore -framework QtOpenGL -framework QtGui -framework QtSql -framework QtXml -framework QtXmlPatterns  -framework QtNetwork -framework QtSql -framework QtScript -framework QtWebKit')
+            build.env.Append(LINKFLAGS = '-framework QtCore -framework QtOpenGL -framework QtGui -framework QtSql -framework QtXml -framework QtXmlPatterns  -framework QtNetwork -framework QtSql -framework QtScript -framework QtWebKit -framework QtDeclarative')
             build.env.Append(CPPPATH = ['/Library/Frameworks/QtCore.framework/Headers/',
                                         '/Library/Frameworks/QtOpenGL.framework/Headers/',
                                         '/Library/Frameworks/QtGui.framework/Headers/',
@@ -140,7 +140,8 @@ class Qt(Dependence):
                                         '/Library/Frameworks/QtNetwork.framework/Headers/',
                                         '/Library/Frameworks/QtSql.framework/Headers/',
                                         '/Library/Frameworks/QtWebKit.framework/Headers/',
-                                        '/Library/Frameworks/QtScript.framework/Headers/'])
+                                        '/Library/Frameworks/QtScript.framework/Headers/',
+					'/Library/Frameworks/QtDeclarative.framework/Headers/'])
 
         # Setup Qt library includes for non-OSX
         if build.platform_is_linux or build.platform_is_bsd:
@@ -151,6 +152,7 @@ class Qt(Dependence):
             build.env.Append(LIBS = 'QtOpenGL')
             build.env.Append(LIBS = 'QtWebKit')
             build.env.Append(LIBS = 'QtScript')
+	    build.env.Append(LIBS = 'QtDeclarative')
         elif build.platform_is_windows:
             build.env.Append(LIBPATH=['$QTDIR/lib'])
             build.env.Append(LIBS = 'QtXml4')
@@ -161,6 +163,7 @@ class Qt(Dependence):
             build.env.Append(LIBS = 'QtWebKit4')
             build.env.Append(LIBS = 'QtNetwork4')
             build.env.Append(LIBS = 'QtOpenGL4')
+	    build.env.Append(LIBS = 'QtDeclarative4')
 
         # Set Qt include paths for non-OSX
         if not build.platform_is_osx:
@@ -171,6 +174,7 @@ class Qt(Dependence):
                                       '$QTDIR/include/QtSql',
                                       '$QTDIR/include/QtOpenGL',
                                       '$QTDIR/include/QtWebKit',
+				      '$QTDIR/include/QtDeclarative',
                                       '$QTDIR/include/Qt'])
 
         # Set the rpath for linux/bsd/osx.
