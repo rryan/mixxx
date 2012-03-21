@@ -9,6 +9,8 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QMutexLocker>
+#include <QDeclarativeView>
+#include <QDeclarativeContext>
 
 #include "controlobject.h"
 #include "controlobjectthreadwidget.h"
@@ -53,6 +55,8 @@
 #include "widget/wskincolor.h"
 #include "widget/wpixmapstore.h"
 
+#include "qml/qmlengine.h"
+
 QList<const char*> LegacySkinParser::s_channelStrs;
 QMutex LegacySkinParser::s_safeStringMutex;
 
@@ -66,7 +70,8 @@ LegacySkinParser::LegacySkinParser(ConfigObject<ConfigValue>* pConfig,
           m_pPlayerManager(pPlayerManager),
           m_pLibrary(pLibrary),
           m_pVCManager(pVCMan),
-          m_pParent(NULL) {
+          m_pParent(NULL),
+          m_pQmlEngine(new QmlEngine) {
 
 }
 
@@ -178,6 +183,7 @@ void LegacySkinParser::setControlDefaults(QDomNode node, WAbstractControl* pCont
 
 QWidget* LegacySkinParser::parseSkin(QString skinPath, QWidget* pParent) {
     Q_ASSERT(!m_pParent);
+    m_sSkinPath = skinPath;
     /*
      * Long explaination because this took too long to figure:
      * Parent all the mixxx widgets (subclasses of wwidget) to
@@ -272,6 +278,8 @@ QWidget* LegacySkinParser::parseNode(QDomElement node, QWidget *pGrandparent) {
         return parseSpinny(node);
     } else if (nodeName == "Time") {
         return parseTime(node);
+    } else if (nodeName == "Qml") {
+        return parseQml(node);
     } else {
         qDebug() << "Invalid node name in skin:" << nodeName;
     }
@@ -821,6 +829,53 @@ QWidget* LegacySkinParser::parseTableView(QDomElement node) {
 
     return pTabWidget;
 }
+
+QWidget* LegacySkinParser::parseQml(QDomElement node) {
+    QWidget* pQmlWidget = new QWidget(m_pParent);
+
+    setupWidget(node, pQmlWidget);
+
+    QString filename = XmlParse::selectNodeQString(node, "Path");
+
+    QDir skinDir(m_sSkinPath);
+    QString skinQmlPath = skinDir.filePath(filename);
+    QFile skinQmlFile(skinQmlPath);
+
+    if (!skinQmlFile.open(QIODevice::ReadOnly)) {
+        return pQmlWidget;
+    }
+
+    QDeclarativeView *pQmlView = new QDeclarativeView;
+    // Set optimizations not already done in QDeclarativeView
+    pQmlView->setAttribute(Qt::WA_OpaquePaintEvent);
+    pQmlView->setAttribute(Qt::WA_NoSystemBackground);
+    // Make QDeclarativeView use OpenGL backend
+    QGLWidget *glWidget = new QGLWidget(QGLFormat(QGL::SampleBuffers));
+    pQmlView->setViewport(glWidget);
+    pQmlView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+
+    QDeclarativeContext *pContext = pQmlView->rootContext();
+
+    pContext->setContextProperty("MixxxEngine", m_pQmlEngine);
+    pQmlView->setSource(QUrl::fromLocalFile(skinQmlPath));
+    if (!pQmlView->errors().empty()) {
+        for (int i = 0; i < pQmlView->errors().length(); ++i) {
+            QMessageBox msgBox(QMessageBox::Critical, pQmlView->errors().at(i).description(), pQmlView->errors().at(i).toString());
+            msgBox.exec();
+        }
+        exit(1);
+    }
+    pQmlView->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+
+    QVBoxLayout *pLayout = new QVBoxLayout(pQmlWidget);
+    pLayout->addWidget(pQmlView);
+    pLayout->setContentsMargins(0, 0, 0, 0);
+
+    m_pQmlEngine->setup(m_pPlayerManager, m_pLibrary, pQmlView);
+
+    return pQmlWidget;
+}
+
 
 QString LegacySkinParser::lookupNodeGroup(QDomElement node) {
     QString group = XmlParse::selectNodeQString(node, "Group");

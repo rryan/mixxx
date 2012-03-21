@@ -15,6 +15,7 @@ class Library;
 class MixxxKeyboard;
 class PlayerManager;
 class WAbstractControl;
+class QmlEngine;
 
 class LegacySkinParser : public QObject, public SkinParser {
     Q_OBJECT
@@ -62,6 +63,7 @@ class LegacySkinParser : public QObject, public SkinParser {
     QWidget* parseTableView(QDomElement node);
     QWidget* parseStyle(QDomElement node);
     QWidget* parseSpinny(QDomElement node);
+    QWidget* parseQml(QDomElement node);
 
     void setupPosition(QDomNode node, QWidget* pWidget);
     void setupSize(QDomNode node, QWidget* pWidget);
@@ -79,6 +81,9 @@ class LegacySkinParser : public QObject, public SkinParser {
     QWidget *m_pParent;
     static QList<const char*> s_channelStrs;
     static QMutex s_safeStringMutex;
+
+    QString m_sSkinPath;
+    QmlEngine *m_pQmlEngine;
 };
 
 
