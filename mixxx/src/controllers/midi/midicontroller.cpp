@@ -13,6 +13,7 @@
 #include "errordialoghandler.h"
 
 MidiController::MidiController() : Controller() {
+    m_type=CONTROLLER_TYPE_MIDI;
 }
 
 MidiController::~MidiController() {
@@ -514,6 +515,11 @@ void MidiController::receive(QByteArray data) {
         return;
     }
     qWarning() << "MidiController: No script function specified for" << message;
+}
+
+void MidiController::sendTimingMessage(unsigned char status)
+{
+    sendShortMsg(status,0,0);
 }
 
 void MidiController::sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2) {

@@ -23,6 +23,9 @@ class Controller : public QObject, ControllerPresetVisitor {
   public:
     Controller();
     virtual ~Controller();  // Subclass should call close() at minimum.
+    int m_type;
+    static const int CONTROLLER_TYPE_GENERIC=0;
+    static const int CONTROLLER_TYPE_MIDI=1;
 
     // Returns the extension for the controller (type) preset files.  This is
     // used by the ControllerManager to display only relevant preset files for

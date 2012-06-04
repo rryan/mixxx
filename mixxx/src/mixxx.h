@@ -38,6 +38,7 @@ class SkinLoader;
 class VinylControlManager;
 class DlgPreferences;
 class SoundManager;
+class MidiClockThread;
 
 #include "configobject.h"
 
@@ -168,6 +169,9 @@ class MixxxApp : public QMainWindow {
     QAction *m_pPlaylistsNew;
     QAction *m_pCratesNew;
     QAction *m_pLibraryRescan;
+
+    //MidiClockThread* m_pMidiClockThread;
+
 #ifdef __VINYLCONTROL__
     QMenu *m_pVinylControlMenu;
     QAction *m_pOptionsVinylControl;

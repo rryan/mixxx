@@ -383,6 +383,8 @@ class MixxxCore(Feature):
                    "controllers/qtscript-bytearray/bytearrayprototype.cpp",
                    "controllers/softtakeover.cpp",
 
+                   "controllers/midiclockthread.cpp",
+
                    "main.cpp",
                    "mixxx.cpp",
                    "errordialoghandler.cpp",

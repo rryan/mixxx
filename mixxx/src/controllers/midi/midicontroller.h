@@ -47,6 +47,7 @@ class MidiController : public Controller {
     virtual bool isMappable() const {
         return m_preset.isMappable();
     }
+    void sendTimingMessage(unsigned char status);
 
   protected:
     Q_INVOKABLE void sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2);

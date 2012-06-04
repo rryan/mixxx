@@ -11,10 +11,12 @@
 #include "configobject.h"
 #include "controllers/controllerenumerator.h"
 #include "controllers/controllerpreset.h"
+#include "controllers/midiclockthread.h"
 
 //Forward declaration(s)
 class Controller;
 class ControllerLearningEventFilter;
+class MidiClockThread;
 
 /** Manages enumeration/operation/deletion of hardware controllers. */
 class ControllerManager : public QObject {
@@ -47,6 +49,9 @@ class ControllerManager : public QObject {
 
     // Writes out presets for currently connected input devices
     void slotSavePresets(bool onlyActive=false);
+    void slotMidiClockTick();
+    void slotMidiClockStart();
+    void slotMidiClockStop();
 
   private slots:
     // Open whatever controllers are selected in the preferences. This currently
@@ -76,6 +81,9 @@ class ControllerManager : public QObject {
     QList<ControllerEnumerator*> m_enumerators;
     QList<Controller*> m_controllers;
     QThread* m_pThread;
+    MidiClockThread* m_pMidiClockThread;
+    ControlObjectThread* m_pMidiClockOutButton;
+    void sendTimingMessage(unsigned char status);
 };
 
 #endif  // CONTROLLERMANAGER_H

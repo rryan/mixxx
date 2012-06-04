@@ -49,6 +49,8 @@
 #include "upgrade.h"
 #include "waveform/waveformwidgetfactory.h"
 
+#include "controllers/midiclockthread.h"
+
 #ifdef __VINYLCONTROL__
 #include "vinylcontrol/vinylcontrol.h"
 #include "vinylcontrol/vinylcontrolmanager.h"
@@ -137,6 +139,7 @@ MixxxApp::MixxxApp(QApplication *a, struct CmdlineArgs args)
     m_pPrefDlg = NULL;
     m_pControllerManager = 0;
     m_pRecordingManager = NULL;
+    //m_pMidiClockThread = NULL;
 
     // Check to see if this is the first time this version of Mixxx is run
     // after an upgrade and make any needed changes.
@@ -329,6 +332,11 @@ MixxxApp::MixxxApp(QApplication *a, struct CmdlineArgs args)
         m_pSoundManager->registerOutput(
             AudioOutput(AudioOutput::DECK, 0, deck), m_pEngine);
     }
+
+    // Create the MidiClockThread
+    //m_pMidiClockThread = new MidiClockThread();
+    //m_pMidiClockThread->start();
+    //m_pMidiClockThread->doMidi(); 
 
 #ifdef __VINYLCONTROL__
     m_pVCManager = new VinylControlManager(this, m_pConfig);

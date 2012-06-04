@@ -40,6 +40,7 @@ class ControlPushButton;
 class EngineVinylSoundEmu;
 class EngineSideChain;
 class SyncWorker;
+class ClockWorker;
 
 class EngineMaster : public EngineObject, public AudioSource {
     Q_OBJECT
@@ -135,6 +136,7 @@ class EngineMaster : public EngineObject, public AudioSource {
 
     EngineWorkerScheduler *m_pWorkerScheduler;
     SyncWorker* m_pSyncWorker;
+    ClockWorker* m_pClockWorker;
 
     ControlObject* m_pMasterVolume;
     ControlObject* m_pHeadVolume;
@@ -142,6 +144,8 @@ class EngineMaster : public EngineObject, public AudioSource {
     ControlObject* m_pMasterLatency;
     ControlPotmeter* m_pMasterRate;
     EngineClipping *clipping, *head_clipping;
+
+    ControlObject *midiClockOutButton,*midiClockSyncButton,*midiClockSync,*midiClockChannel;
 
 #ifdef __LADSPA__
     EngineLADSPA *ladspa;

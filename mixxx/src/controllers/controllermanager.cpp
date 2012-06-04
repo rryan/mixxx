@@ -37,6 +37,7 @@ QString firstAvailableFilename(QSet<QString>& filenames,
     return filename;
 }
 
+
 ControllerManager::ControllerManager(ConfigObject<ConfigValue> * pConfig) :
         QObject(),
         m_pConfig(pConfig),
@@ -57,6 +58,15 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue> * pConfig) :
         qDebug() << "Creating local controller presets directory:" << LOCAL_PRESETS_PATH;
         QDir().mkpath(LOCAL_PRESETS_PATH);
     }
+
+    // MIDI CLOCK
+    m_pMidiClockThread=new MidiClockThread();
+    connect(m_pMidiClockThread, SIGNAL(signalMidiClockTick()),
+            this, SLOT(slotMidiClockTick()));
+    connect(m_pMidiClockThread, SIGNAL(signalMidiClockStart()),
+            this, SLOT(slotMidiClockStart()));
+    connect(m_pMidiClockThread, SIGNAL(signalMidiClockStop()),
+            this, SLOT(slotMidiClockStop()));
 
     // Instantiate all enumerators
     m_enumerators.append(new PortMidiEnumerator());
@@ -93,6 +103,7 @@ ControllerManager::~ControllerManager() {
     m_pThread->wait();
     delete m_pThread;
     delete m_pControllerLearningEventFilter;
+    delete m_pMidiClockThread;
 }
 
 ControllerLearningEventFilter* ControllerManager::getControllerLearningEventFilter() const {
@@ -146,7 +157,7 @@ QList<Controller*> ControllerManager::getControllers() const {
 }
 
 QList<Controller*> ControllerManager::getControllerList(bool bOutputDevices, bool bInputDevices) {
-    qDebug() << "ControllerManager::getControllerList";
+    //qDebug() << "ControllerManager::getControllerList";
 
     QMutexLocker locker(&m_mutex);
     QList<Controller*> controllers = m_controllers;
@@ -393,3 +404,33 @@ void ControllerManager::slotSavePresets(bool onlyActive) {
         }
     }
 }
+
+void ControllerManager::slotMidiClockTick()
+{
+    sendTimingMessage(0xF8);
+}
+
+void ControllerManager::slotMidiClockStart()
+{
+    qDebug() << "Sending MIDI START";
+    sendTimingMessage(0xFA);
+}
+
+void ControllerManager::slotMidiClockStop()
+{
+    qDebug() << "Sending MIDI STOP";
+    sendTimingMessage(0xFC);
+}
+
+void ControllerManager::sendTimingMessage(unsigned char status)
+{
+    QList<Controller*> deviceList=getControllerList(true,false);
+    foreach (Controller* pController, deviceList) {
+        if(pController->m_type==Controller::CONTROLLER_TYPE_MIDI)
+        {
+             //qDebug() << pController->getName();
+             ((MidiController*)pController)->sendTimingMessage(status);
+        }
+    }
+}
+

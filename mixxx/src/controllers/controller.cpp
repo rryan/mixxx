@@ -22,6 +22,7 @@ Controller::Controller()
     // Get --controllerDebug command line option
     QStringList commandLineArgs = QApplication::arguments();
     m_bDebug = commandLineArgs.contains("--controllerDebug", Qt::CaseInsensitive);
+    m_type=CONTROLLER_TYPE_GENERIC;
 }
 
 Controller::~Controller() {

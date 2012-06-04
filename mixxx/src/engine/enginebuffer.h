@@ -207,7 +207,7 @@ private:
 
     ControlPushButton *playButton, *buttonBeatSync, *playStartButton, *stopStartButton, *stopButton;
     ControlObjectThreadMain *playButtonCOT, *playStartButtonCOT, *stopStartButtonCOT, *m_pTrackEndCOT, *stopButtonCOT;
-    ControlObject *fwdButton, *backButton;
+    ControlObject *fwdButton, *backButton, *midiClockSync;
 
     ControlObject *rateEngine;
     ControlObject *visualBpm;

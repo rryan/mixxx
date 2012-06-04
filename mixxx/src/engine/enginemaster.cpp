@@ -112,6 +112,15 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
         ConfigKey("[Mixer Profile]", "xFaderCurve"), 0., 2.);
     xFaderCalibration = new ControlPotmeter(
         ConfigKey("[Mixer Profile]", "xFaderCalibration"), -2., 2.);
+
+     // Midi clock out button
+    midiClockOutButton = new ControlObject(ConfigKey(group, "midi_clock_out"));
+
+    midiClockSyncButton = new ControlObject(ConfigKey(group, "midi_clock_do_sync"));
+    midiClockSync = new ControlObject(ConfigKey(group, "midi_clock_sync"));
+    midiClockSync->set(0);
+
+    midiClockChannel = new ControlObject(ConfigKey(group, "midi_clock_channel"));
 }
 
 EngineMaster::~EngineMaster()
@@ -134,6 +143,12 @@ EngineMaster::~EngineMaster()
     delete m_pMasterSampleRate;
     delete m_pMasterLatency;
     delete m_pMasterRate;
+
+    delete midiClockOutButton;
+    delete midiClockSyncButton;
+    delete midiClockSync;
+    delete midiClockChannel;
+
 
     SampleUtil::free(m_pHead);
     SampleUtil::free(m_pMaster);
