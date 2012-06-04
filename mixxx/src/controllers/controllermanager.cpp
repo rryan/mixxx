@@ -412,21 +412,23 @@ void ControllerManager::slotMidiClockTick()
 
 void ControllerManager::slotMidiClockStart()
 {
-    qDebug() << "Sending MIDI START";
+    //qDebug() << "Sending MIDI START";
     sendTimingMessage(0xFA);
 }
 
 void ControllerManager::slotMidiClockStop()
 {
-    qDebug() << "Sending MIDI STOP";
+    //qDebug() << "Sending MIDI STOP";
     sendTimingMessage(0xFC);
 }
 
+// Sends a MIDI timing message to all open MIDI output controllers
+// TODO make this more discriminatory
 void ControllerManager::sendTimingMessage(unsigned char status)
 {
     QList<Controller*> deviceList=getControllerList(true,false);
     foreach (Controller* pController, deviceList) {
-        if(pController->m_type==Controller::CONTROLLER_TYPE_MIDI)
+        if(pController->m_type==Controller::CONTROLLER_TYPE_MIDI and pController->isOpen())
         {
              //qDebug() << pController->getName();
              ((MidiController*)pController)->sendTimingMessage(status);
