@@ -30,7 +30,7 @@ QString MidiController::defaultPreset() {
 }
 
 QString MidiController::presetExtension() {
-    return MIDI_MAPPING_EXTENSION;
+    return MIDI_PRESET_EXTENSION;
 }
 
 void MidiController::visit(const MidiControllerPreset* preset) {
@@ -57,14 +57,19 @@ void MidiController::visit(const HidControllerPreset* preset) {
     // TODO(XXX): throw a hissy fit.
 }
 
+bool MidiController::matchPreset(const PresetInfo& preset) {
+    // Product info mapping not implemented for MIDI devices yet
+    return false;
+}
+
 bool MidiController::savePreset(const QString fileName) const {
     MidiControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);
 }
 
-void MidiController::applyPreset(QString configPath) {
+void MidiController::applyPreset(QString resourcePath) {
     // Handles the engine
-    Controller::applyPreset(configPath);
+    Controller::applyPreset(resourcePath);
 
     // Only execute this code if this is an output device
     if (isOutputDevice()) {
@@ -332,6 +337,12 @@ void MidiController::receive(unsigned char status, unsigned char control,
         newValue = computeValue(options, currMixxxControlValue, value);
     }
 
+    // ControlPushButton ControlObjects only accept NOTE_ON, so if the midi
+    // mapping is <button> we override the Midi 'status' appropriately.
+    if (options.button || options.sw) {
+        opCode = MIDI_NOTE_ON;
+    }
+
     if (options.soft_takeover) {
         // This is the only place to enable it if it isn't already.
         m_st.enable(p);
@@ -449,7 +460,7 @@ double MidiController::computeValue(MidiOptions options, double _prevmidivalue, 
 
 void MidiController::receive(QByteArray data) {
     int length = data.size();
-    QString message = getName() + ": [";
+    QString message = QString("%1: %2 bytes: [").arg(getName()).arg(length);
     for (int i = 0; i < length; ++i) {
         message += QString("%1%2").arg(
             QString("%1").arg((unsigned char)(data.at(i)), 2, 16, QChar('0')).toUpper(),

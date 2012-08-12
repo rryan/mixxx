@@ -39,31 +39,34 @@ WaveformWidgetHolder::WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidge
 
 ///////////////////////////////////////////
 
-WaveformWidgetFactory::WaveformWidgetFactory() {
-    m_time = new QTime();
-    m_config = 0;
-    m_skipRender = false;
-    setFrameRate(33);
-    m_defaultZoom = 3;
-    m_zoomSync = false;
+WaveformWidgetFactory::WaveformWidgetFactory() :
+        m_type(WaveformWidgetType::Count_WaveformwidgetType),
+        m_config(0),
+        m_skipRender(false),
+        m_frameRate(30),
+        m_defaultZoom(3),
+        m_zoomSync(false),
+        m_overviewNormalized(false),
+        m_openGLAvailable(false),
+        m_openGLShaderAvailable(false),
+        m_time(new QTime()),
+        m_lastFrameTime(0), 
+        m_actualFrameRate(0) {
+
     m_visualGain[All] = 1.5;
     m_visualGain[Low] = 1.0;
     m_visualGain[Mid] = 1.0;
     m_visualGain[High] = 1.0;
-
-    m_lastFrameTime = 0;
-    m_actualFrameRate = 0;
-
-    //setup the opengl default format
-    m_openGLAvailable = false;
-    m_openGLShaderAvailable = false;
 
     if (QGLFormat::hasOpenGL()) {
         QGLFormat glFormat;
         glFormat.setDirectRendering(true);
         glFormat.setDoubleBuffer(true);
         glFormat.setDepth(false);
-        glFormat.setSwapInterval(0); //enable vertical sync to avoid cue line to be cut
+        // Disable waiting for vertical Sync
+        // This can be enabled when using a single Threads for each QGLContext
+        // Setting 1 causes QGLContext::swapBuffer to sleep until the next VSync
+        glFormat.setSwapInterval(0);
         glFormat.setRgba(true);
         QGLFormat::setDefaultFormat(glFormat);
 
@@ -102,13 +105,13 @@ WaveformWidgetFactory::WaveformWidgetFactory() {
             m_openGLVersion = QString::number(majorVersion) + "." +
                     QString::number(minorVersion);
         }
+
         m_openGLAvailable = true;
-        {
-            QGLWidget glWidget;
-            glWidget.makeCurrent();
-            m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms();
-            glWidget.doneCurrent();
-        }
+
+        QGLWidget* glWidget = new QGLWidget(); // create paint device
+        // QGLShaderProgram::hasOpenGLShaderPrograms(); valgind error
+        m_openGLShaderAvailable = QGLShaderProgram::hasOpenGLShaderPrograms(glWidget->context());
+        delete glWidget;
     }
 
     evaluateWidgets();
@@ -140,7 +143,6 @@ bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config){
         m_config->set(ConfigKey("[Waveform]","DefaultZoom"), ConfigValue(m_defaultZoom));
     }
 
-
     int zoomSync = m_config->getValueString(ConfigKey("[Waveform]","ZoomSynchronization")).toInt(&ok);
     if (ok) {
         setZoomSync(static_cast<bool>(zoomSync));
@@ -164,6 +166,13 @@ bool WaveformWidgetFactory::setConfig(ConfigObject<ConfigValue> *config){
             m_config->set(ConfigKey("[Waveform]","VisualGain_" + QString::number(i)),
                           QString::number(m_visualGain[i]));
         }
+    }
+
+    int overviewNormalized = m_config->getValueString(ConfigKey("[Waveform]","OverviewNormalized")).toInt(&ok);
+    if (ok) {
+        setOverviewNormalized(static_cast<bool>(overviewNormalized));
+    } else {
+        m_config->set(ConfigKey("[Waveform]","OverviewNormalized"), ConfigValue(m_overviewNormalized));
     }
 
     return true;
@@ -235,6 +244,7 @@ void WaveformWidgetFactory::setFrameRate(int frameRate) {
     if (m_config) {
         m_config->set(ConfigKey("[Waveform]","FrameRate"), ConfigValue(m_frameRate));
     }
+    start();
 }
 
 bool WaveformWidgetFactory::setWidgetType(WaveformWidgetType::Type type) {
@@ -348,6 +358,13 @@ double WaveformWidgetFactory::getVisualGain(FilterIndex index) const {
     return m_visualGain[index];
 }
 
+void WaveformWidgetFactory::setOverviewNormalized(bool normalize) {
+    m_overviewNormalized = normalize;
+    if (m_config) {
+        m_config->set(ConfigKey("[Waveform]","OverviewNormalized"), ConfigValue(m_overviewNormalized));
+    }
+}
+
 void WaveformWidgetFactory::notifyZoomChange(WWaveformViewer* viewer) {
     if (isZoomSync()) {
         //qDebug() << "WaveformWidgetFactory::notifyZoomChange";
@@ -377,10 +394,10 @@ void WaveformWidgetFactory::refresh() {
     // update.
     emit(waveformUpdateTick());
 
-    m_lastFrameTime = m_time->elapsed();
-    m_time->restart();
-
-    m_actualFrameRate = 1000.0/(double)(m_lastFrameTime);
+    m_lastFrameTime = m_time->restart();
+    if (m_lastFrameTime && m_lastFrameTime <= 1000) {
+        m_actualFrameRate = 1000.0/(double)(m_lastFrameTime);
+    }
 }
 
 WaveformWidgetType::Type WaveformWidgetFactory::autoChooseWidgetType() const {

@@ -11,12 +11,16 @@
 #include "configobject.h"
 #include "controllers/controllerenumerator.h"
 #include "controllers/controllerpreset.h"
+#include "controllers/controllerpresetinfo.h"
 #include "controllers/midiclockthread.h"
 
 //Forward declaration(s)
 class Controller;
 class ControllerLearningEventFilter;
 class MidiClockThread;
+
+// Function to sort controllers by name
+bool controllerCompare(Controller *a,Controller *b);
 
 /** Manages enumeration/operation/deletion of hardware controllers. */
 class ControllerManager : public QObject {
@@ -27,8 +31,8 @@ class ControllerManager : public QObject {
 
     QList<Controller*> getControllers() const;
     QList<Controller*> getControllerList(bool outputDevices=true, bool inputDevices=true);
-    QList<QString> getPresetList(QString extension);
     ControllerLearningEventFilter* getControllerLearningEventFilter() const;
+    PresetInfoEnumerator* getPresetInfoManager();
 
     // Prevent other parts of Mixxx from having to manually connect to our slots
     void setUpDevices() { emit(requestSetUpDevices()); };
@@ -81,6 +85,7 @@ class ControllerManager : public QObject {
     QList<ControllerEnumerator*> m_enumerators;
     QList<Controller*> m_controllers;
     QThread* m_pThread;
+    PresetInfoEnumerator* m_pPresetInfoManager;
     MidiClockThread* m_pMidiClockThread;
     ControlObjectThread* m_pMidiClockOutButton;
     void sendTimingMessage(unsigned char status);

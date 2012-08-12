@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
-<MixxxControllerPreset schemaVersion="1">
+<MixxxMIDIPreset schemaVersion="1" mixxxVersion="1.11+">
+    <info>
+        <name>Novation Launchpad</name>
+        <author>zestoi</author>
+        <description>Multi page mapping for the Novation Launchpad</description>
+    </info>
     <controller id="Novation Launchpad">
-        <info>
-            <name>Novation Launchpad</name>
-            <author>zestoi</author>
-            <description>Multi page mapping for the Novation Launchpad</description>
-        </info>
         <scriptfiles>
             <file filename="Novation-Launchpad-scripts.js" functionprefix="NovationLaunchpad"/>
         </scriptfiles>
@@ -733,4 +733,4 @@
         </controls>
         <outputs/>
     </controller>
-</MixxxControllerPreset>
+</MixxxMIDIPreset>

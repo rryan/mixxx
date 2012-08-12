@@ -49,6 +49,8 @@ class MidiController : public Controller {
     }
     void sendTimingMessage(unsigned char status);
 
+    virtual bool matchPreset(const PresetInfo& preset);
+
   protected:
     Q_INVOKABLE void sendShortMsg(unsigned char status, unsigned char byte1, unsigned char byte2);
     // Alias for send()
@@ -68,7 +70,7 @@ class MidiController : public Controller {
 
   private slots:
     // Initializes the engine and static output mappings.
-    void applyPreset(QString configPath);
+    void applyPreset(QString resourcePath);
 
   private:
     virtual void send(unsigned int word) = 0;
