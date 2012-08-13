@@ -171,7 +171,7 @@ QList<Controller*> ControllerManager::getControllers() const {
 }
 
 QList<Controller*> ControllerManager::getControllerList(bool bOutputDevices, bool bInputDevices) {
-    qDebug() << "ControllerManager::getControllerList";
+    // qDebug() << "ControllerManager::getControllerList";
 
     QMutexLocker locker(&m_mutex);
     QList<Controller*> controllers = m_controllers;
