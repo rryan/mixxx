@@ -32,6 +32,7 @@
 #include "enginevumeter.h"
 #include "enginexfader.h"
 #include "engine/sidechain/enginesidechain.h"
+#include "engine/syncworker.h"
 #include "sampleutil.h"
 #include "util/timer.h"
 
@@ -47,6 +48,8 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
           m_callbackTrackManager(*m_state.getTrackManager()) {
     m_pWorkerScheduler = new EngineWorkerScheduler(this);
     m_pWorkerScheduler->start();
+    m_pSyncWorker = new SyncWorker(m_pWorkerScheduler,
+                                   &m_callbackControlManager);
 
     // Master sample rate
     ControlObject* pMasterSampleRate = new ControlObject(
@@ -167,6 +170,7 @@ EngineMaster::~EngineMaster() {
     }
 
     delete m_pWorkerScheduler;
+    delete m_pSyncWorker;
 }
 
 const CSAMPLE* EngineMaster::getMasterBuffer() const
@@ -465,6 +469,9 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut,
 
     // Publish all of our control changes.
     m_callbackControlManager.callbackProcessOutgoingUpdates();
+
+    // Schedule a ControlObject sync
+    m_pSyncWorker->schedule();
 
     // We're close to the end of the callback. Wake up the engine worker
     // scheduler so that it runs the workers.

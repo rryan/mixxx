@@ -470,6 +470,7 @@ class MixxxCore(Feature):
                    "engine/callbacktrackmanager.cpp",
                    "engine/engineworker.cpp",
                    "engine/engineworkerscheduler.cpp",
+                   "engine/syncworker.cpp",
                    "engine/enginebuffer.cpp",
                    "engine/enginebufferscale.cpp",
                    "engine/enginebufferscaledummy.cpp",

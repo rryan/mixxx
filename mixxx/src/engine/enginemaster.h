@@ -139,6 +139,7 @@ class EngineMaster : public EngineObject, public AudioSource {
     CSAMPLE *m_pMaster, *m_pHead;
 
     EngineWorkerScheduler *m_pWorkerScheduler;
+    SyncWorker* m_pSyncWorker;
 
     CallbackControl* m_pMasterVolume;
     CallbackControl* m_pHeadVolume;
