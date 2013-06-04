@@ -31,14 +31,13 @@
 #include "engineclipping.h"
 #include "enginevumeter.h"
 #include "enginexfader.h"
-#include "enginesidechain.h"
-#include "engine/syncworker.h"
+#include "engine/sidechain/enginesidechain.h"
 #include "sampleutil.h"
+#include "util/timer.h"
 
 #ifdef __LADSPA__
 #include "engineladspa.h"
 #endif
-
 
 EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
                            const char * group,
@@ -48,22 +47,23 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
           m_callbackTrackManager(*m_state.getTrackManager()) {
     m_pWorkerScheduler = new EngineWorkerScheduler(this);
     m_pWorkerScheduler->start();
-    m_pSyncWorker = new SyncWorker(m_pWorkerScheduler,
-                                   &m_callbackControlManager);
 
     // Master sample rate
     ControlObject* pMasterSampleRate = new ControlObject(
-        ConfigKey(group, "samplerate"));
+        ConfigKey(group, "samplerate"), true, true);
     pMasterSampleRate->set(44100.);
     m_pMasterSampleRate = m_callbackControlManager.addControl(
         pMasterSampleRate, 1);
 
     // Latency control
     m_pMasterLatency = m_callbackControlManager.addControl(
-        new ControlObject(ConfigKey(group, "latency")), 1);
+        new ControlObject(ConfigKey(group, "latency"), true, true), 1);
 
     m_pMasterUnderflowCount = m_callbackControlManager.addControl(
-        new ControlObject(ConfigKey(group, "underflow_count")), 1);
+        new ControlObject(ConfigKey(group, "underflow_count"), true, true), 1);
+
+    m_pMasterAudioBufferSize = m_callbackControlManager.addControl(
+        new ControlObject(ConfigKey(group, "audio_buffer_size")), 1);
 
     // Master rate
     m_pMasterRate = m_callbackControlManager.addControl(
@@ -109,18 +109,11 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
     // Allocate buffers
     m_pHead = SampleUtil::alloc(MAX_BUFFER_LEN);
     m_pMaster = SampleUtil::alloc(MAX_BUFFER_LEN);
-    memset(m_pHead, 0, sizeof(CSAMPLE) * MAX_BUFFER_LEN);
-    memset(m_pMaster, 0, sizeof(CSAMPLE) * MAX_BUFFER_LEN);
+    SampleUtil::applyGain(m_pHead, 0, MAX_BUFFER_LEN);
+    SampleUtil::applyGain(m_pMaster, 0, MAX_BUFFER_LEN);
 
     // Starts a thread for recording and shoutcast
-    sidechain = NULL;
-    if (bEnableSidechain) {
-        sidechain = new EngineSideChain(_config);
-        connect(sidechain, SIGNAL(isRecording(bool)),
-                this, SIGNAL(isRecording(bool)));
-        connect(sidechain, SIGNAL(bytesRecorded(int)),
-                this, SIGNAL(bytesRecorded(int)));
-    }
+    m_pSideChain = bEnableSidechain ? new EngineSideChain(_config) : NULL;
 
     //X-Fader Setup
     xFaderMode = m_callbackControlManager.addControl(
@@ -147,7 +140,7 @@ EngineMaster::~EngineMaster() {
     delete clipping;
     delete vumeter;
     delete head_clipping;
-    delete sidechain;
+    delete m_pSideChain;
 
     delete xFaderReverse;
     delete xFaderCalibration;
@@ -156,6 +149,7 @@ EngineMaster::~EngineMaster() {
 
     delete m_pMasterSampleRate;
     delete m_pMasterLatency;
+    delete m_pMasterAudioBufferSize;
     delete m_pMasterRate;
     delete m_pMasterUnderflowCount;
 
@@ -173,7 +167,6 @@ EngineMaster::~EngineMaster() {
     }
 
     delete m_pWorkerScheduler;
-    delete m_pSyncWorker;
 }
 
 const CSAMPLE* EngineMaster::getMasterBuffer() const
@@ -222,6 +215,8 @@ void EngineMaster::mixChannels(unsigned int channelBitvector, unsigned int maxCh
             pChannel7 = m_channels[i];
         }
     }
+
+    ScopedTimer t(QString("EngineMaster::mixChannels_%1active").arg(totalActive));
 
     if (totalActive == 0) {
         SampleUtil::applyGain(pOutput, 0.0f, iBufferSize);
@@ -349,6 +344,13 @@ void EngineMaster::mixChannels(unsigned int channelBitvector, unsigned int maxCh
 
 void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut,
                            const int iBufferSize) {
+    static bool haveSetName = false;
+    if (!haveSetName) {
+        QThread::currentThread()->setObjectName("Engine");
+        haveSetName = true;
+    }
+    ScopedTimer t("EngineMaster::process");
+
     // TODO(rryan) revisit the ordering here
     m_callbackTrackManager.callbackProcessIncomingUpdates();
     m_callbackControlManager.callbackProcessIncomingUpdates();
@@ -371,6 +373,7 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut,
     // qDebug() << "head val " << cf_val << ", head " << chead_gain
     //          << ", master " << cmaster_gain;
 
+    Timer timer("EngineMaster::process channels");
     QList<ChannelInfo*>::iterator it = m_channels.begin();
     for (unsigned int channel_number = 0;
          it != m_channels.end(); ++it, ++channel_number) {
@@ -399,6 +402,7 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut,
             pChannel->process(NULL, pChannelInfo->m_pBuffer, iBufferSize);
         }
     }
+    timer.elapsed(true);
 
     // Mix all the enabled headphone channels together.
     m_headphoneGain.setGain(chead_gain);
@@ -445,8 +449,8 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut,
 
     //Submit master samples to the side chain to do shoutcasting, recording,
     //etc.  (cpu intensive non-realtime tasks)
-    if (sidechain != NULL) {
-        sidechain->submitSamples(m_pMaster, iBufferSize);
+    if (m_pSideChain != NULL) {
+        m_pSideChain->writeSamples(m_pMaster, iBufferSize);
     }
 
     // Add master to headphone with appropriate gain
@@ -461,9 +465,6 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut,
 
     // Publish all of our control changes.
     m_callbackControlManager.callbackProcessOutgoingUpdates();
-
-    // Schedule a ControlObject sync
-    m_pSyncWorker->schedule();
 
     // We're close to the end of the callback. Wake up the engine worker
     // scheduler so that it runs the workers.

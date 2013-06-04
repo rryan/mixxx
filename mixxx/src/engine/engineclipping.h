@@ -36,7 +36,7 @@ class EngineClipping : public EngineObject {
     int m_duration;
 };
 
-#endif
+#endif // ENGINECLIPPING_H
 
 
 

@@ -63,6 +63,7 @@ void QuantizeControl::trackLoaded(TrackPointer pTrack) {
 }
 
 void QuantizeControl::trackUnloaded(TrackPointer pTrack) {
+    Q_UNUSED(pTrack);
     if (m_pTrack) {
         m_pTrackWatcher->unwatchTrack(pTrack);
     }
@@ -84,6 +85,9 @@ double QuantizeControl::process(const double dRate,
                                 const double currentSample,
                                 const double totalSamples,
                                 const int iBufferSize) {
+    Q_UNUSED(dRate);
+    Q_UNUSED(totalSamples);
+    Q_UNUSED(iBufferSize);
     int iCurrentSample = currentSample;
     if (!even(iCurrentSample)) {
         iCurrentSample--;

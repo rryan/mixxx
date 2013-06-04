@@ -15,14 +15,12 @@
 CueControl::CueControl(const char * _group,
                        EngineState* pEngineState) :
         EngineControl(_group, pEngineState->getConfig()),
+        m_bHotcueCancel(false),
         m_bPreviewing(false),
         m_bPreviewingHotcue(false),
         m_iCurrentlyPreviewingHotcues(0),
         m_iNumHotCues(NUM_HOT_CUES),
-        m_pLoadedTrack(),
-        m_bHotcueCancel(false) {
-    createControls(pEngineState);
-
+        m_pLoadedTrack() {
     m_pTrackWatcher = pEngineState->getTrackManager()->createTrackWatcher();
     connect(m_pTrackWatcher, SIGNAL(cuesUpdated()),
             this, SLOT(trackCuesUpdated()),
@@ -216,17 +214,14 @@ void CueControl::trackLoaded(TrackPointer pTrack) {
         ConfigKey("[Controls]","CueRecall")).toInt();
     //If cue recall is ON in the prefs, then we're supposed to seek to the cue
     //point on song load. Note that cueRecall == 0 corresponds to "ON", not OFF.
+    double loadCuePoint = 0;
     if (loadCue && cueRecall == 0) {
-        double loadCuePoint = loadCue->getPosition();
-        emit(seekAbs(loadCuePoint));
+        loadCuePoint = loadCue->getPosition();
     }
+    emit(seekAbs(loadCuePoint));
 }
 
 void CueControl::trackUnloaded(TrackPointer pTrack) {
-    if (!pTrack) {
-        return;
-    }
-
     m_pTrackWatcher->unwatchTrack(pTrack);
     for (int i = 0; i < m_iNumHotCues; ++i) {
         detachCue(i);

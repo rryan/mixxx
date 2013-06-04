@@ -55,6 +55,7 @@ class EngineChannel : public EngineObject {
 
   private:
     const QString m_group;
+    CallbackControl* m_pMaster;
     CallbackControl* m_pPFL;
     CallbackControl* m_pOrientation;
 };

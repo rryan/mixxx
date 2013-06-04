@@ -46,6 +46,7 @@ void ClockControl::trackLoaded(TrackPointer pTrack) {
 }
 
 void ClockControl::trackUnloaded(TrackPointer pTrack) {
+    Q_UNUSED(pTrack)
     trackLoaded(TrackPointer());
 }
 
@@ -60,6 +61,8 @@ double ClockControl::process(const double dRate,
                              const double currentSample,
                              const double totalSamples,
                              const int iBuffersize) {
+    Q_UNUSED(totalSamples);
+    Q_UNUSED(iBuffersize);
     double samplerate = m_pCOSampleRate->get();
 
     // TODO(XXX) should this be customizable, or latency dependent?

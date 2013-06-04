@@ -81,9 +81,9 @@ class EngineMaster : public EngineObject, public AudioSource {
         return &m_state;
     }
 
-  signals:
-    void bytesRecorded(int);
-    void isRecording(bool);
+    inline EngineSideChain* getSideChain() const {
+        return m_pSideChain;
+    }
 
   private:
     struct ChannelInfo {
@@ -139,7 +139,6 @@ class EngineMaster : public EngineObject, public AudioSource {
     CSAMPLE *m_pMaster, *m_pHead;
 
     EngineWorkerScheduler *m_pWorkerScheduler;
-    SyncWorker* m_pSyncWorker;
 
     CallbackControl* m_pMasterVolume;
     CallbackControl* m_pHeadVolume;
@@ -147,13 +146,14 @@ class EngineMaster : public EngineObject, public AudioSource {
     CallbackControl* m_pMasterLatency;
     CallbackControl* m_pMasterRate;
     CallbackControl* m_pMasterUnderflowCount;
+    CallbackControl* m_pMasterAudioBufferSize;
     EngineClipping *clipping, *head_clipping;
 
 #ifdef __LADSPA__
     EngineLADSPA *ladspa;
 #endif
     EngineVuMeter *vumeter;
-    EngineSideChain *sidechain;
+    EngineSideChain* m_pSideChain;
 
     CallbackControl* crossfader;
     CallbackControl* head_mix;

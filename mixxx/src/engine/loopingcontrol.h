@@ -55,6 +55,7 @@ class LoopingControl : public EngineControl {
   public slots:
     void slotLoopIn(double);
     void slotLoopOut(double);
+    void slotLoopExit(double);
     void slotReloopExit(double);
     void slotLoopStartPos(double);
     void slotLoopEndPos(double);
@@ -83,6 +84,7 @@ class LoopingControl : public EngineControl {
     CallbackControl* m_pCOLoopEnabled;
     CallbackControl* m_pLoopInButton;
     CallbackControl* m_pLoopOutButton;
+    CallbackControl* m_pLoopExitButton;
     CallbackControl* m_pReloopExitButton;
     CallbackControl* m_pCOLoopScale;
     CallbackControl* m_pLoopHalveButton;

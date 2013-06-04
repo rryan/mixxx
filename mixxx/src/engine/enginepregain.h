@@ -18,6 +18,7 @@
 #define ENGINEPREGAIN_H
 
 #include "engine/engineobject.h"
+#include "util/performancetimer.h"
 
 class CallbackControl;
 class EngineState;
@@ -34,12 +35,11 @@ class EnginePregain : public EngineObject {
     CallbackControl* potmeterPregain;
     CallbackControl* m_pTotalGain;
     CallbackControl* m_pControlReplayGain;
+    CallbackControl* m_pPassthroughEnabled;
     CallbackControl* m_pReplayGainBoost;
     CallbackControl* m_pEnableReplayGain;
-    float m_fReplayGainCorrection;
     bool m_bSmoothFade;
-    float m_fClock;
-    float m_fSumClock;
+    PerformanceTimer m_timer;
 };
 
 #endif

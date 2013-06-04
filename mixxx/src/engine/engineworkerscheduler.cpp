@@ -19,6 +19,7 @@ EngineWorkerScheduler::~EngineWorkerScheduler() {
     m_bQuit = true;
     m_waitCondition.wakeAll();
     m_workerThreadPool.waitForDone();
+    wait();
 }
 
 void EngineWorkerScheduler::bindWorker(EngineWorker* pWorker) {
@@ -63,7 +64,7 @@ void EngineWorkerScheduler::run() {
                 m_workerThreadPool.start(pWorker);
             }
         }
-        m_waitCondition.wait(&m_mutex);
+        m_waitCondition.wait(&m_mutex); // unlock mutex and wait
         m_mutex.unlock();
     }
 }

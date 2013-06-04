@@ -21,6 +21,7 @@ class BpmControl : public EngineControl {
                EngineState* pEngineState);
     virtual ~BpmControl();
     double getBpm();
+    double getFileBpm();
 
   public slots:
     virtual void trackLoaded(TrackPointer pTrack);
@@ -28,13 +29,12 @@ class BpmControl : public EngineControl {
 
   private slots:
     void slotSetEngineBpm(double);
-    void slotFileBpmChanged(double);
     void slotControlBeatSync(double);
     void slotControlBeatSyncPhase(double);
     void slotControlBeatSyncTempo(double);
     void slotTapFilter(double,int);
     void slotBpmTap(double);
-    void slotRateChanged(double);
+    void slotAdjustBpm();
     void slotUpdatedTrackBeats();
     void slotBeatsTranslate(double);
 
@@ -51,6 +51,11 @@ class BpmControl : public EngineControl {
     CallbackControl* m_pRateSlider;
     CallbackControl* m_pRateRange;
     CallbackControl* m_pRateDir;
+
+    // CallbackControls that come from LoopingControl
+    CallbackControl* m_pLoopEnabled;
+    CallbackControl* m_pLoopStartPosition;
+    CallbackControl* m_pLoopEndPosition;
 
     // The current loaded file's detected BPM
     CallbackControl* m_pFileBpm;

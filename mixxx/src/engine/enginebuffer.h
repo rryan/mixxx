@@ -19,6 +19,7 @@
 #define ENGINEBUFFER_H
 
 #include <qapplication.h>
+#include <QAtomicInt>
 
 #include "defs.h"
 #include "engine/engineobject.h"
@@ -69,13 +70,6 @@ const int TRACK_END_MODE_NEXT = 1;
 const int TRACK_END_MODE_LOOP = 2;
 const int TRACK_END_MODE_PING = 3;
 
-//vinyl status constants
-//XXX: move this to vinylcontrol.h once thread startup is moved
-const int VINYL_STATUS_DISABLED = 0;
-const int VINYL_STATUS_OK = 1;
-const int VINYL_STATUS_WARNING = 2;
-const int VINYL_STATUS_ERROR = 3;
-
 const int ENGINE_RAMP_DOWN = -1;
 const int ENGINE_RAMP_NONE = 0;
 const int ENGINE_RAMP_UP = 1;
@@ -117,10 +111,12 @@ public:
     // Add an engine control to the EngineBuffer. Only call this during startup.
     void addControl(EngineControl* pControl);
 
-    /** Return the current rate (not thread-safe) */
+    // Return the current rate (not thread-safe)
     double getRate();
-    /** Returns current bpm value (not thread-safe) */
+    // Returns current bpm value (not thread-safe)
     double getBpm();
+    // Returns the BPM of the loaded track (not thread-safe)
+    double getFileBpm();
     /** Sets pointer to other engine buffer/channel */
     void setEngineMaster(EngineMaster*);
 
@@ -152,7 +148,7 @@ public:
     // has completed. This method is called from the GUI thread and should not
     // touch any EngineBuffer state other than thread-safe calls to m_pReader
     // and QAtomicInts.
-    void slotLoadTrackFromGuiThread(TrackPointer pTrack);
+    void slotLoadTrackFromGuiThread(TrackPointer pTrack, bool play = false);
 
     void slotEjectTrack(double);
 
@@ -162,6 +158,7 @@ public:
     void trackUnloaded(TrackPointer pTrack);
 
   private slots:
+    void slotTrackLoading();
     void slotTrackLoaded(TrackPointer pTrack,
                          int iSampleRate, int iNumSamples);
     void slotTrackLoadFailed(TrackPointer pTrack,
@@ -172,8 +169,7 @@ public:
 
     void updateIndicators(double rate, int iBufferSize);
 
-    void hintReader(const double rate,
-                    const int iSourceSamples);
+    void hintReader(const double rate);
 
     void ejectTrack();
 
@@ -182,7 +178,7 @@ public:
     TwoWayMessagePipe<PlayerMessage, EnginePlayerMessage> m_messagePipe;
 
     /** Holds the name of the control group */
-    const char* group;
+    const char* m_group;
     ConfigObject<ConfigValue>* m_pConfig;
 
     /** Pointer to the loop control object */
@@ -207,13 +203,13 @@ public:
     QList<Hint> m_hintList;
 
     /** The current sample to play in the file. */
-    double filepos_play;
+    double m_filepos_play;
     /** Copy of rate_exchange, used to check if rate needs to be updated */
-    double rate_old;
+    double m_rate_old;
     /** Copy of length of file */
-    long int file_length_old;
+    long int m_file_length_old;
     /** Copy of file sample rate*/
-    int file_srate_old;
+    int m_file_srate_old;
     /** Used in update of playpos slider */
     int m_iSamplesCalculated;
     int m_iUiSlowTick;
@@ -228,31 +224,29 @@ public:
     CallbackControl* m_pTrackSamples;
     CallbackControl* m_pTrackSampleRate;
 
-    CallbackControl* playButton;
-    CallbackControl* fwdButton;
-    CallbackControl* backButton;
+    CallbackControl* m_playButton;
+    CallbackControl* m_fwdButton;
+    CallbackControl* m_backButton;
 
     CallbackControl* m_pSlipButton;
     CallbackControl* m_pSlipPosition;
 
-    CallbackControl* rateEngine;
-    CallbackControl* playposSlider;
-    CallbackControl* visualPlaypos;
-    CallbackControl* visualBpm;
+    CallbackControl* m_rateEngine;
+    CallbackControl* m_playposSlider;
+    CallbackControl* m_visualPlaypos;
+    CallbackControl* m_visualBpm;
     CallbackControl* m_pSampleRate;
     CallbackControl* m_pKeylock;
-
-    QAtomicInt m_iTrackLoading;
 
     // Whether or not to repeat the track when at the end
     CallbackControl* m_pRepeat;
 
     /** Object used to perform waveform scaling (sample rate conversion) */
-    EngineBufferScale *m_pScale;
+    EngineBufferScale* m_pScale;
     /** Object used for linear interpolation scaling of the audio */
-    EngineBufferScaleLinear *m_pScaleLinear;
+    EngineBufferScaleLinear* m_pScaleLinear;
     /** Object used for pitch-indep time stretch (key lock) scaling of the audio */
-    EngineBufferScaleST *m_pScaleST;
+    EngineBufferScaleST* m_pScaleST;
     // Indicates whether the scaler has changed since the last process()
     bool m_bScalerChanged;
 
@@ -261,6 +255,8 @@ public:
     float m_fLastSampleValue[2];
     /** Is true if the previous buffer was silent due to pausing */
     bool m_bLastBufferPaused;
+    QAtomicInt m_iTrackLoading;
+    bool m_bPlayAfterLoading;
     float m_fRampValue;
     int m_iRampState;
     //int m_iRampIter;
