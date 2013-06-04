@@ -21,6 +21,8 @@ CueControl::CueControl(const char * _group,
         m_iCurrentlyPreviewingHotcues(0),
         m_iNumHotCues(NUM_HOT_CUES),
         m_pLoadedTrack() {
+    createControls(pEngineState);
+
     m_pTrackWatcher = pEngineState->getTrackManager()->createTrackWatcher();
     connect(m_pTrackWatcher, SIGNAL(cuesUpdated()),
             this, SLOT(trackCuesUpdated()),
