@@ -975,12 +975,7 @@ void EngineBuffer::slotLoadTrackFromGuiThread(TrackPointer pTrack, bool play) {
 void EngineBuffer::addControl(EngineControl* pControl) {
     // Connect to signals from EngineControl here...
     m_engineControls.push_back(pControl);
-    connect(pControl, SIGNAL(seek(double)),
-            this, SLOT(slotControlSeek(double)),
-            Qt::DirectConnection);
-    connect(pControl, SIGNAL(seekAbs(double)),
-            this, SLOT(slotControlSeekAbs(double)),
-            Qt::DirectConnection);
+    pControl->setEngineBuffer(this);
     connect(this, SIGNAL(trackLoaded(TrackPointer)),
             pControl, SLOT(trackLoaded(TrackPointer)),
             Qt::DirectConnection);

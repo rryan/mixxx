@@ -443,7 +443,7 @@ bool BpmControl::syncPhase(EngineBuffer* pOtherEngineBuffer) {
         }
     }
 
-    emit(seekAbs(dNewPlaypos));
+    seekAbs(dNewPlaypos);
     return true;
 }
 

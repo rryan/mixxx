@@ -220,7 +220,7 @@ void CueControl::trackLoaded(TrackPointer pTrack) {
     if (loadCue && cueRecall == 0) {
         loadCuePoint = loadCue->getPosition();
     }
-    emit(seekAbs(loadCuePoint));
+    seekAbs(loadCuePoint);
 }
 
 void CueControl::trackUnloaded(TrackPointer pTrack) {
@@ -335,7 +335,7 @@ void CueControl::hotcueSet(HotcueControl* pControl, double v) {
     // potentially invalid for vinyl control?
     bool playing = m_pPlayButton->get() > 0;
     if (!playing && m_pQuantizeEnabled->get() > 0.0) {
-        emit(seekAbs(cuePosition));
+        seekAbs(cuePosition);
     }
 }
 
@@ -350,7 +350,7 @@ void CueControl::hotcueGoto(HotcueControl* pControl, double v) {
     if (pCue) {
         int position = pCue->getPosition();
         if (position != -1) {
-            emit(seekAbs(position));
+            seekAbs(position);
         }
     }
 }
@@ -367,7 +367,7 @@ void CueControl::hotcueGotoAndStop(HotcueControl* pControl, double v) {
         int position = pCue->getPosition();
         if (position != -1) {
             m_pPlayButton->set(0.0);
-            emit(seekAbs(position));
+            seekAbs(position);
         }
     }
 }
@@ -383,7 +383,7 @@ void CueControl::hotcueGotoAndPlay(HotcueControl* pControl, double v) {
     if (pCue) {
         int position = pCue->getPosition();
         if (position != -1) {
-            emit(seekAbs(position));
+            seekAbs(position);
             m_pPlayButton->set(1.0);
         }
     }
@@ -440,7 +440,7 @@ void CueControl::hotcueActivatePreview(HotcueControl* pControl, double v) {
             m_bPreviewingHotcue = true;
             pControl->setPreviewing(true);
             pControl->setPreviewingPosition(iPosition);
-            emit(seekAbs(iPosition));
+            seekAbs(iPosition);
         }
     } else if (m_bPreviewingHotcue) {
         // This is a activate release and we are previewing at least one
@@ -465,7 +465,7 @@ void CueControl::hotcueActivatePreview(HotcueControl* pControl, double v) {
                     m_pPlayButton->set(m_pPlayButton->get());
                 } else {
                     m_pPlayButton->set(0.0);
-                    emit(seekAbs(iPosition));
+                    seekAbs(iPosition);
                 }
             }
         }
@@ -559,7 +559,7 @@ void CueControl::cueGoto(double v) {
 
     // Seek to cue point
     double cuePoint = m_pCuePoint->get();
-    emit(seekAbs(cuePoint));
+    seekAbs(cuePoint);
 }
 
 void CueControl::cueGotoAndPlay(double v) {
@@ -578,7 +578,7 @@ void CueControl::cueGotoAndStop(double v) {
 
     m_pPlayButton->set(0.0);
     double cuePoint = m_pCuePoint->get();
-    emit(seekAbs(cuePoint));
+    seekAbs(cuePoint);
 }
 
 void CueControl::cuePreview(double v) {
@@ -591,7 +591,7 @@ void CueControl::cuePreview(double v) {
     }
 
     double cuePoint = m_pCuePoint->get();
-    emit(seekAbs(cuePoint));
+    seekAbs(cuePoint);
 }
 
 void CueControl::cueSimple(double v) {
@@ -605,7 +605,7 @@ void CueControl::cueSimple(double v) {
     }
 
     double cuePoint = m_pCuePoint->get();
-    emit(seekAbs(cuePoint));
+    seekAbs(cuePoint);
 }
 
 void CueControl::cueCDJ(double v) {
@@ -625,7 +625,7 @@ void CueControl::cueCDJ(double v) {
 
             // Just in case.
             m_bPreviewing = false;
-            emit(seekAbs(cuePoint));
+            seekAbs(cuePoint);
         } else {
             if (fabs(getCurrentSample() - m_pCuePoint->get()) < 1.0f) {
                 m_pPlayButton->set(1.0);
@@ -638,14 +638,14 @@ void CueControl::cueCDJ(double v) {
                 // If quantize is enabled, jump to the cue point since it's not
                 // necessarily where we currently are
                 if (m_pQuantizeEnabled->get() > 0.0) {
-                    emit(seekAbs(m_pCuePoint->get()));
+                    seekAbs(m_pCuePoint->get());
                 }
             }
         }
     } else if (m_bPreviewing) {
         m_pPlayButton->set(0.0);
         m_bPreviewing = false;
-        emit(seekAbs(cuePoint));
+        seekAbs(cuePoint);
     }
     else {
         // Re-trigger the play button value so controllers get the correct one
