@@ -26,14 +26,10 @@ class EngineWorkerScheduler : public QThread {
 
     void bindWorker(EngineWorker* pWorker);
     void runWorkers();
+    void workerReady(EngineWorker* worker);
 
   protected:
     void run();
-
-  private slots:
-    void workerReady(EngineWorker* worker);
-    void workerStarted(EngineWorker* worker);
-    void workerFinished(EngineWorker* worker);
 
   private:
     FIFO<EngineWorker*> m_scheduleFIFO;

@@ -23,15 +23,7 @@ EngineWorkerScheduler::~EngineWorkerScheduler() {
 }
 
 void EngineWorkerScheduler::bindWorker(EngineWorker* pWorker) {
-    connect(pWorker, SIGNAL(workReady(EngineWorker*)),
-            this, SLOT(workerReady(EngineWorker*)),
-            Qt::DirectConnection);
-    connect(pWorker, SIGNAL(workStarting(EngineWorker*)),
-            this, SLOT(workerStarted(EngineWorker*)),
-            Qt::DirectConnection);
-    connect(pWorker, SIGNAL(workDone(EngineWorker*)),
-            this, SLOT(workerFinished(EngineWorker*)),
-            Qt::DirectConnection);
+    pWorker->setScheduler(this);
 }
 
 void EngineWorkerScheduler::workerReady(EngineWorker* pWorker) {
@@ -43,27 +35,19 @@ void EngineWorkerScheduler::workerReady(EngineWorker* pWorker) {
     }
 }
 
-void EngineWorkerScheduler::workerStarted(EngineWorker* pWorker) {
-    pWorker->setActive(true);
-}
-
-void EngineWorkerScheduler::workerFinished(EngineWorker* pWorker) {
-    pWorker->setActive(false);
-}
-
 void EngineWorkerScheduler::runWorkers() {
     m_waitCondition.wakeAll();
 }
 
 void EngineWorkerScheduler::run() {
     while (!m_bQuit) {
-        m_mutex.lock();
         EngineWorker* pWorker = NULL;
         while (m_scheduleFIFO.read(&pWorker, 1) == 1) {
             if (pWorker && !pWorker->isActive()) {
                 m_workerThreadPool.start(pWorker);
             }
         }
+        m_mutex.lock();
         m_waitCondition.wait(&m_mutex); // unlock mutex and wait
         m_mutex.unlock();
     }

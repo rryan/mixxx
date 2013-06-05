@@ -15,14 +15,14 @@ SyncWorker::~SyncWorker() {
 
 void SyncWorker::run() {
     // Notify the EngineWorkerScheduler that the work we scheduled is starting.
-    emit(workStarting(this));
+    setActive(true);
 
     m_pCallbackControlManager->processOutgoingUpdates();
 
     // Notify the EngineWorkerScheduler that the work we did is done.
-    emit(workDone(this));
+    setActive(false);
 }
 
 void SyncWorker::schedule() {
-    emit(workReady(this));
+    workReady();
 }

@@ -13,6 +13,8 @@
 // EngineWorker can emit its workReady signal, and an EngineWorkerManager will
 // schedule it for running after the audio callback has completed.
 
+class EngineWorkerScheduler;
+
 class EngineWorker : public QObject, public QRunnable {
     Q_OBJECT
   public:
@@ -31,12 +33,11 @@ class EngineWorker : public QObject, public QRunnable {
         return m_isActive > 0;
     }
 
-  signals:
-    void workReady(EngineWorker* worker);
-    void workStarting(EngineWorker* worker);
-    void workDone(EngineWorker* worker);
+    void setScheduler(EngineWorkerScheduler* pScheduler);
+    void workReady();
 
   private:
+    EngineWorkerScheduler* m_pScheduler;
     QAtomicInt m_isActive;
 };
 
