@@ -114,10 +114,10 @@ void MixxxApp::logBuildDetails() {
     QStringList buildInfo;
     if (!buildBranch.isEmpty() && !buildRevision.isEmpty()) {
         buildInfo.append(
-            QString("bzr %1 r%2").arg(buildBranch, buildRevision));
+            QString("git %1 r%2").arg(buildBranch, buildRevision));
     } else if (!buildRevision.isEmpty()) {
         buildInfo.append(
-            QString("bzr r%2").arg(buildRevision));
+            QString("git r%2").arg(buildRevision));
     }
     buildInfo.append("built on: " __DATE__ " @ " __TIME__);
     if (!buildFlags.isEmpty()) {
@@ -1300,7 +1300,7 @@ void MixxxApp::slotOptionsPreferences()
 void MixxxApp::slotControlVinylControl(double toggle)
 {
 #ifdef __VINYLCONTROL__
-    if (m_pVCManager->vinylInputEnabled(0)) {
+    if (m_pPlayerManager->hasVinylInput(0)) {
         m_pOptionsVinylControl->setChecked((bool)toggle);
     } else {
         m_pOptionsVinylControl->setChecked(false);
@@ -1329,7 +1329,7 @@ void MixxxApp::slotCheckboxVinylControl(bool toggle)
 void MixxxApp::slotControlVinylControl2(double toggle)
 {
 #ifdef __VINYLCONTROL__
-    if (m_pVCManager->vinylInputEnabled(1)) {
+    if (m_pPlayerManager->hasVinylInput(1)) {
         m_pOptionsVinylControl2->setChecked((bool)toggle);
     } else {
         m_pOptionsVinylControl2->setChecked(false);

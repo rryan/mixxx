@@ -35,8 +35,7 @@ RateControl::RateControl(const char* _group, EngineState* pEngineState)
           m_dTempRateChange(0.0),
           m_dRateTemp(0.0),
           m_eRampBackMode(RATERAMP_RAMPBACK_NONE),
-          m_dRateTempRampbackChange(0.0),
-          m_dOldRate(0.0f) {
+          m_dRateTempRampbackChange(0.0) {
     m_pScratchController = new PositionScratchController(_group, pEngineState);
 
     CallbackControlManager* pCallbackControlManager =
