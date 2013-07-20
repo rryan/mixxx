@@ -429,6 +429,11 @@ class Aubio(Dependence):
         if not conf.CheckLib('aubio'):
             raise Exception('Could not find aubio or its development headers.')
 
+class OpenAL(Dependence):
+    def configure(self, build, conf):
+        if not conf.CheckLib('openal'):
+            raise Exception('Could not find libopenal.')
+
 class MixxxCore(Feature):
 
     def description(self):
@@ -973,7 +978,7 @@ class MixxxCore(Feature):
     def depends(self, build):
         return [SoundTouch, ReplayGain, PortAudio, PortMIDI, Qt,
                 FidLib, SndFile, FLAC, OggVorbis, OpenGL, TagLib, ProtoBuf,
-                Chromaprint, OSC, Aubio]
+                Chromaprint, OpenAL, OSC, Aubio]
 
     def post_dependency_check_configure(self, build, conf):
         """Sets up additional things in the Environment that must happen
