@@ -19,6 +19,7 @@
 
 #include "controlobject.h"
 #include "controlpushbutton.h"
+#include "control/vectorcontrol.h"
 
 EngineChannel::EngineChannel(const char* pGroup,
                              EngineChannel::ChannelOrientation defaultOrientation)
@@ -29,6 +30,9 @@ EngineChannel::EngineChannel(const char* pGroup,
     m_pMaster->setButtonMode(ControlPushButton::TOGGLE);
     m_pOrientation = new ControlObject(ConfigKey(m_group, "orientation"));
     m_pOrientation->set(defaultOrientation);
+    m_pPosition = new Vector3DControl(ConfigKey(m_group, "position"));
+    m_pSpaceOrientation = new Vector3DControl(ConfigKey(m_group, "orientation"));
+    m_pVelocity = new Vector3DControl(ConfigKey(m_group, "velocity"));
 }
 
 EngineChannel::~EngineChannel() {

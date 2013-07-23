@@ -18,6 +18,8 @@
 #ifndef ENGINECHANNEL_H
 #define ENGINECHANNEL_H
 
+#include <QVector3D>
+
 #include "engineobject.h"
 #include "configobject.h"
 
@@ -32,6 +34,7 @@ class EngineVuMeter;
 class EngineVinylSoundEmu;
 class ControlPushButton;
 class ControlObject;
+class Vector3DControl;
 
 class EngineChannel : public EngineObject {
     Q_OBJECT
@@ -64,6 +67,9 @@ class EngineChannel : public EngineObject {
     ControlPushButton* m_pMaster;
     ControlPushButton* m_pPFL;
     ControlObject* m_pOrientation;
+    Vector3DControl* m_pPosition;
+    Vector3DControl* m_pSpaceOrientation;
+    Vector3DControl* m_pVelocity;
 };
 
 #endif
