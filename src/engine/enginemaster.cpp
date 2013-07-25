@@ -318,10 +318,6 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     m_pAudioScene->addEmitter(pChannel);
 }
 
-void EngineMaster::addDomeOutput() {
-    m_pAudioScene->addListener();
-}
-
 EngineChannel* EngineMaster::getChannel(QString group) {
     for (QList<ChannelInfo*>::const_iterator i = m_channels.begin();
          i != m_channels.end(); ++i) {

@@ -62,7 +62,6 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
     // TODO(rryan): Position them. Read this from a config file?
     const int numDomeOutputs = 7;
     for (int i = 0; i < numDomeOutputs; ++i) {
-        m_pEngine->addDomeOutput();
         m_pSoundManager->registerOutput(AudioOutput(AudioOutput::DOME, 0, i),
                                         m_pEngine);
     }
