@@ -23,10 +23,16 @@ class Vector3DControl {
         delete m_pVectorZ;
     }
 
-    QVector3D getVector() const {
+    QVector3D get() const {
         return QVector3D(m_pVectorX->get(),
                          m_pVectorY->get(),
                          m_pVectorZ->get());
+    }
+
+    void set(const QVector3D& vector) {
+        m_pVectorX->set(vector.x());
+        m_pVectorY->set(vector.y());
+        m_pVectorZ->set(vector.z());
     }
 
   private:
