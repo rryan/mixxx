@@ -165,3 +165,16 @@ void AudioScene::shutdown() {
 void AudioScene::addEmitter(EngineChannel* pChannel) {
     m_emitters.push_back(new AudioEmitter(pChannel));
 }
+
+void AudioScene::addListener() {
+    QString group = QString("[Dome%1]").arg(m_listeners.size() + 1);
+    m_listeners.push_back(new AudioListener(group));
+}
+
+CSAMPLE* AudioScene::buffer(const AudioOutput& output) {
+    unsigned char index = output.getIndex();
+    if (index < m_listeners.size()) {
+        return m_listeners[index]->buffer();
+    }
+    return NULL;
+}

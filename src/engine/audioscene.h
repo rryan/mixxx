@@ -8,6 +8,9 @@
 #include <AL/alc.h>
 #include <AL/alext.h>
 
+#include "defs.h"
+#include "sampleutil.h"
+#include "soundmanagerutil.h"
 #include "engine/enginechannel.h"
 #include "control/vectorcontrol.h"
 
@@ -54,9 +57,18 @@ class AudioListener : public AudioEntity {
     AudioListener(const QString& group)
             : m_position(ConfigKey(group, "position")),
               m_orientation(ConfigKey(group, "orientation")),
-              m_velocity(ConfigKey(group, "velocity")) {
+              m_velocity(ConfigKey(group, "velocity")),
+              m_pBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
+        SampleUtil::applyGain(m_pBuffer, 0, MAX_BUFFER_LEN);
     }
-    virtual ~AudioListener() {}
+    virtual ~AudioListener() {
+        SampleUtil::free(m_pBuffer);
+        m_pBuffer = NULL;
+    }
+
+    CSAMPLE* buffer() {
+        return m_pBuffer;
+    }
 
     void position(ALfloat* pPosition) {
         QVector3D vec = m_position.get();
@@ -77,6 +89,7 @@ class AudioListener : public AudioEntity {
     Vector3DControl m_position;
     Vector3DControl m_orientation;
     Vector3DControl m_velocity;
+    CSAMPLE* m_pBuffer;
 };
 
 class AudioScene : public QObject {
@@ -85,6 +98,9 @@ class AudioScene : public QObject {
     virtual ~AudioScene();
 
     void addEmitter(EngineChannel* pChannel);
+    void addListener();
+
+    CSAMPLE* buffer(const AudioOutput& output);
 
     bool initialize();
     void shutdown();
