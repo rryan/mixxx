@@ -288,6 +288,8 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut, const int iBuff
     m_headphoneVolumeOld = headphoneVolume;
     head_clipping->process(m_pHead, m_pHead, iBufferSize);
 
+    m_pAudioScene->process(iBufferSize/2);
+
     //Master/headphones interleaving is now done in
     //SoundManager::requestBuffer() - Albert Nov 18/07
 

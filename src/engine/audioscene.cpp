@@ -72,15 +72,74 @@ ALsizei BytesToFrames(ALsizei size, ALenum channels, ALenum type)
     return size / FramesToBytes(1, channels, type);
 }
 
+
+#ifndef M_PI
+#define M_PI    (3.14159265358979323846)
+#endif
+
+static ALuint CreateSineWave(void)
+{
+    ALshort data[44100];
+    ALuint buffer;
+    ALenum err;
+    ALuint i;
+
+    for(i = 0;i < 44100;i++)
+        data[i] = (ALshort)(sin(i * 441.0 / 44100.0 * 2.0*M_PI)*32767.0);
+
+    /* Buffer the audio data into a new buffer object. */
+    buffer = 0;
+    alGenBuffers(1, &buffer);
+    alBufferData(buffer, AL_FORMAT_MONO16, data, sizeof(data), 44100);
+
+    /* Check if an error occured, and clean up if so. */
+    err = alGetError();
+    if(err != AL_NO_ERROR)
+    {
+        qDebug() << "OpenAL Error:" << err << alGetString(err);
+        if(alIsBuffer(buffer))
+            alDeleteBuffers(1, &buffer);
+        return 0;
+    }
+
+    return buffer;
+}
+
+AudioListener::AudioListener(const QString& group)
+        : m_position(ConfigKey(group, "position")),
+          m_orientation(ConfigKey(group, "orientation")),
+          m_velocity(ConfigKey(group, "velocity")) {
+}
+
+AudioListener::~AudioListener() {
+}
+
 AudioScene::AudioScene()
-        : m_pDevice(NULL),
+        : m_pInterleavedBuffer(NULL),
+          m_listener("[AudioScene]"),
+          m_pDevice(NULL),
           m_pContext(NULL),
           m_iFrameSize(0) {
+
+    const int num_channels = 7;
+    m_pInterleavedBuffer = SampleUtil::alloc(num_channels * MAX_BUFFER_LEN);
+    SampleUtil::applyGain(m_pInterleavedBuffer, 0, num_channels * MAX_BUFFER_LEN);
+    for (int i = 0; i < num_channels; ++i) {
+        CSAMPLE* pBuffer = SampleUtil::alloc(MAX_BUFFER_LEN);
+        SampleUtil::applyGain(pBuffer, 0, MAX_BUFFER_LEN);
+        m_buffers.push_back(pBuffer);
+    }
+
     initialize();
 }
 
 AudioScene::~AudioScene() {
     shutdown();
+    SampleUtil::free(m_pInterleavedBuffer);
+    m_pInterleavedBuffer = NULL;
+    while (m_buffers.size() > 0) {
+        SampleUtil::free(m_buffers.takeLast());
+    }
 }
 
 
@@ -110,9 +169,10 @@ bool AudioScene::initialize() {
         return false;
     }
 
+
     ALCint attrs[16];
     attrs[0] = ALC_FORMAT_CHANNELS_SOFT;
-    attrs[1] = ALC_STEREO_SOFT;
+    attrs[1] = ALC_6POINT1_SOFT;
     attrs[2] = ALC_FORMAT_TYPE_SOFT;
     attrs[3] = ALC_FLOAT_SOFT;
     attrs[4] = ALC_FREQUENCY;
@@ -134,7 +194,7 @@ bool AudioScene::initialize() {
     }
 
     if (alcMakeContextCurrent(m_pContext) == ALC_FALSE) {
-        qDebug() << "WARNING: Couldn't make OpenAL context current.";
+        qDebug() << "WARNING: Couldn't make listener OpenAL context current.";
         shutdown();
         return false;
     }
@@ -145,36 +205,66 @@ bool AudioScene::initialize() {
              << "Sample Type:" << TypeName(attrs[3])
              << "Sample Rate:" << attrs[5]
              << "Frame Size:" << m_iFrameSize;
+
+    m_buffer = CreateSineWave();
+    if (!m_buffer) {
+        shutdown();
+        return false;
+    }
+
+    m_source = 0;
+    alGenSources(1, &m_source);
+    alSourcei(m_source, AL_BUFFER, m_buffer);
+    alSourcei(m_source, AL_LOOPING, AL_TRUE);
+    alSource3f(m_source, AL_POSITION, 0, 1, 1);
+    if (alGetError() != AL_NO_ERROR) {
+        qDebug() << "Failed to setup sound source";
+        shutdown();
+        return false;
+    }
+    alSourcePlay(m_source);
     return true;
 }
 
 void AudioScene::shutdown() {
-    if (m_pContext) {
-        qDebug() << "Destroying OpenAL context.";
-        alcDestroyContext(m_pContext);
-        m_pContext = NULL;
-    }
     if (m_pDevice) {
         qDebug() << "Destroying OpenAL device.";
         alcCloseDevice(m_pDevice);
         m_pDevice = NULL;
     }
+    if (m_pContext) {
+        qDebug() << "Destroying OpenAL context.";
+        alcDestroyContext(m_pContext);
+        m_pContext = NULL;
+    }
     m_iFrameSize = 0;
+}
+
+void AudioScene::process(const int iNumFrames) {
+    ALenum state;
+    alGetSourcei(m_source, AL_SOURCE_STATE, &state);
+
+    SampleUtil::applyGain(m_pInterleavedBuffer, 0, iNumFrames * m_buffers.size());
+    alcRenderSamplesSOFT(m_pDevice, m_pInterleavedBuffer, iNumFrames);
+
+    // De-interleave the buffer.
+    const int num_buffers = m_buffers.size();
+    for (int j = 0; j < num_buffers; ++j) {
+        CSAMPLE* pBuffer = m_buffers[j];
+        for (int i = 0; i < iNumFrames; ++i) {
+            pBuffer[i] = m_pInterleavedBuffer[i * num_buffers + j] * SHRT_MAX;
+        }
+    }
 }
 
 void AudioScene::addEmitter(EngineChannel* pChannel) {
     m_emitters.push_back(new AudioEmitter(pChannel));
 }
 
-void AudioScene::addListener() {
-    QString group = QString("[Dome%1]").arg(m_listeners.size() + 1);
-    m_listeners.push_back(new AudioListener(group));
-}
-
 CSAMPLE* AudioScene::buffer(const AudioOutput& output) {
     unsigned char index = output.getIndex();
-    if (index < m_listeners.size()) {
-        return m_listeners[index]->buffer();
+    if (index < m_buffers.size()) {
+        return m_buffers[index];
     }
     return NULL;
 }

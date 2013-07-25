@@ -54,21 +54,8 @@ class AudioEmitter : public AudioEntity {
 
 class AudioListener : public AudioEntity {
   public:
-    AudioListener(const QString& group)
-            : m_position(ConfigKey(group, "position")),
-              m_orientation(ConfigKey(group, "orientation")),
-              m_velocity(ConfigKey(group, "velocity")),
-              m_pBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
-        SampleUtil::applyGain(m_pBuffer, 0, MAX_BUFFER_LEN);
-    }
-    virtual ~AudioListener() {
-        SampleUtil::free(m_pBuffer);
-        m_pBuffer = NULL;
-    }
-
-    CSAMPLE* buffer() {
-        return m_pBuffer;
-    }
+    explicit AudioListener(const QString& group);
+    virtual ~AudioListener();
 
     void position(ALfloat* pPosition) {
         QVector3D vec = m_position.get();
@@ -89,7 +76,6 @@ class AudioListener : public AudioEntity {
     Vector3DControl m_position;
     Vector3DControl m_orientation;
     Vector3DControl m_velocity;
-    CSAMPLE* m_pBuffer;
 };
 
 class AudioScene : public QObject {
@@ -98,21 +84,23 @@ class AudioScene : public QObject {
     virtual ~AudioScene();
 
     void addEmitter(EngineChannel* pChannel);
-    void addListener();
 
     CSAMPLE* buffer(const AudioOutput& output);
 
     bool initialize();
     void shutdown();
-    void process();
+    void process(const int iNumFrames);
 
   private:
     QList<AudioEmitter*> m_emitters;
-    QList<AudioListener*> m_listeners;
+    QList<CSAMPLE*> m_buffers;
+    CSAMPLE* m_pInterleavedBuffer;
+    AudioListener m_listener;
 
     ALCdevice* m_pDevice;
     ALCcontext* m_pContext;
     ALCsizei m_iFrameSize;
+    ALuint m_source, m_buffer;
 };
 
 #endif /* AUDIOSCENE_H */

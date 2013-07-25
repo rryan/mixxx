@@ -57,7 +57,6 @@ class EngineMaster : public EngineObject, public AudioSource {
     // Add an EngineChannel to the mixing engine. This is not thread safe --
     // only call it before the engine has started mixing.
     void addChannel(EngineChannel* pChannel);
-    void addDomeOutput();
 
     EngineChannel* getChannel(QString group);
     static inline double gainForOrientation(EngineChannel::ChannelOrientation orientation,
