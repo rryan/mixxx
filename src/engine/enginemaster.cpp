@@ -318,6 +318,10 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
     m_pAudioScene->addEmitter(pChannel);
 }
 
+void EngineMaster::addDomeOutput() {
+    m_pAudioScene->addListener();
+}
+
 EngineChannel* EngineMaster::getChannel(QString group) {
     for (QList<ChannelInfo*>::const_iterator i = m_channels.begin();
          i != m_channels.end(); ++i) {
@@ -354,6 +358,9 @@ const CSAMPLE* EngineMaster::buffer(AudioOutput output) const {
         break;
     case AudioOutput::DECK:
         return getDeckBuffer(output.getIndex());
+        break;
+    case AudioOutput::DOME:
+        return m_pAudioScene->buffer(output);
         break;
     default:
         return NULL;
