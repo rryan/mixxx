@@ -33,6 +33,11 @@ EngineChannel::EngineChannel(const char* pGroup,
     m_pPosition = new Vector3DControl(ConfigKey(m_group, "position"));
     m_pSpaceOrientation = new Vector3DControl(ConfigKey(m_group, "orientation"));
     m_pVelocity = new Vector3DControl(ConfigKey(m_group, "velocity"));
+    if (defaultOrientation == LEFT) {
+        m_pPosition->set(QVector3D(-1.0, 0, 0));
+    } else if (defaultOrientation == RIGHT) {
+        m_pPosition->set(QVector3D(1.0, 0, 0));
+    }
 }
 
 EngineChannel::~EngineChannel() {
