@@ -32,6 +32,7 @@
 #include "enginevumeter.h"
 #include "enginexfader.h"
 #include "engine/sidechain/enginesidechain.h"
+#include "engine/audioscene.h"
 #include "sampleutil.h"
 #include "util/timer.h"
 #include "playermanager.h"
@@ -48,6 +49,8 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
           m_headphoneVolumeOld(0) {
     m_pWorkerScheduler = new EngineWorkerScheduler(this);
     m_pWorkerScheduler->start();
+
+    m_pAudioScene = new AudioScene();
 
     // Master sample rate
     m_pMasterSampleRate = new ControlObject(ConfigKey(group, "samplerate"), true, true);
@@ -115,6 +118,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
 EngineMaster::~EngineMaster()
 {
     qDebug() << "in ~EngineMaster()";
+    delete m_pAudioScene;
     delete crossfader;
     delete m_pBalance;
     delete head_mix;
@@ -310,6 +314,8 @@ void EngineMaster::addChannel(EngineChannel* pChannel) {
         pBuffer->bindWorkers(m_pWorkerScheduler);
         pBuffer->setEngineMaster(this);
     }
+
+    m_pAudioScene->addEmitter(pChannel);
 }
 
 EngineChannel* EngineMaster::getChannel(QString group) {
