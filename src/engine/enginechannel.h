@@ -22,6 +22,7 @@
 
 #include "engineobject.h"
 #include "configobject.h"
+#include "control/vectorcontrol.h"
 
 class ControlObject;
 class EngineBuffer;
@@ -34,7 +35,6 @@ class EngineVuMeter;
 class EngineVinylSoundEmu;
 class ControlPushButton;
 class ControlObject;
-class Vector3DControl;
 
 class EngineChannel : public EngineObject {
     Q_OBJECT
@@ -60,6 +60,18 @@ class EngineChannel : public EngineObject {
     // TODO(XXX) This hack needs to be removed.
     virtual EngineBuffer* getEngineBuffer() {
         return NULL;
+    }
+
+    QVector3D position() const {
+        return m_pPosition->get();
+    }
+
+    QVector3D orientation() const {
+        return m_pSpaceOrientation->get();
+    }
+
+    QVector3D velocity() const {
+        return m_pVelocity->get();
     }
 
   private:
