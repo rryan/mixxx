@@ -168,6 +168,8 @@ QString AudioPath::getStringFromType(AudioPathType type) {
         return QString::fromAscii("Passthrough");
     case LIGHTCONTROL:
         return QString::fromAscii("Light Control");
+    case DOME:
+        return QString::fromAscii("Dome");
     }
     return QString::fromAscii("Unknown path type %1").arg(type);
 }
@@ -194,6 +196,8 @@ QString AudioPath::getTrStringFromType(AudioPathType type) {
         return QString(QObject::tr("Microphone"));
     case EXTPASSTHROUGH:
         return QString(QObject::tr("Passthrough"));
+    case DOME:
+        return QString::fromAscii("Dome");
     }
     return QString(QObject::tr("Unknown path type %1")).arg(type);
 }
@@ -218,6 +222,8 @@ AudioPathType AudioPath::getTypeFromString(QString string) {
         return AudioPath::LIGHTCONTROL;
     } else if (string == AudioPath::getStringFromType(AudioPath::EXTPASSTHROUGH).toLower()) {
         return AudioPath::EXTPASSTHROUGH;
+    } else if (string == AudioPath::getStringFromType(AudioPath::DOME).toLower()) {
+        return AudioPath::DOME;
     } else {
         return AudioPath::INVALID;
     }
@@ -232,6 +238,7 @@ bool AudioPath::isIndexed(AudioPathType type) {
     case DECK:
     case VINYLCONTROL:
     case EXTPASSTHROUGH:
+    case DOME:
         return true;
     case LIGHTCONTROL:
     case MICROPHONE:
@@ -260,6 +267,7 @@ AudioPathType AudioPath::getTypeFromInt(int typeInt) {
 unsigned char AudioPath::channelsNeededForType(AudioPathType type) {
     switch (type) {
     case AudioPath::MICROPHONE:
+    case AudioPath::DOME:
         return 1;
     default:
         return 2;
@@ -318,6 +326,7 @@ QList<AudioPathType> AudioOutput::getSupportedTypes() {
     types.append(MASTER);
     types.append(HEADPHONES);
     types.append(DECK);
+    types.append(DOME);
     return types;
 }
 
