@@ -315,9 +315,6 @@ void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer, const int
 }
 
 void AudioScene::process(const int iNumFrames) {
-    ALenum state;
-    alGetSourcei(m_source, AL_SOURCE_STATE, &state);
-
     SampleUtil::applyGain(m_pInterleavedBuffer, 0, iNumFrames * m_buffers.size());
     alcRenderSamplesSOFT(m_pDevice, m_pInterleavedBuffer, iNumFrames);
 
