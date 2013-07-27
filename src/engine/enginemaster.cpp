@@ -50,11 +50,11 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
     m_pWorkerScheduler = new EngineWorkerScheduler(this);
     m_pWorkerScheduler->start();
 
-    m_pAudioScene = new AudioScene();
-
     // Master sample rate
     m_pMasterSampleRate = new ControlObject(ConfigKey(group, "samplerate"), true, true);
     m_pMasterSampleRate->set(44100.);
+
+    m_pAudioScene = new AudioScene(m_pMasterSampleRate->get());
 
     // Latency control
     m_pMasterLatency = new ControlObject(ConfigKey(group, "latency"), true, true);
@@ -226,7 +226,9 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut, const int iBuff
         }
 
         m_pAudioScene->receiveBuffer(pChannel->getGroup(),
-                                     pChannelInfo->m_pBuffer, iBufferSize/2);
+                                     pChannelInfo->m_pBuffer,
+                                     iBufferSize/2,
+                                     m_pMasterSampleRate->get());
     }
     timer.elapsed(true);
 

@@ -34,7 +34,7 @@ class AudioEmitter : public AudioEntity {
     AudioEmitter(EngineChannel* pChannel);
     virtual ~AudioEmitter();
 
-    void receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames);
+    void receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames, const int iSampleRate);
 
     void position(ALfloat* pPosition) {
         QVector3D vec = m_pChannel->position();
@@ -86,7 +86,7 @@ class AudioListener : public AudioEntity {
 
 class AudioScene : public QObject {
   public:
-    AudioScene();
+    AudioScene(int sampleRate);
     virtual ~AudioScene();
 
     void addEmitter(EngineChannel* pChannel);
@@ -97,9 +97,11 @@ class AudioScene : public QObject {
     void shutdown();
     void onCallbackStart();
     void process(const int iNumFrames);
-    void receiveBuffer(const QString& group, CSAMPLE* pBuffer, const int iNumFrames);
+    void receiveBuffer(const QString& group, CSAMPLE* pBuffer, const int iNumFrames,
+                       const int iSampleRate);
 
   private:
+    int m_iSampleRate;
     QMap<QString, AudioEmitter*> m_emitters;
     QList<CSAMPLE*> m_buffers;
     CSAMPLE* m_pInterleavedBuffer;

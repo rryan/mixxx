@@ -112,11 +112,10 @@ AudioEmitter::~AudioEmitter() {
     m_pConversion = NULL;
 }
 
-void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames) {
+void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames,
+                                 const int iSampleRate) {
     for (int i = 0; i < iNumFrames; ++i) {
-        //m_pConversion[i] = sin(i * 200.0/44100.0 * 2.0*M_PI);
-
-        m_pConversion[i] = pBuffer[i*2] / SHRT_MAX;
+        m_pConversion[i] = (pBuffer[i*2]+ pBuffer[i*2 + 1]) / SHRT_MAX;
         if (m_pConversion[i] > 1.0 || m_pConversion[i] < -1.0) {
             qDebug() << "receive buffer clipped";
         }
@@ -138,7 +137,7 @@ void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames) {
         ALuint buffer = m_buffers.takeFirst();
         // TODO(rryan): samplerate
         alBufferData(buffer, AL_FORMAT_MONO_FLOAT32, m_pConversion,
-                     iNumFrames * sizeof(CSAMPLE), 44100);
+                     iNumFrames * sizeof(CSAMPLE), iSampleRate);
 
         if (alGetError() != AL_NO_ERROR) {
             qDebug() << "Error buffering data:" << alGetError();
@@ -181,8 +180,9 @@ AudioListener::AudioListener(const QString& group)
 AudioListener::~AudioListener() {
 }
 
-AudioScene::AudioScene()
-        : m_pInterleavedBuffer(NULL),
+AudioScene::AudioScene(int sampleRate)
+        : m_iSampleRate(sampleRate),
+          m_pInterleavedBuffer(NULL),
           m_listener("[AudioScene]"),
           m_pDevice(NULL),
           m_pContext(NULL),
@@ -243,7 +243,7 @@ bool AudioScene::initialize() {
     attrs[2] = ALC_FORMAT_TYPE_SOFT;
     attrs[3] = ALC_FLOAT_SOFT;
     attrs[4] = ALC_FREQUENCY;
-    attrs[5] = 44100; // TODO
+    attrs[5] = m_iSampleRate;
     attrs[6] = 0;
 
     if (alcIsRenderFormatSupportedSOFT(m_pDevice, attrs[5], attrs[1], attrs[3]) == ALC_FALSE) {
@@ -296,7 +296,8 @@ void AudioScene::onCallbackStart() {
     }
 }
 
-void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer, const int iNumFrames) {
+void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer,
+                               const int iNumFrames, const int iSampleRate) {
     // Passthrough for testing.
     // const int num_buffers = m_buffers.size();
     // for (int j = 0; j < num_buffers; ++j) {
@@ -311,7 +312,7 @@ void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer, const int
         qDebug() << "No group registered for:" << group;
         return;
     }
-    pEmitter->receiveBuffer(pBuffer, iNumFrames);
+    pEmitter->receiveBuffer(pBuffer, iNumFrames, iSampleRate);
 }
 
 void AudioScene::process(const int iNumFrames) {
