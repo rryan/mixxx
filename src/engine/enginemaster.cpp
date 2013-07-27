@@ -192,12 +192,16 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut, const int iBuff
     // qDebug() << "head val " << cf_val << ", head " << chead_gain
     //          << ", master " << cmaster_gain;
 
+    m_pAudioScene->onCallbackStart();
+
     Timer timer("EngineMaster::process channels");
     QList<ChannelInfo*>::iterator it = m_channels.begin();
     for (unsigned int channel_number = 0;
          it != m_channels.end(); ++it, ++channel_number) {
         ChannelInfo* pChannelInfo = *it;
         EngineChannel* pChannel = pChannelInfo->m_pChannel;
+
+        SampleUtil::applyGain(pChannelInfo->m_pBuffer, 0, iBufferSize);
 
         if (!pChannel->isActive()) {
             continue;
@@ -220,6 +224,9 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut, const int iBuff
         if (needsProcessing) {
             pChannel->process(NULL, pChannelInfo->m_pBuffer, iBufferSize);
         }
+
+        m_pAudioScene->receiveBuffer(pChannel->getGroup(),
+                                     pChannelInfo->m_pBuffer, iBufferSize/2);
     }
     timer.elapsed(true);
 
