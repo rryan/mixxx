@@ -224,20 +224,28 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut, const int iBuff
         if (needsProcessing) {
             pChannel->process(NULL, pChannelInfo->m_pBuffer, iBufferSize);
         }
-
-        m_pAudioScene->receiveBuffer(pChannel->getGroup(),
-                                     pChannelInfo->m_pBuffer,
-                                     iBufferSize/2,
-                                     m_pMasterSampleRate->get());
     }
     timer.elapsed(true);
 
     // Mix all the enabled headphone channels together.
     m_headphoneGain.setGain(chead_gain);
 
-    ChannelMixer::mixChannels(m_channels, m_headphoneGain, headphoneOutput,
-                              maxChannels, &m_channelHeadphoneGainCache,
-                              m_pHead, iBufferSize);
+    if (m_pAudioScene) {
+        ScopedTimer t("EngineMaster::receiveBuffers");
+        for (QList<ChannelInfo*>::iterator it = m_channels.begin();
+             it != m_channels.end(); ++it) {
+            ChannelInfo* pChannelInfo = *it;
+            EngineChannel* pChannel = pChannelInfo->m_pChannel;
+            m_pAudioScene->receiveBuffer(pChannel->getGroup(),
+                                         pChannelInfo->m_pBuffer,
+                                         iBufferSize/2,
+                                         m_pMasterSampleRate->get());
+        }
+    } else {
+        ChannelMixer::mixChannels(m_channels, m_headphoneGain, headphoneOutput,
+                                  maxChannels, &m_channelHeadphoneGainCache,
+                                  m_pHead, iBufferSize);
+    }
 
     // Calculate the crossfader gains for left and right side of the crossfader
     double c1_gain, c2_gain;

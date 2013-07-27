@@ -2,6 +2,7 @@
 
 #include "engine/audioscene.h"
 #include "engine/enginechannel.h"
+#include "util/timer.h"
 
 #define LOAD_PROC(x,t)  ((x) = (t)alcGetProcAddress(NULL, #x))
 static LPALCLOOPBACKOPENDEVICESOFT alcLoopbackOpenDeviceSOFT;
@@ -298,6 +299,8 @@ void AudioScene::onCallbackStart() {
 
 void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer,
                                const int iNumFrames, const int iSampleRate) {
+    ScopedTimer t("AudioScene::receiveBuffer");
+
     // Passthrough for testing.
     // const int num_buffers = m_buffers.size();
     // for (int j = 0; j < num_buffers; ++j) {
@@ -316,6 +319,8 @@ void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer,
 }
 
 void AudioScene::process(const int iNumFrames) {
+    ScopedTimer t("AudioScene::process");
+
     SampleUtil::applyGain(m_pInterleavedBuffer, 0, iNumFrames * m_buffers.size());
     alcRenderSamplesSOFT(m_pDevice, m_pInterleavedBuffer, iNumFrames);
 
