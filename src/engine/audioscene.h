@@ -30,8 +30,10 @@ class AudioEntity {
 
 class AudioEmitter : public AudioEntity {
   public:
-    AudioEmitter(EngineChannel* pChannel) : m_pChannel(pChannel) {}
-    virtual ~AudioEmitter() {}
+    AudioEmitter(EngineChannel* pChannel);
+    virtual ~AudioEmitter();
+
+    void receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames);
 
     void position(ALfloat* pPosition) {
         QVector3D vec = m_pChannel->position();
@@ -50,6 +52,9 @@ class AudioEmitter : public AudioEntity {
 
   private:
     EngineChannel* m_pChannel;
+    CSAMPLE* m_pConversion;
+    QList<ALuint> m_buffers;
+    ALuint m_source;
 };
 
 class AudioListener : public AudioEntity {

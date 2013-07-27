@@ -105,6 +105,106 @@ static ALuint CreateSineWave(void)
     return buffer;
 }
 
+AudioEmitter::AudioEmitter(EngineChannel* pChannel)
+        : m_pChannel(pChannel),
+          m_pConversion(SampleUtil::alloc(MAX_BUFFER_LEN)) {
+    SampleUtil::applyGain(m_pConversion, 0, MAX_BUFFER_LEN);
+
+    while (m_buffers.size() < 2) {
+        ALuint buffer = 0;
+        alGenBuffers(1, &buffer);
+        if (alGetError() != AL_NO_ERROR) {
+            qDebug() << "Failed to create buffer.";
+            return;
+        }
+        qDebug() << "Created buffer:" << buffer;
+        m_buffers.push_back(buffer);
+    }
+
+    alGenSources(1, &m_source);
+    ALenum err = alGetError();
+    if (err != AL_NO_ERROR) {
+        qDebug() << "Failed to create source." << err;
+        return;
+    }
+
+    // Set parameters so mono sources play out the front-center speaker and
+    // won't distance attenuate.
+    alSource3i(m_source, AL_POSITION, 0, 0, 0);
+    alSource3i(m_source, AL_VELOCITY, 0, 0, 0);
+    alSource3i(m_source, AL_DIRECTION, 0, 0, 0);
+    //alSourcei(m_source, AL_SOURCE_RELATIVE, AL_TRUE);
+    //alSourcei(m_source, AL_ROLLOFF_FACTOR, 0);
+
+    alSourceRewind(m_source);
+    alSourcei(m_source, AL_BUFFER, 0);
+}
+
+AudioEmitter::~AudioEmitter() {
+    SampleUtil::free(m_pConversion);
+    m_pConversion = NULL;
+}
+
+void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames) {
+    for (int i = 0; i < iNumFrames; ++i) {
+        //m_pConversion[i] = sin(i * 200.0/44100.0 * 2.0*M_PI);
+
+        m_pConversion[i] = pBuffer[i*2] / SHRT_MAX;
+        if (m_pConversion[i] > 1.0 || m_pConversion[i] < -1.0) {
+            qDebug() << "clip";
+        }
+    }
+
+    if (m_buffers.size() == 0) {
+        ALint processed = 0;
+        alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &processed);
+
+        while (processed > 0) {
+            ALuint bufid = 0;
+            alSourceUnqueueBuffers(m_source, 1, &bufid);
+            processed--;
+            m_buffers.push_back(bufid);
+        }
+    }
+
+    if (m_buffers.size() > 0) {
+        ALuint buffer = m_buffers.takeFirst();
+        // TODO(rryan): samplerate
+        alBufferData(buffer, AL_FORMAT_MONO_FLOAT32, m_pConversion,
+                     iNumFrames * sizeof(CSAMPLE), 44100);
+
+        if (alGetError() != AL_NO_ERROR) {
+            qDebug() << "Error buffering data:" << alGetError();
+        }
+
+        alSourceQueueBuffers(m_source, 1, &buffer);
+
+        if (alGetError() != AL_NO_ERROR) {
+            qDebug() << "Error queueing data:" << alGetError();
+        }
+    } else {
+        qDebug() << "Buffer overrun in AudioScene.";
+    }
+
+    ALint state;
+    alGetSourcei(m_source, AL_SOURCE_STATE, &state);
+
+    if (state != AL_PLAYING && state != AL_PAUSED) {
+        ALint queued;
+        /* If no buffers are queued, playback is finished */
+        alGetSourcei(m_source, AL_BUFFERS_QUEUED, &queued);
+        if (queued == 0) {
+            return;
+        }
+
+        alSourcePlay(m_source);
+        if (alGetError() != AL_NO_ERROR) {
+            qDebug() << "Error restarting playback";
+            return;
+        }
+    }
+}
+
 AudioListener::AudioListener(const QString& group)
         : m_position(ConfigKey(group, "position")),
           m_orientation(ConfigKey(group, "orientation")),
