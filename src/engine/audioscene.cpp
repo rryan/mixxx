@@ -72,39 +72,6 @@ ALsizei BytesToFrames(ALsizei size, ALenum channels, ALenum type)
     return size / FramesToBytes(1, channels, type);
 }
 
-
-#ifndef M_PI
-#define M_PI    (3.14159265358979323846)
-#endif
-
-static ALuint CreateSineWave(void)
-{
-    ALshort data[44100];
-    ALuint buffer;
-    ALenum err;
-    ALuint i;
-
-    for(i = 0;i < 44100;i++)
-        data[i] = (ALshort)(sin(i * 441.0 / 44100.0 * 2.0*M_PI)*32767.0);
-
-    /* Buffer the audio data into a new buffer object. */
-    buffer = 0;
-    alGenBuffers(1, &buffer);
-    alBufferData(buffer, AL_FORMAT_MONO16, data, sizeof(data), 44100);
-
-    /* Check if an error occured, and clean up if so. */
-    err = alGetError();
-    if(err != AL_NO_ERROR)
-    {
-        qDebug() << "OpenAL Error:" << err << alGetString(err);
-        if(alIsBuffer(buffer))
-            alDeleteBuffers(1, &buffer);
-        return 0;
-    }
-
-    return buffer;
-}
-
 AudioEmitter::AudioEmitter(EngineChannel* pChannel)
         : m_pChannel(pChannel),
           m_pConversion(SampleUtil::alloc(MAX_BUFFER_LEN)) {
@@ -306,23 +273,6 @@ bool AudioScene::initialize() {
              << "Sample Rate:" << attrs[5]
              << "Frame Size:" << m_iFrameSize;
 
-    m_buffer = CreateSineWave();
-    if (!m_buffer) {
-        shutdown();
-        return false;
-    }
-
-    m_source = 0;
-    alGenSources(1, &m_source);
-    alSourcei(m_source, AL_BUFFER, m_buffer);
-    alSourcei(m_source, AL_LOOPING, AL_TRUE);
-    alSource3f(m_source, AL_POSITION, 0, 1, 1);
-    if (alGetError() != AL_NO_ERROR) {
-        qDebug() << "Failed to setup sound source";
-        shutdown();
-        return false;
-    }
-    alSourcePlay(m_source);
     return true;
 }
 

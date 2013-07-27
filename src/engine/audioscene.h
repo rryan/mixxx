@@ -105,7 +105,6 @@ class AudioScene : public QObject {
     ALCdevice* m_pDevice;
     ALCcontext* m_pContext;
     ALCsizei m_iFrameSize;
-    ALuint m_source, m_buffer;
 };
 
 #endif /* AUDIOSCENE_H */
