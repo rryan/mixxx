@@ -2,6 +2,7 @@
 #define AUDIOSCENE_H
 
 #include <QObject>
+#include <QMap>
 #include <QList>
 
 #include <AL/al.h>
@@ -94,10 +95,12 @@ class AudioScene : public QObject {
 
     bool initialize();
     void shutdown();
+    void onCallbackStart();
     void process(const int iNumFrames);
+    void receiveBuffer(const QString& group, CSAMPLE* pBuffer, const int iNumFrames);
 
   private:
-    QList<AudioEmitter*> m_emitters;
+    QMap<QString, AudioEmitter*> m_emitters;
     QList<CSAMPLE*> m_buffers;
     CSAMPLE* m_pInterleavedBuffer;
     AudioListener m_listener;

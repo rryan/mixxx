@@ -118,7 +118,7 @@ void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames) {
 
         m_pConversion[i] = pBuffer[i*2] / SHRT_MAX;
         if (m_pConversion[i] > 1.0 || m_pConversion[i] < -1.0) {
-            qDebug() << "clip";
+            qDebug() << "receive buffer clipped";
         }
     }
 
@@ -290,6 +290,30 @@ void AudioScene::shutdown() {
     m_iFrameSize = 0;
 }
 
+void AudioScene::onCallbackStart() {
+    foreach (CSAMPLE* pBuffer, m_buffers) {
+        SampleUtil::applyGain(pBuffer, 0, MAX_BUFFER_LEN);
+    }
+}
+
+void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer, const int iNumFrames) {
+    // Passthrough for testing.
+    // const int num_buffers = m_buffers.size();
+    // for (int j = 0; j < num_buffers; ++j) {
+    //     CSAMPLE* pOutBuffer = m_buffers[j];
+    //     for (int i = 0; i < iNumFrames; ++i) {
+    //         pOutBuffer[i] += pBuffer[i*2];
+    //     }
+    // }
+
+    AudioEmitter* pEmitter = m_emitters.value(group, NULL);
+    if (pEmitter == NULL) {
+        qDebug() << "No group registered for:" << group;
+        return;
+    }
+    pEmitter->receiveBuffer(pBuffer, iNumFrames);
+}
+
 void AudioScene::process(const int iNumFrames) {
     ALenum state;
     alGetSourcei(m_source, AL_SOURCE_STATE, &state);
@@ -302,13 +326,17 @@ void AudioScene::process(const int iNumFrames) {
     for (int j = 0; j < num_buffers; ++j) {
         CSAMPLE* pBuffer = m_buffers[j];
         for (int i = 0; i < iNumFrames; ++i) {
-            pBuffer[i] = m_pInterleavedBuffer[i * num_buffers + j] * SHRT_MAX;
+            pBuffer[i] = m_pInterleavedBuffer[i * num_buffers + j];
+            if (pBuffer[i] > 1.0 || pBuffer[i] < -1.0) {
+                qDebug() << "deinterleave clipped.";
+            }
+            pBuffer[i] *= SHRT_MAX;
         }
     }
 }
 
 void AudioScene::addEmitter(EngineChannel* pChannel) {
-    m_emitters.push_back(new AudioEmitter(pChannel));
+    m_emitters.insert(pChannel->getGroup(), new AudioEmitter(pChannel));
 }
 
 CSAMPLE* AudioScene::buffer(const AudioOutput& output) {
