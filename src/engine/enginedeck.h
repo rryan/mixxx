@@ -23,7 +23,6 @@
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
 #include "configobject.h"
-
 #include "soundmanagerutil.h"
 
 class EngineBuffer;
@@ -35,6 +34,8 @@ class EngineFlanger;
 class EngineVuMeter;
 class EngineVinylSoundEmu;
 class ControlPushButton;
+class ControlObjectThread;
+class FeatureExtractor;
 
 class EngineDeck : public EngineChannel, public AudioDestination {
     Q_OBJECT
@@ -77,6 +78,8 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     EnginePregain* m_pPregain;
     EngineVinylSoundEmu* m_pVinylSoundEmu;
     EngineVuMeter* m_pVUMeter;
+    ControlObjectThread* m_pMasterSampleRate;
+    FeatureExtractor* m_pFeatureExtractor;
 
     // Begin vinyl passthrough fields
     ControlPushButton* m_pPassing;

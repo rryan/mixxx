@@ -16,6 +16,7 @@
 ***************************************************************************/
 
 #include "controlpushbutton.h"
+#include "controlobjectthread.h"
 #include "enginebuffer.h"
 #include "enginevinylsoundemu.h"
 #include "enginedeck.h"
@@ -25,6 +26,7 @@
 #include "enginefilterblock.h"
 #include "enginevumeter.h"
 #include "enginefilteriir.h"
+#include "engine/featureextractor.h"
 
 #include "sampleutil.h"
 
@@ -57,6 +59,9 @@ EngineDeck::EngineDeck(const char* group,
     m_pBuffer = new EngineBuffer(group, pConfig);
     m_pVinylSoundEmu = new EngineVinylSoundEmu(pConfig, group);
     m_pVUMeter = new EngineVuMeter(group);
+
+    m_pMasterSampleRate = new ControlObjectThread(ConfigKey("[Master]", "samplerate"));
+    m_pFeatureExtractor = new AubioFeatureExtractor(group, m_pMasterSampleRate->get());
 }
 
 EngineDeck::~EngineDeck() {
@@ -70,6 +75,8 @@ EngineDeck::~EngineDeck() {
     delete m_pPregain;
     delete m_pVinylSoundEmu;
     delete m_pVUMeter;
+    delete m_pMasterSampleRate;
+    delete m_pFeatureExtractor;
 }
 
 void EngineDeck::process(const CSAMPLE*, const CSAMPLE * pOutput, const int iBufferSize) {
@@ -112,6 +119,9 @@ void EngineDeck::process(const CSAMPLE*, const CSAMPLE * pOutput, const int iBuf
     m_pClipping->process(pOut, pOut, iBufferSize);
     // Update VU meter
     m_pVUMeter->process(pOut, pOut, iBufferSize);
+
+    m_pFeatureExtractor->setSampleRate(m_pMasterSampleRate->get());
+    m_pFeatureExtractor->process(pOut, 2, iBufferSize/2);
 }
 
 EngineBuffer* EngineDeck::getEngineBuffer() {
@@ -198,4 +208,3 @@ bool EngineDeck::isPassthroughActive() {
 void EngineDeck::slotPassingToggle(double v) {
     m_bPassthroughIsActive = v > 0;
 }
-

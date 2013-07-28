@@ -7,8 +7,9 @@
 #define AUBIO_FFT_WINSIZE 1024
 #define AUBIO_SILENCE_THRESHOLD -60.0
 
-AubioFeatureExtractor::AubioFeatureExtractor(int iSampleRate)
-        : m_iSampleRate(iSampleRate),
+AubioFeatureExtractor::AubioFeatureExtractor(const char* pGroup, int iSampleRate)
+        : m_group(pGroup),
+          m_iSampleRate(iSampleRate),
           m_iCurInput(0),
           m_iInputBufferSize(0),
           m_aubio_fft(NULL),
@@ -28,8 +29,10 @@ AubioFeatureExtractor::~AubioFeatureExtractor() {
 }
 
 void AubioFeatureExtractor::setSampleRate(int iSampleRate) {
-    shutdown();
-    init(iSampleRate);
+    if (iSampleRate != m_iSampleRate) {
+        shutdown();
+        init(iSampleRate);
+    }
 }
 
 void AubioFeatureExtractor::shutdown() {
@@ -118,8 +121,8 @@ void AubioFeatureExtractor::processBuffer() {
     aubio_pitch_do(m_aubio_pitch, m_input_buf, m_pitch_output);
     aubio_fft_do(m_aubio_fft, m_input_buf, m_fft_output);
 
-    bool is_silence = aubio_silence_detection(m_input_buf,
-                                              AUBIO_SILENCE_THRESHOLD);
+    bool is_silence = aubio_silence_detection(
+        m_input_buf, AUBIO_SILENCE_THRESHOLD) > 0;
     bool is_beat = fvec_read_sample(m_tempo_output, 0) > 0;
     bool is_tempo_onset = fvec_read_sample(m_tempo_output, 1) > 0;
     bool is_onset = fvec_read_sample(m_onset_output, 0) > 0;

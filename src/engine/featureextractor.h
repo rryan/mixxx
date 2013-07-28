@@ -1,6 +1,8 @@
 #ifndef FEATUREEXTRACTOR_H
 #define FEATUREEXTRACTOR_H
 
+#include <QString>
+
 #include <aubio/aubio.h>
 
 #include "defs.h"
@@ -8,12 +10,13 @@
 class FeatureExtractor {
   public:
     virtual ~FeatureExtractor() {}
-    virtual void process(CSAMPLE* pBuffer, const int iSamplePerBuffer) = 0;
+    virtual void process(CSAMPLE* pBuffer, const int iNumChannels, const int iSamplePerBuffer) = 0;
+    virtual void setSampleRate(int iSampleRate) = 0;
 };
 
 class AubioFeatureExtractor : public FeatureExtractor {
   public:
-    AubioFeatureExtractor(int iSampleRate);
+    AubioFeatureExtractor(const char* pGroup, int iSampleRate);
     virtual ~AubioFeatureExtractor();
 
     void setSampleRate(int iSampleRate);
@@ -24,6 +27,7 @@ class AubioFeatureExtractor : public FeatureExtractor {
   private:
     void processBuffer();
 
+    QString m_group;
     int m_iSampleRate;
     int m_iCurInput;
     int m_iInputBufferSize;
