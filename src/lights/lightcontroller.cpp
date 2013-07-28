@@ -44,7 +44,7 @@ LightController::LightController() {
                                        port.toAscii().data());
 
     m_iCurInput = 0;
-    m_input_buf = new_fvec(ANALYZER_BEAT_BUFSIZE * channels);
+    m_input_buf = new_fvec(ANALYZER_BEAT_OLAPSIZE);
     // onset
     char* onset_method = "default";
 
@@ -52,7 +52,7 @@ LightController::LightController() {
                                     ANALYZER_BEAT_BUFSIZE,
                                     ANALYZER_BEAT_OLAPSIZE,
                                     samplerate);
-    m_onset_output = new_fvec(ANALYZER_BEAT_OLAPSIZE * channels);
+    m_onset_output = new_fvec(1);
 
     m_aubio_fft = new_aubio_fft(ANALYZER_BEAT_WINSIZE);
     m_fft_output = new_cvec(ANALYZER_BEAT_WINSIZE/2 * channels);
@@ -63,14 +63,14 @@ LightController::LightController() {
                                     ANALYZER_BEAT_BUFSIZE,
                                     ANALYZER_BEAT_OLAPSIZE,
                                     samplerate);
-    m_tempo_output = new_fvec(2 * channels);
+    m_tempo_output = new_fvec(2);
 
     m_aubio_pitch = new_aubio_pitch(onset_method,
                                     ANALYZER_BEAT_BUFSIZE,
                                     ANALYZER_BEAT_OLAPSIZE,
                                     samplerate);
     aubio_pitch_set_unit(m_aubio_pitch, "midi");
-    m_pitch_output = new_fvec(1 * channels);
+    m_pitch_output = new_fvec(1);
 
     RGBCycler* cycler = new RGBCycler("RGBCycle", 20, 200, 70, 50, 100, 20);
     addColorGenerator(cycler);
