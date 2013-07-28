@@ -9,6 +9,8 @@ ClockControl::ClockControl(const char* pGroup, ConfigObject<ConfigValue>* pConfi
         : EngineControl(pGroup, pConfig) {
     m_pCOBeatActive = new ControlObject(ConfigKey(pGroup, "beat_active"));
     m_pCOBeatActive->set(0.0f);
+    m_pCOBeatActiveThisFrame = new ControlObject(ConfigKey(pGroup, "beat_active_this_frame"));
+    m_pCOBeatActiveThisFrame->set(0.0f);
     m_pCOSampleRate = ControlObject::getControl(ConfigKey("[Master]","samplerate"));
 }
 
@@ -64,8 +66,10 @@ double ClockControl::process(const double dRate,
 
     if (m_pBeats) {
         double closestBeat = m_pBeats->findClosestBeat(currentSample);
-        double distanceToClosestBeat = fabs(currentSample - closestBeat);
-        m_pCOBeatActive->set(distanceToClosestBeat < blinkIntervalSamples / 2.0);
+        double distanceToBeat = closestBeat - currentSample;
+        bool beatThisFrame = distanceToBeat >= 0 && distanceToBeat <= iBuffersize;
+        m_pCOBeatActiveThisFrame->set(beatThisFrame ? 1 : 0);
+        m_pCOBeatActive->set(fabs(distanceToBeat) < blinkIntervalSamples / 2.0);
     }
 
     return kNoTrigger;

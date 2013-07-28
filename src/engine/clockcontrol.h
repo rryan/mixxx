@@ -25,6 +25,7 @@ class ClockControl: public EngineControl {
 
   private:
     ControlObject* m_pCOBeatActive;
+    ControlObject* m_pCOBeatActiveThisFrame;
     ControlObject* m_pCOSampleRate;
     TrackPointer m_pTrack;
     BeatsPointer m_pBeats;
