@@ -506,6 +506,7 @@ class MixxxCore(Feature):
                    "engine/enginepassthrough.cpp",
                    "engine/channelmixer_autogen.cpp",
                    "engine/audioscene.cpp",
+                   "engine/featureextractor.cpp",
 
                    "engine/enginecontrol.cpp",
                    "engine/ratecontrol.cpp",
