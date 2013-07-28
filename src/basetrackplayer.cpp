@@ -13,7 +13,6 @@
 #include "engine/enginemaster.h"
 #include "soundsourceproxy.h"
 #include "engine/cuecontrol.h"
-#include "engine/clockcontrol.h"
 #include "mathstuff.h"
 #include "track/beatgrid.h"
 #include "waveform/renderers/waveformwidgetrenderer.h"
@@ -53,9 +52,6 @@ BaseTrackPlayer::BaseTrackPlayer(QObject* pParent,
         pHeadphones->slotSet(defaultHeadphones);
         delete pHeadphones;
     }
-
-    ClockControl* pClockControl = new ClockControl(pSafeGroupName, pConfig);
-    pEngineBuffer->addControl(pClockControl);
 
     CueControl* pCueControl = new CueControl(pSafeGroupName, pConfig);
     pEngineBuffer->addControl(pCueControl);
