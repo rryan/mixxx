@@ -11,7 +11,7 @@ class Uptime {
     }
 
     // Returns nanoseconds since initialize was called.
-    static int uptimeNanos() {
+    static qint64 uptimeNanos() {
         return s_timer.elapsed();
     }
 
