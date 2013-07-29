@@ -148,4 +148,12 @@ void AubioFeatureExtractor::processBuffer() {
         qDebug() << "Tempo onset and onset do not agree.";
     }
     float pitch = fvec_read_sample(m_pitch_output, 0);
+
+    if (is_onset) {
+        //qDebug() << m_group << "onset";
+    }
+
+    if (is_beat) {
+        qDebug() << m_group << "beat";;
+    }
 }
