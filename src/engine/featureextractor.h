@@ -10,23 +10,16 @@
 
 class FeatureExtractor {
   public:
+    FeatureExtractor(const char* pGroup)
+            : m_pGroup(pGroup) {
+    }
     virtual ~FeatureExtractor() {}
+
     virtual void process(CSAMPLE* pBuffer, const int iNumChannels, const int iSamplePerBuffer) = 0;
     virtual void setSampleRate(int iSampleRate) = 0;
-};
 
-class EngineBufferFeatureExtractor : public FeatureExtractor {
-  public:
-    EngineBufferFeatureExtractor(const char* pGroup, int iSampleRate);
-    virtual ~EngineBufferFeatureExtractor();
-
-    void setSampleRate(int iSampleRate);
-    void process(CSAMPLE* pBuffer, const int iNumChannels, const int iFramesPerBuffer);
-
-  private:
-    QString m_group;
-    ControlObjectThread m_beatActiveThisFrame;
-
+  protected:
+    const char* m_pGroup;
 };
 
 class AubioFeatureExtractor : public FeatureExtractor {
@@ -37,12 +30,14 @@ class AubioFeatureExtractor : public FeatureExtractor {
     void setSampleRate(int iSampleRate);
     void init(int iSampleRate);
     void shutdown();
-    void process(CSAMPLE* pBuffer, const int iNumChannels, const int iFramesPerBuffer);
+    virtual void process(CSAMPLE* pBuffer, const int iNumChannels, const int iFramesPerBuffer);
+
+  protected:
+    bool m_bReportBeats;
 
   private:
     void processBuffer();
 
-    QString m_group;
     int m_iSampleRate;
     int m_iCurInput;
     int m_iInputBufferSize;
@@ -57,6 +52,17 @@ class AubioFeatureExtractor : public FeatureExtractor {
     fvec_t* m_onset_output;
     fvec_t* m_pitch_output;
     cvec_t* m_fft_output;
+};
+
+class EngineBufferFeatureExtractor : public AubioFeatureExtractor {
+  public:
+    EngineBufferFeatureExtractor(const char* pGroup, int iSampleRate);
+    virtual ~EngineBufferFeatureExtractor();
+
+    virtual void process(CSAMPLE* pBuffer, const int iNumChannels, const int iFramesPerBuffer);
+
+  private:
+    ControlObjectThread m_beatActiveThisFrame;
 };
 
 #endif /* FEATUREEXTRACTOR_H */

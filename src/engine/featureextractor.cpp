@@ -8,25 +8,26 @@
 #define AUBIO_SILENCE_THRESHOLD -60.0
 
 EngineBufferFeatureExtractor::EngineBufferFeatureExtractor(const char* pGroup, int iSampleRate)
-        : m_group(pGroup),
+        : AubioFeatureExtractor(pGroup, iSampleRate),
           m_beatActiveThisFrame(ConfigKey(pGroup, "beat_active_this_frame")) {
+    // We get our beats from the beat_active_this_frame control.
+    m_bReportBeats = false;
 }
 
 EngineBufferFeatureExtractor::~EngineBufferFeatureExtractor() {
 }
 
-void EngineBufferFeatureExtractor::setSampleRate(int iSampleRate) {
-}
-
 void EngineBufferFeatureExtractor::process(CSAMPLE* pBuffer, const int iNumChannels,
-                                      const int iFramesPerBuffer) {
+                                           const int iFramesPerBuffer) {
+    AubioFeatureExtractor::process(pBuffer, iNumChannels, iFramesPerBuffer);
+
     if (m_beatActiveThisFrame.get() > 0) {
         qDebug() << m_group << "beat";
     }
 }
 
 AubioFeatureExtractor::AubioFeatureExtractor(const char* pGroup, int iSampleRate)
-        : m_group(pGroup),
+          m_bReportBeats(true),
           m_iSampleRate(iSampleRate),
           m_iCurInput(0),
           m_iInputBufferSize(0),
