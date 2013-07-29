@@ -7,6 +7,7 @@
 #include <QWaitCondition>
 
 #include "util/fifo.h"
+#include "util/timer.h"
 
 // The max engine workers that can be expected to run within a callback
 // (e.g. the max that we will schedule). Must be a power of 2.
@@ -31,6 +32,7 @@ class EngineWorkerScheduler : public QThread {
     void run();
 
   private:
+    Timer m_scheduleTimer;
     FIFO<EngineWorker*> m_scheduleFIFO;
     QWaitCondition m_waitCondition;
     QMutex m_mutex;

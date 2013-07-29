@@ -7,7 +7,8 @@
 #include "engine/engineworkerscheduler.h"
 
 EngineWorkerScheduler::EngineWorkerScheduler(QObject* pParent)
-        : m_scheduleFIFO(MAX_ENGINE_WORKERS),
+        : m_scheduleTimer("EngineWorkerScheduler latency"),
+          m_scheduleFIFO(MAX_ENGINE_WORKERS),
           m_bQuit(false) {
     Q_UNUSED(pParent);
 }
@@ -28,11 +29,15 @@ void EngineWorkerScheduler::workerReady(EngineWorker* pWorker) {
 }
 
 void EngineWorkerScheduler::runWorkers() {
+    m_scheduleTimer.start();
     m_waitCondition.wakeAll();
+
 }
 
 void EngineWorkerScheduler::run() {
     while (!m_bQuit) {
+        m_scheduleTimer.elapsed(true);
+
         EngineWorker* pWorker = NULL;
         while (m_scheduleFIFO.read(&pWorker, 1) == 1) {
             if (pWorker) {
@@ -44,4 +49,3 @@ void EngineWorkerScheduler::run() {
         m_mutex.unlock();
     }
 }
-
