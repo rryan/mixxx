@@ -7,6 +7,24 @@
 #define AUBIO_FFT_WINSIZE 1024
 #define AUBIO_SILENCE_THRESHOLD -60.0
 
+EngineBufferFeatureExtractor::EngineBufferFeatureExtractor(const char* pGroup, int iSampleRate)
+        : m_group(pGroup),
+          m_beatActiveThisFrame(ConfigKey(pGroup, "beat_active_this_frame")) {
+}
+
+EngineBufferFeatureExtractor::~EngineBufferFeatureExtractor() {
+}
+
+void EngineBufferFeatureExtractor::setSampleRate(int iSampleRate) {
+}
+
+void EngineBufferFeatureExtractor::process(CSAMPLE* pBuffer, const int iNumChannels,
+                                      const int iFramesPerBuffer) {
+    if (m_beatActiveThisFrame.get() > 0) {
+        qDebug() << m_group << "beat";
+    }
+}
+
 AubioFeatureExtractor::AubioFeatureExtractor(const char* pGroup, int iSampleRate)
         : m_group(pGroup),
           m_iSampleRate(iSampleRate),

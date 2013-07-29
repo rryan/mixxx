@@ -6,12 +6,27 @@
 #include <aubio/aubio.h>
 
 #include "defs.h"
+#include "controlobjectthread.h"
 
 class FeatureExtractor {
   public:
     virtual ~FeatureExtractor() {}
     virtual void process(CSAMPLE* pBuffer, const int iNumChannels, const int iSamplePerBuffer) = 0;
     virtual void setSampleRate(int iSampleRate) = 0;
+};
+
+class EngineBufferFeatureExtractor : public FeatureExtractor {
+  public:
+    EngineBufferFeatureExtractor(const char* pGroup, int iSampleRate);
+    virtual ~EngineBufferFeatureExtractor();
+
+    void setSampleRate(int iSampleRate);
+    void process(CSAMPLE* pBuffer, const int iNumChannels, const int iFramesPerBuffer);
+
+  private:
+    QString m_group;
+    ControlObjectThread m_beatActiveThisFrame;
+
 };
 
 class AubioFeatureExtractor : public FeatureExtractor {
