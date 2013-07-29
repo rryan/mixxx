@@ -1,6 +1,9 @@
 #include <QtDebug>
 
 #include "engine/featureextractor.h"
+#include "engine/featurecollector.h"
+#include "proto/audio_features.pb.h"
+#include "util/uptime.h"
 
 #define AUBIO_PITCH_SIZE 512
 #define AUBIO_HOP_SIZE 256
@@ -22,11 +25,19 @@ void EngineBufferFeatureExtractor::process(CSAMPLE* pBuffer, const int iNumChann
     AubioFeatureExtractor::process(pBuffer, iNumChannels, iFramesPerBuffer);
 
     if (m_beatActiveThisFrame.get() > 0) {
-        qDebug() << m_group << "beat";
+        FeatureCollector* pCollector = FeatureCollector::instance();
+        if (pCollector) {
+            mixxx::Features features;
+            features.set_time(static_cast<float>(Uptime::uptimeNanos()) / 1e9);
+            features.set_group(m_pGroup);
+            features.set_beat(true);
+            pCollector->write(features);
+        }
     }
 }
 
 AubioFeatureExtractor::AubioFeatureExtractor(const char* pGroup, int iSampleRate)
+        : FeatureExtractor(pGroup),
           m_bReportBeats(true),
           m_iSampleRate(iSampleRate),
           m_iCurInput(0),
@@ -149,11 +160,17 @@ void AubioFeatureExtractor::processBuffer() {
     }
     float pitch = fvec_read_sample(m_pitch_output, 0);
 
-    if (is_onset) {
-        //qDebug() << m_group << "onset";
-    }
-
-    if (is_beat) {
-        qDebug() << m_group << "beat";;
+    FeatureCollector* pCollector = FeatureCollector::instance();
+    if (pCollector) {
+        mixxx::Features features;
+        features.set_time(static_cast<float>(Uptime::uptimeNanos()) / 1e9);
+        features.set_group(m_pGroup);
+        features.set_silence(is_silence);
+        features.set_onset(is_tempo_onset);
+        if (m_bReportBeats) {
+            features.set_beat(is_beat);
+        }
+        features.set_pitch(pitch);
+        pCollector->write(features);
     }
 }
