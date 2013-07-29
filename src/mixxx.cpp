@@ -57,6 +57,7 @@
 #include "util/statsmanager.h"
 #include "util/timer.h"
 #include "util/version.h"
+#include "util/uptime.h"
 
 #ifdef __VINYLCONTROL__
 #include "vinylcontrol/defs_vinylcontrol.h"
@@ -239,6 +240,7 @@ MixxxApp::MixxxApp(QApplication *pApp, const CmdlineArgs& args)
           m_cmdLineArgs(args) {
     logBuildDetails();
     ScopedTimer t("MixxxApp::MixxxApp");
+    Uptime::initialize();
     m_runtime_timer.start();
     initializeWindow();
 
