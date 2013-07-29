@@ -783,6 +783,7 @@ class MixxxCore(Feature):
                    "util/performancetimer.cpp",
                    "util/version.cpp",
                    "util/rlimit.cpp",
+                   "util/uptime.cpp",
 
                    # Add the QRC file which compiles in some extra resources
                    # (prefs icons, etc.)
