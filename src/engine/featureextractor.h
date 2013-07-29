@@ -63,6 +63,7 @@ class EngineBufferFeatureExtractor : public AubioFeatureExtractor {
 
   private:
     ControlObjectThread m_beatActiveThisFrame;
+    ControlObjectThread m_bpm;
 };
 
 #endif /* FEATUREEXTRACTOR_H */

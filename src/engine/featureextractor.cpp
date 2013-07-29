@@ -12,7 +12,8 @@
 
 EngineBufferFeatureExtractor::EngineBufferFeatureExtractor(const char* pGroup, int iSampleRate)
         : AubioFeatureExtractor(pGroup, iSampleRate),
-          m_beatActiveThisFrame(ConfigKey(pGroup, "beat_active_this_frame")) {
+          m_beatActiveThisFrame(ConfigKey(pGroup, "beat_active_this_frame")),
+          m_bpm(ConfigKey(pGroup, "bpm")) {
     // We get our beats from the beat_active_this_frame control.
     m_bReportBeats = false;
 }
@@ -24,15 +25,17 @@ void EngineBufferFeatureExtractor::process(CSAMPLE* pBuffer, const int iNumChann
                                            const int iFramesPerBuffer) {
     AubioFeatureExtractor::process(pBuffer, iNumChannels, iFramesPerBuffer);
 
-    if (m_beatActiveThisFrame.get() > 0) {
-        FeatureCollector* pCollector = FeatureCollector::instance();
-        if (pCollector) {
-            mixxx::Features features;
-            features.set_time(static_cast<float>(Uptime::uptimeNanos()) / 1e9);
-            features.set_group(m_pGroup);
-            features.set_beat(true);
-            pCollector->write(features);
+    FeatureCollector* pCollector = FeatureCollector::instance();
+    if (pCollector) {
+        mixxx::Features features;
+        features.set_time(static_cast<float>(Uptime::uptimeNanos()) / 1e9);
+        features.set_group(m_pGroup);
+        features.set_beat(m_beatActiveThisFrame.get() > 0);
+        double bpm = m_bpm.get();
+        if (bpm > 0) {
+            features.set_bpm(bpm);
         }
+        pCollector->write(features);
     }
 }
 
@@ -169,6 +172,10 @@ void AubioFeatureExtractor::processBuffer() {
         features.set_onset(is_tempo_onset);
         if (m_bReportBeats) {
             features.set_beat(is_beat);
+            float bpm = aubio_tempo_get_bpm(m_aubio_tempo);
+            if (bpm > 0) {
+                features.set_bpm(bpm);
+            }
         }
         features.set_pitch(pitch);
         pCollector->write(features);
