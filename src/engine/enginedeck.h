@@ -20,6 +20,7 @@
 
 #include "circularbuffer.h"
 #include "controlpushbutton.h"
+#include "controlobjectthread.h"
 #include "engine/engineobject.h"
 #include "engine/enginechannel.h"
 #include "configobject.h"
@@ -34,7 +35,6 @@ class EngineFlanger;
 class EngineVuMeter;
 class EngineVinylSoundEmu;
 class ControlPushButton;
-class ControlObjectThread;
 class FeatureExtractor;
 
 class EngineDeck : public EngineChannel, public AudioDestination {
@@ -78,7 +78,7 @@ class EngineDeck : public EngineChannel, public AudioDestination {
     EnginePregain* m_pPregain;
     EngineVinylSoundEmu* m_pVinylSoundEmu;
     EngineVuMeter* m_pVUMeter;
-    ControlObjectThread* m_pMasterSampleRate;
+    ControlObjectThread m_masterSampleRate;
     FeatureExtractor* m_pInternalFeatureExtractor;
     FeatureExtractor* m_pPassthroughFeatureExtractor;
 

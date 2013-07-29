@@ -35,6 +35,7 @@ EngineDeck::EngineDeck(const char* group,
                              EngineChannel::ChannelOrientation defaultOrientation)
         : EngineChannel(group, defaultOrientation),
           m_pConfig(pConfig),
+          m_masterSampleRate(ConfigKey("[Master]", "samplerate")),
           m_pPassing(new ControlPushButton(ConfigKey(group, "passthrough"))),
           // Need a +1 here because the CircularBuffer only allows its size-1
           // items to be held at once (it keeps a blank spot open persistently)
@@ -60,11 +61,10 @@ EngineDeck::EngineDeck(const char* group,
     m_pVinylSoundEmu = new EngineVinylSoundEmu(pConfig, group);
     m_pVUMeter = new EngineVuMeter(group);
 
-    m_pMasterSampleRate = new ControlObjectThread(ConfigKey("[Master]", "samplerate"));
     m_pInternalFeatureExtractor = new EngineBufferFeatureExtractor(
-        group, m_pMasterSampleRate->get());
+        group, m_masterSampleRate.get());
     m_pPassthroughFeatureExtractor = new AubioFeatureExtractor(
-        group, m_pMasterSampleRate->get());
+        group, m_masterSampleRate.get());
 }
 
 EngineDeck::~EngineDeck() {
@@ -78,7 +78,6 @@ EngineDeck::~EngineDeck() {
     delete m_pPregain;
     delete m_pVinylSoundEmu;
     delete m_pVUMeter;
-    delete m_pMasterSampleRate;
     delete m_pInternalFeatureExtractor;
     delete m_pPassthroughFeatureExtractor;
 }
@@ -96,7 +95,7 @@ void EngineDeck::process(const CSAMPLE*, const CSAMPLE * pOutput, const int iBuf
             qWarning() << "ERROR: Buffer overflow in EngineDeck. Playing silence.";
             SampleUtil::applyGain(pOut + samplesRead, 0.0, iBufferSize - samplesRead);
         }
-        m_pPassthroughFeatureExtractor->setSampleRate(m_pMasterSampleRate->get());
+        m_pPassthroughFeatureExtractor->setSampleRate(m_masterSampleRate.get());
         m_pPassthroughFeatureExtractor->process(pOut, 2, iBufferSize/2);
         m_bPassthroughWasActive = true;
     } else {
@@ -126,7 +125,7 @@ void EngineDeck::process(const CSAMPLE*, const CSAMPLE * pOutput, const int iBuf
     // Update VU meter
     m_pVUMeter->process(pOut, pOut, iBufferSize);
 
-    m_pInternalFeatureExtractor->setSampleRate(m_pMasterSampleRate->get());
+    m_pInternalFeatureExtractor->setSampleRate(m_masterSampleRate.get());
     m_pInternalFeatureExtractor->process(pOut, 2, iBufferSize/2);
 }
 
