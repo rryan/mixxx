@@ -1,0 +1,13 @@
+package mixxx;
+
+option optimize_for = LITE_RUNTIME;
+
+message Features {
+  optional float time = 1;
+  optional string group = 2;
+  optional bool silence = 3 [ default = false ];
+  optional bool onset = 4 [ default = false ];
+  optional bool beat = 5 [ default = false ];
+  optional float pitch = 6;
+  optional float bpm = 7;
+}
