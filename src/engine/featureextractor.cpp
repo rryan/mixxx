@@ -2,8 +2,8 @@
 
 #include "engine/featureextractor.h"
 
-#define AUBIO_BUFFER_SIZE 1024
-#define AUBIO_HOP_SIZE 512
+#define AUBIO_BUFFER_SIZE 512
+#define AUBIO_HOP_SIZE 256
 #define AUBIO_FFT_WINSIZE 1024
 #define AUBIO_SILENCE_THRESHOLD -60.0
 
