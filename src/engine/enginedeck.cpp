@@ -61,7 +61,10 @@ EngineDeck::EngineDeck(const char* group,
     m_pVUMeter = new EngineVuMeter(group);
 
     m_pMasterSampleRate = new ControlObjectThread(ConfigKey("[Master]", "samplerate"));
-    m_pFeatureExtractor = new AubioFeatureExtractor(group, m_pMasterSampleRate->get());
+    m_pInternalFeatureExtractor = new EngineBufferFeatureExtractor(
+        group, m_pMasterSampleRate->get());
+    m_pPassthroughFeatureExtractor = new AubioFeatureExtractor(
+        group, m_pMasterSampleRate->get());
 }
 
 EngineDeck::~EngineDeck() {
@@ -76,7 +79,8 @@ EngineDeck::~EngineDeck() {
     delete m_pVinylSoundEmu;
     delete m_pVUMeter;
     delete m_pMasterSampleRate;
-    delete m_pFeatureExtractor;
+    delete m_pInternalFeatureExtractor;
+    delete m_pPassthroughFeatureExtractor;
 }
 
 void EngineDeck::process(const CSAMPLE*, const CSAMPLE * pOutput, const int iBufferSize) {
@@ -92,6 +96,8 @@ void EngineDeck::process(const CSAMPLE*, const CSAMPLE * pOutput, const int iBuf
             qWarning() << "ERROR: Buffer overflow in EngineDeck. Playing silence.";
             SampleUtil::applyGain(pOut + samplesRead, 0.0, iBufferSize - samplesRead);
         }
+        m_pPassthroughFeatureExtractor->setSampleRate(m_pMasterSampleRate->get());
+        m_pPassthroughFeatureExtractor->process(pOut, 2, iBufferSize/2);
         m_bPassthroughWasActive = true;
     } else {
         // If passthrough is no longer enabled, zero out the buffer
@@ -120,8 +126,8 @@ void EngineDeck::process(const CSAMPLE*, const CSAMPLE * pOutput, const int iBuf
     // Update VU meter
     m_pVUMeter->process(pOut, pOut, iBufferSize);
 
-    m_pFeatureExtractor->setSampleRate(m_pMasterSampleRate->get());
-    m_pFeatureExtractor->process(pOut, 2, iBufferSize/2);
+    m_pInternalFeatureExtractor->setSampleRate(m_pMasterSampleRate->get());
+    m_pInternalFeatureExtractor->process(pOut, 2, iBufferSize/2);
 }
 
 EngineBuffer* EngineDeck::getEngineBuffer() {
