@@ -2,7 +2,7 @@
 
 #include "engine/featureextractor.h"
 
-#define AUBIO_BUFFER_SIZE 512
+#define AUBIO_PITCH_SIZE 512
 #define AUBIO_HOP_SIZE 256
 #define AUBIO_FFT_WINSIZE 1024
 #define AUBIO_SILENCE_THRESHOLD -60.0
@@ -85,7 +85,7 @@ void AubioFeatureExtractor::init(int iSampleRate) {
 
     char* onset_method = "default";
     m_aubio_onset = new_aubio_onset(onset_method,
-                                    AUBIO_BUFFER_SIZE,
+                                    AUBIO_FFT_WINSIZE,
                                     m_iInputBufferSize,
                                     m_iSampleRate);
     m_onset_output = new_fvec(1);
@@ -93,17 +93,16 @@ void AubioFeatureExtractor::init(int iSampleRate) {
     m_aubio_fft = new_aubio_fft(AUBIO_FFT_WINSIZE);
     m_fft_output = new_cvec(AUBIO_FFT_WINSIZE/2);
 
-    // beattracking
     char* tempo_method = "default";
     m_aubio_tempo = new_aubio_tempo(tempo_method,
-                                    AUBIO_BUFFER_SIZE,
+                                    AUBIO_FFT_WINSIZE,
                                     m_iInputBufferSize,
                                     m_iSampleRate);
     m_tempo_output = new_fvec(2);
 
     char* pitch_method = "default";
     m_aubio_pitch = new_aubio_pitch(pitch_method,
-                                    AUBIO_BUFFER_SIZE,
+                                    AUBIO_PITCH_SIZE,
                                     m_iInputBufferSize,
                                     m_iSampleRate);
     aubio_pitch_set_unit(m_aubio_pitch, "midi");
