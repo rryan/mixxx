@@ -7,10 +7,13 @@
 
 #include "circularbuffer.h"
 #include "controlpushbutton.h"
+#include "controlobjectthread.h"
 #include "engine/enginechannel.h"
 #include "engine/engineclipping.h"
 #include "engine/enginevumeter.h"
 #include "soundmanagerutil.h"
+
+class FeatureExtractor;
 
 // EnginePassthrough is an EngineChannel that implements a mixing source whose
 // samples are fed directly from the SoundManager
@@ -46,6 +49,8 @@ class EnginePassthrough : public EngineChannel, public AudioDestination {
     ControlPushButton *m_pPassing;
     CSAMPLE *m_pConversionBuffer;
     CircularBuffer<CSAMPLE> m_sampleBuffer;
+    ControlObjectThread m_masterSampleRate;
+    FeatureExtractor* m_pFeatureExtractor;
 };
 
 #endif /* ENGINEPASSTHROUGH_H */

@@ -5,6 +5,7 @@
 #include <QtDebug>
 
 #include "engine/enginepassthrough.h"
+#include "engine/featureextractor.h"
 
 #include "configobject.h"
 #include "sampleutil.h"
@@ -18,7 +19,10 @@ EnginePassthrough::EnginePassthrough(const char* pGroup)
           m_pConversionBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
           // Need a +1 here because the CircularBuffer only allows its size-1
           // items to be held at once (it keeps a blank spot open persistently)
-          m_sampleBuffer(MAX_BUFFER_LEN+1) {
+          m_sampleBuffer(MAX_BUFFER_LEN+1),
+          m_masterSampleRate(ConfigKey("[Master]", "samplerate")),
+          m_pFeatureExtractor(new AubioFeatureExtractor(
+              pGroup, m_masterSampleRate.get())) {
     m_pPassing->setButtonMode(ControlPushButton::POWERWINDOW);
 }
 
@@ -117,4 +121,7 @@ void EnginePassthrough::process(const CSAMPLE* pInput, const CSAMPLE* pOutput, c
     m_clipping.process(pOut, pOut, iBufferSize);
     // Update VU meter
     m_vuMeter.process(pOut, pOut, iBufferSize);
+
+    m_pFeatureExtractor->setSampleRate(m_masterSampleRate.get());
+    m_pFeatureExtractor->process(pOut, 2, iBufferSize/2);
 }
