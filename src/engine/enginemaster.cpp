@@ -37,6 +37,7 @@
 #include "util/timer.h"
 #include "playermanager.h"
 #include "engine/channelmixer.h"
+#include "engine/featurecollector.h"
 
 #ifdef __LADSPA__
 #include "engineladspa.h"
@@ -55,6 +56,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
     m_pMasterSampleRate->set(44100.);
 
     m_pAudioScene = new AudioScene(m_pMasterSampleRate->get());
+    m_pFeatureCollector = new FeatureCollector(_config);
 
     // Latency control
     m_pMasterLatency = new ControlObject(ConfigKey(group, "latency"), true, true);
@@ -154,6 +156,7 @@ EngineMaster::~EngineMaster()
         delete pChannelInfo->m_pVolumeControl;
         delete pChannelInfo;
     }
+    delete m_pFeatureCollector;
 }
 
 const CSAMPLE* EngineMaster::getMasterBuffer() const

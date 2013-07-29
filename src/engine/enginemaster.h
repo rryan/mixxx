@@ -39,6 +39,7 @@ class EngineVinylSoundEmu;
 class EngineSideChain;
 class SyncWorker;
 class AudioScene;
+class FeatureCollector;
 
 class EngineMaster : public EngineObject, public AudioSource {
     Q_OBJECT
@@ -162,6 +163,7 @@ class EngineMaster : public EngineObject, public AudioSource {
     CSAMPLE m_headphoneMasterGainOld;
     CSAMPLE m_headphoneVolumeOld;
     AudioScene* m_pAudioScene;
+    FeatureCollector* m_pFeatureCollector;
 };
 
 #endif
