@@ -27,6 +27,8 @@
 #include "enginevumeter.h"
 #include "enginefilteriir.h"
 #include "engine/featureextractor.h"
+#include "engine/featurecollector.h"
+#include "util/uptime.h"
 
 #include "sampleutil.h"
 
@@ -84,6 +86,18 @@ EngineDeck::~EngineDeck() {
 
 void EngineDeck::process(const CSAMPLE*, const CSAMPLE * pOutput, const int iBufferSize) {
     CSAMPLE* pOut = const_cast<CSAMPLE*>(pOutput);
+
+    QVector3D pos = position();
+    FeatureCollector* pCollector = FeatureCollector::instance();
+    if (pCollector) {
+        mixxx::Features features;
+        features.set_time(static_cast<float>(Uptime::uptimeNanos()) / 1e9);
+        features.set_group(getGroup().toStdString());
+        features.add_pos(pos.x());
+        features.add_pos(pos.y());
+        features.add_pos(pos.z());
+        pCollector->write(features);
+    }
 
     // Feed the incoming audio through if passthrough is active
     if (isPassthroughActive()) {
