@@ -116,7 +116,7 @@ AudioEmitter::~AudioEmitter() {
 void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames,
                                  const int iSampleRate) {
     for (int i = 0; i < iNumFrames; ++i) {
-        m_pConversion[i] = (pBuffer[i*2]+ pBuffer[i*2 + 1]) / SHRT_MAX;
+        m_pConversion[i] = (pBuffer[i*2]+ pBuffer[i*2 + 1]) * 0.5 / SHRT_MAX;
         if (m_pConversion[i] > 1.0 || m_pConversion[i] < -1.0) {
             qDebug() << "receive buffer clipped";
         }
