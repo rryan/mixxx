@@ -14,6 +14,7 @@
 #include "controllers/controllerpresetinfo.h"
 
 //Forward declaration(s)
+class OscServer;
 class Controller;
 class ControllerLearningEventFilter;
 
@@ -83,6 +84,7 @@ class ControllerManager : public QObject {
     QList<Controller*> m_controllers;
     QThread* m_pThread;
     PresetInfoEnumerator* m_pPresetInfoManager;
+    OscServer* m_pOscServer;
 };
 
 #endif  // CONTROLLERMANAGER_H

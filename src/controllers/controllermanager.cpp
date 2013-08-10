@@ -25,6 +25,8 @@
 #    include "controllers/bulk/bulkenumerator.h"
 #endif
 
+#include "controllers/osc/oscserver.h"
+
 // http://developer.qt.nokia.com/wiki/Threads_Events_QObjects
 
 // Poll every 1ms (where possible) for good controller response
@@ -89,6 +91,8 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
     m_enumerators.append(new HidEnumerator());
 #endif
 
+    m_pOscServer = new OscServer(this, 2448);
+
     m_pollTimer.setInterval(kPollIntervalMillis);
     connect(&m_pollTimer, SIGNAL(timeout()),
             this, SLOT(pollDevices()));
@@ -116,6 +120,7 @@ ControllerManager::~ControllerManager() {
     delete m_pThread;
     delete m_pControllerLearningEventFilter;
     delete m_pPresetInfoManager;
+    delete m_pOscServer;
 }
 
 ControllerLearningEventFilter* ControllerManager::getControllerLearningEventFilter() const {
