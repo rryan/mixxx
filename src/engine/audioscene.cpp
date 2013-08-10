@@ -321,6 +321,29 @@ void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer,
 void AudioScene::process(const int iNumFrames) {
     ScopedTimer t("AudioScene::process");
 
+    ALfloat vec[3];
+
+    m_listener.position(vec);
+
+    FeatureCollector* pCollector = FeatureCollector::instance();
+    if (pCollector) {
+        mixxx::Features features;
+        features.set_time(static_cast<float>(Uptime::uptimeNanos()) / 1e9);
+        features.set_group("[AudioScene]");
+        features.add_pos(vec[0]);
+        features.add_pos(vec[1]);
+        features.add_pos(vec[2]);
+        pCollector->write(features);
+    }
+
+    alListenerfv(AL_POSITION, vec);
+
+    m_listener.velocity(vec);
+    alListenerfv(AL_VELOCITY, vec);
+
+    m_listener.orientation(vec);
+    alListenerfv(AL_ORIENTATION, vec);
+
     SampleUtil::applyGain(m_pInterleavedBuffer, 0, iNumFrames * m_buffers.size());
     alcRenderSamplesSOFT(m_pDevice, m_pInterleavedBuffer, iNumFrames);
 
