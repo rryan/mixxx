@@ -227,6 +227,7 @@ AudioScene::AudioScene(int sampleRate)
         m_buffers.push_back(pBuffer);
     }
 
+    m_listener.m_position.set(QVector3D(500, 500, 0));
     initialize();
 }
 
