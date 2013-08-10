@@ -80,7 +80,9 @@ AudioEmitter::AudioEmitter(EngineChannel* pChannel)
           m_pConversion(SampleUtil::alloc(MAX_BUFFER_LEN)) {
     SampleUtil::applyGain(m_pConversion, 0, MAX_BUFFER_LEN);
 
-    while (m_buffers.size() < 2) {
+    const int numBuffers = 10;
+
+    while (m_buffers.size() < numBuffers) {
         ALuint buffer = 0;
         alGenBuffers(1, &buffer);
         if (alGetError() != AL_NO_ERROR) {
