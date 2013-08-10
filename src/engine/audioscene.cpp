@@ -102,9 +102,9 @@ AudioEmitter::AudioEmitter(EngineChannel* pChannel)
 
     // Set parameters so mono sources play out the front-center speaker and
     // won't distance attenuate.
-    alSource3i(m_source, AL_POSITION, 0, 0, 0);
-    alSource3i(m_source, AL_VELOCITY, 0, 0, 0);
-    alSource3i(m_source, AL_DIRECTION, 0, 0, 0);
+    alSource3f(m_source, AL_POSITION, 0, 0, 0);
+    alSource3f(m_source, AL_VELOCITY, 0, 0, 0);
+    alSource3f(m_source, AL_DIRECTION, 0, 0, 0);
     //alSourcei(m_source, AL_SOURCE_RELATIVE, AL_TRUE);
     //alSourcei(m_source, AL_ROLLOFF_FACTOR, 0);
 
