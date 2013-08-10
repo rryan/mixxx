@@ -34,6 +34,7 @@ class AudioEmitter : public AudioEntity {
     AudioEmitter(EngineChannel* pChannel);
     virtual ~AudioEmitter();
 
+    void process(int iNumFrames);
     void receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames, const int iSampleRate);
 
     void position(ALfloat* pPosition) {
@@ -78,7 +79,6 @@ class AudioListener : public AudioEntity {
         QVector3DToALfloat(vec, pVelocity);
     }
 
-  private:
     Vector3DControl m_position;
     Vector3DControl m_orientation;
     Vector3DControl m_velocity;

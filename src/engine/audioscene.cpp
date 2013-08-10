@@ -3,6 +3,8 @@
 #include "engine/audioscene.h"
 #include "engine/enginechannel.h"
 #include "util/timer.h"
+#include "engine/featurecollector.h"
+#include "util/uptime.h"
 
 #define LOAD_PROC(x,t)  ((x) = (t)alcGetProcAddress(NULL, #x))
 static LPALCLOOPBACKOPENDEVICESOFT alcLoopbackOpenDeviceSOFT;
@@ -111,6 +113,31 @@ AudioEmitter::AudioEmitter(EngineChannel* pChannel)
 AudioEmitter::~AudioEmitter() {
     SampleUtil::free(m_pConversion);
     m_pConversion = NULL;
+}
+
+void AudioEmitter::process(int iNumFrames) {
+    ALfloat vec[3];
+
+    position(vec);
+
+    FeatureCollector* pCollector = FeatureCollector::instance();
+    if (pCollector) {
+        mixxx::Features features;
+        features.set_time(static_cast<float>(Uptime::uptimeNanos()) / 1e9);
+        features.set_group(m_pChannel->getGroup().toStdString());
+        features.add_pos(vec[0]);
+        features.add_pos(vec[1]);
+        features.add_pos(vec[2]);
+        pCollector->write(features);
+    }
+
+    alSourcefv(m_source, AL_POSITION, vec);
+
+    velocity(vec);
+    alSourcefv(m_source, AL_VELOCITY, vec);
+
+    orientation(vec);
+    alSourcefv(m_source, AL_DIRECTION, vec);
 }
 
 void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames,
@@ -315,6 +342,7 @@ void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer,
         qDebug() << "No group registered for:" << group;
         return;
     }
+    pEmitter->process(iNumFrames);
     pEmitter->receiveBuffer(pBuffer, iNumFrames, iSampleRate);
 }
 
