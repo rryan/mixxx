@@ -30,10 +30,12 @@ class FeatureCollector : public QThread {
   private:
     void process();
 
-    void writeOSCBool(const QString& group, const QString& feature,
-                      float time, bool value);
-    void writeOSCFloat(const QString& group, const QString& feature,
-                       float time, float value);
+    void maybeWriteOSCBool(const QString& group, const QString& feature,
+                           float time, bool value, QHash<QString, bool>* cache,
+                           bool no_cache=false);
+    void maybeWriteOSCFloat(const QString& group, const QString& feature,
+                            float time, float value, QHash<QString, float>* cache,
+                            bool no_cache=false);
 
     static FeatureCollector* s_pInstance;
 
@@ -42,6 +44,15 @@ class FeatureCollector : public QThread {
     QMutex m_featuresLock;
     QList<mixxx::Features> m_features;
     lo_address m_osc_destination;
+
+    QHash<QString, bool> m_silenceCache;
+    QHash<QString, bool> m_beatCache;
+    QHash<QString, float> m_bpmCache;
+    QHash<QString, float> m_pitchCache;
+    QHash<QString, bool> m_onsetCache;
+    QHash<QString, float> m_posXCache;
+    QHash<QString, float> m_posYCache;
+    QHash<QString, float> m_posZCache;
 
     QWaitCondition m_wait;
     QMutex m_waitMutex;

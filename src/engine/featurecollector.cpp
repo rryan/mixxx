@@ -46,27 +46,51 @@ inline QString locationForFeature(const QString& group, const QString& feature) 
     return QString("/%1/%2").arg(group, feature);
 }
 
-void FeatureCollector::writeOSCBool(const QString& group,
-                                    const QString& feature,
-                                    float time,
-                                    bool value) {
+void FeatureCollector::maybeWriteOSCBool(const QString& group,
+                                         const QString& feature,
+                                         float time,
+                                         bool value,
+                                         QHash<QString, bool>* pCache,
+                                         bool no_cache) {
+    QHash<QString, bool>::iterator it = pCache->find(group);
+    if (!no_cache && it != pCache->end() && it.value() == value) {
+        return;
+    }
+
     QString location = locationForFeature(group, feature);
     if (lo_send(m_osc_destination, location.toAscii().constData(),
                 (value ? "fT" : "fF"), time) < 0) {
         qDebug() << "OSC error " << lo_address_errno(m_osc_destination)
                  << ": " << lo_address_errstr(m_osc_destination);
     }
+    if (it != pCache->end()) {
+        it.value() = value;
+    } else {
+        pCache->insert(group, value);
+    }
 }
 
-void FeatureCollector::writeOSCFloat(const QString& group,
-                                     const QString& feature,
-                                     float time,
-                                     float value) {
+void FeatureCollector::maybeWriteOSCFloat(const QString& group,
+                                          const QString& feature,
+                                          float time,
+                                          float value,
+                                          QHash<QString, float>* pCache,
+                                          bool no_cache) {
+    QHash<QString, float>::iterator it = pCache->find(group);
+    if (!no_cache && it != pCache->end() && it.value() == value) {
+        return;
+    }
+
     QString location = locationForFeature(group, feature);
     if (lo_send(m_osc_destination, location.toAscii().constData(),
                 "ff", time, value) < 0) {
         qDebug() << "OSC error " << lo_address_errno(m_osc_destination)
                  << ": " << lo_address_errstr(m_osc_destination);
+    }
+    if (it != pCache->end()) {
+        it.value() = value;
+    } else {
+        pCache->insert(group, value);
     }
 }
 
@@ -86,23 +110,34 @@ void FeatureCollector::process() {
         QString baseDestination = QString("/%1/").arg(group);
 
         if (feature.has_silence()) {
-            writeOSCBool(group, "silence", feature.time(), feature.silence());
+            maybeWriteOSCBool(group, "silence", feature.time(), feature.silence(),
+                              &m_silenceCache);
         }
 
         if (feature.has_beat()) {
-            writeOSCBool(group, "beat", feature.time(), feature.beat());
+            maybeWriteOSCBool(group, "beat", feature.time(), feature.beat(),
+                              &m_beatCache);
         }
 
         if (feature.has_bpm()) {
-            writeOSCFloat(group, "bpm", feature.time(), feature.bpm());
+            maybeWriteOSCFloat(group, "bpm", feature.time(), feature.bpm(),
+                               &m_bpmCache);
         }
 
         if (feature.has_pitch()) {
-            writeOSCFloat(group, "pitch", feature.time(), feature.pitch());
+            maybeWriteOSCFloat(group, "pitch", feature.time(), feature.pitch(),
+                               &m_pitchCache);
         }
 
         if (feature.has_onset()) {
-            writeOSCBool(group, "onset", feature.time(), feature.onset());
+            maybeWriteOSCBool(group, "onset", feature.time(), feature.onset(),
+                              &m_onsetCache);
+        }
+
+        if (feature.pos_size() == 3) {
+            maybeWriteOSCFloat(group, "pos_x", feature.time(), feature.pos(0), &m_posXCache, true);
+            maybeWriteOSCFloat(group, "pos_y", feature.time(), feature.pos(1), &m_posYCache, true);
+            maybeWriteOSCFloat(group, "pos_z", feature.time(), feature.pos(2), &m_posZCache, true);
         }
     }
 }
