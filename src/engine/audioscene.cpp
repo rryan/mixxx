@@ -189,7 +189,7 @@ AudioScene::AudioScene(int sampleRate)
           m_pContext(NULL),
           m_iFrameSize(0) {
 
-    const int num_channels = 7;
+    const int num_channels = 6;
     m_pInterleavedBuffer = SampleUtil::alloc(num_channels * MAX_BUFFER_LEN);
     SampleUtil::applyGain(m_pInterleavedBuffer, 0, num_channels * MAX_BUFFER_LEN);
     for (int i = 0; i < num_channels; ++i) {
@@ -240,7 +240,7 @@ bool AudioScene::initialize() {
 
     ALCint attrs[16];
     attrs[0] = ALC_FORMAT_CHANNELS_SOFT;
-    attrs[1] = ALC_6POINT1_SOFT;
+    attrs[1] = ALC_5POINT1_SOFT;
     attrs[2] = ALC_FORMAT_TYPE_SOFT;
     attrs[3] = ALC_FLOAT_SOFT;
     attrs[4] = ALC_FREQUENCY;
