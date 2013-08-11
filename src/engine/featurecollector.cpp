@@ -134,6 +134,11 @@ void FeatureCollector::process() {
                               &m_onsetCache);
         }
 
+        if (feature.has_vumeter()) {
+            maybeWriteOSCFloat(group, "vumeter", feature.time(), feature.vumeter(),
+                               &m_vumeterCache);
+        }
+
         if (feature.pos_size() == 3) {
             maybeWriteOSCFloat(group, "pos_x", feature.time(), feature.pos(0), &m_posXCache, true);
             maybeWriteOSCFloat(group, "pos_y", feature.time(), feature.pos(1), &m_posYCache, true);

@@ -49,6 +49,7 @@ class FeatureCollector : public QThread {
     QHash<QString, bool> m_beatCache;
     QHash<QString, float> m_bpmCache;
     QHash<QString, float> m_pitchCache;
+    QHash<QString, float> m_vumeterCache;
     QHash<QString, bool> m_onsetCache;
     QHash<QString, float> m_posXCache;
     QHash<QString, float> m_posYCache;

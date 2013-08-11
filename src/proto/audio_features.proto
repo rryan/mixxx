@@ -11,4 +11,5 @@ message Features {
   optional float pitch = 6;
   optional float bpm = 7;
   repeated float pos = 8;
+  optional float vumeter = 9;
 }

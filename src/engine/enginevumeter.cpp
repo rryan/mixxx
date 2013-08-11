@@ -21,8 +21,10 @@
 #include "engine/enginevumeter.h"
 #include "controlpotmeter.h"
 #include "sampleutil.h"
+#include "engine/featurecollector.h"
+#include "util/uptime.h"
 
-EngineVuMeter::EngineVuMeter(const char * group) {
+EngineVuMeter::EngineVuMeter(const char * group) : m_group(group) {
     // The VUmeter widget is controlled via a controlpotmeter, which means
     // that it should react on the setValue(int) signal.
     m_ctrlVuMeter = new ControlPotmeter(ConfigKey(group, "VuMeter"), 0., 1.);
@@ -60,7 +62,7 @@ void EngineVuMeter::process(const CSAMPLE * pIn, const CSAMPLE *, const int iBuf
     m_iSamplesCalculated += iBufferSize/2;
 
     // Are we ready to update the VU meter?:
-    if (m_iSamplesCalculated > (44100/2/UPDATE_RATE) )
+    if (m_iSamplesCalculated > (44100/UPDATE_RATE) )
     {
         doSmooth(m_fRMSvolumeL, log10(m_fRMSvolumeSumL/(m_iSamplesCalculated*1000)+1));
         doSmooth(m_fRMSvolumeR, log10(m_fRMSvolumeSumR/(m_iSamplesCalculated*1000)+1));
@@ -79,6 +81,15 @@ void EngineVuMeter::process(const CSAMPLE * pIn, const CSAMPLE *, const int iBuf
         double fRMSvolume = (m_fRMSvolumeL + m_fRMSvolumeR) / 2.0;
         if (fabs(fRMSvolume - m_ctrlVuMeter->get()) > epsilon)
             m_ctrlVuMeter->set(fRMSvolume);
+
+        FeatureCollector* pCollector = FeatureCollector::instance();
+        if (pCollector) {
+            mixxx::Features features;
+            features.set_time(static_cast<float>(Uptime::uptimeNanos()) / 1e9);
+            features.set_group(m_group.toStdString());
+            features.set_vumeter(fRMSvolume);
+            pCollector->write(features);
+        }
 
         // Reset calculation:
         m_iSamplesCalculated = 0;

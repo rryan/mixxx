@@ -20,7 +20,7 @@
 #include "engine/engineobject.h"
 
 // Rate at which the vumeter is updated (using a sample rate of 44100 Hz):
-#define UPDATE_RATE 20
+#define UPDATE_RATE 30
 
 //SMOOTHING FACTORS
 //Must be from 0-1 the lower the factor, the more smoothing that is applied
@@ -36,6 +36,7 @@ public:
     void process(const CSAMPLE *pIn, const CSAMPLE *pOut, const int iBufferSize);
 
 private:
+    QString m_group;
     ControlPotmeter *m_ctrlVuMeter;
     ControlPotmeter *m_ctrlVuMeterL;
     ControlPotmeter *m_ctrlVuMeterR;
