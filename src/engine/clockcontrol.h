@@ -29,6 +29,9 @@ class ClockControl: public EngineControl {
     ControlObject* m_pCOSampleRate;
     TrackPointer m_pTrack;
     BeatsPointer m_pBeats;
+    double m_dLastPosition;
+    double m_dOldNextBeat;
+    bool m_bEmitted;
 };
 
 #endif /* CLOCKCONTROL_H */

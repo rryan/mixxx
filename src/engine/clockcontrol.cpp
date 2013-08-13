@@ -12,6 +12,9 @@ ClockControl::ClockControl(const char* pGroup, ConfigObject<ConfigValue>* pConfi
     m_pCOBeatActiveThisFrame = new ControlObject(ConfigKey(pGroup, "beat_active_this_frame"));
     m_pCOBeatActiveThisFrame->set(0.0f);
     m_pCOSampleRate = ControlObject::getControl(ConfigKey("[Master]","samplerate"));
+    m_dOldNextBeat = 0;
+    m_dLastPosition = 0;
+    m_bEmitted = false;
 }
 
 ClockControl::~ClockControl() {
@@ -65,11 +68,45 @@ double ClockControl::process(const double dRate,
     const double blinkIntervalSamples = 2.0 * samplerate * (1.0 * dRate) * blinkSeconds;
 
     if (m_pBeats) {
-        double closestBeat = m_pBeats->findClosestBeat(currentSample);
-        double distanceToBeat = closestBeat - currentSample;
-        bool beatThisFrame = distanceToBeat >= 0 && distanceToBeat <= iBuffersize;
+        double nextBeat = m_pBeats->findNextBeat(currentSample);
+        double prevBeat = m_pBeats->findPrevBeat(currentSample);
+
+        double nextDist = nextBeat - currentSample;
+        double prevDist = currentSample - prevBeat;
+
+        bool beatThisFrame = (nextDist >= 0 && nextDist <= iBuffersize) || prevDist == 0;
         m_pCOBeatActiveThisFrame->set(beatThisFrame ? 1 : 0);
+
+        double closestBeat = (nextDist > prevDist) ? prevBeat : nextBeat;
+        double distanceToBeat = closestBeat - currentSample;
         m_pCOBeatActive->set(fabs(distanceToBeat) < blinkIntervalSamples / 2.0);
+
+
+        // Sometimes we miss beats. Check that we emitted the last beat that was
+        // the next beat.
+        if (m_dOldNextBeat == nextBeat) {
+            if (beatThisFrame) {
+                m_bEmitted = true;
+            }
+        } else if (m_dOldNextBeat != nextBeat) {
+            if (m_bEmitted) {
+                m_bEmitted = false;
+            } else {
+                // qDebug() << "Didn't emit for beat" << m_dOldNextBeat
+                //          << "lastPos" << m_dLastPosition
+                //          << "prev" << prevBeat
+                //          << "next" << nextBeat
+                //          << "prevdist" << prevDist
+                //          << "current" << currentSample
+                //          << "iBuffersize" << iBuffersize;
+                // lolhax
+                m_pCOBeatActiveThisFrame->set(1);
+            }
+            m_dOldNextBeat = nextBeat;
+        }
+
+        m_dLastPosition = currentSample;
+
     }
 
     return kNoTrigger;
