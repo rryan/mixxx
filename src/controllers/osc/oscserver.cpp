@@ -10,11 +10,22 @@ void error(int num, const char *msg, const char *path) {
 
 int control_set_handler(const char *path, const char *types, lo_arg** argv,
                         int argc, void *data, void *user_data) {
-    qDebug() << path << types << argc << &argv[0]->s << argv[1]->d;
-    QString keyStr(&argv[0]->s);
-    ConfigKey key = ConfigKey::parseCommaSeparated(keyStr);
-    ControlObjectThread cot(key);
-    cot.set(argv[1]->d);
+    QRegExp typePattern("^(sd)+$");
+
+    QString typesStr(types);
+    if (!typePattern.exactMatch(typesStr)) {
+        qDebug() << "/control/set got unexpected message type" << types;
+        return 1;
+    }
+
+    for (int i = 0; i + 1 < typesStr.length(); i += 2) {
+        qDebug() << path << types << argc << &argv[i]->s << argv[i+1]->d;
+        QString keyStr(&argv[i]->s);
+        ConfigKey key = ConfigKey::parseCommaSeparated(keyStr);
+        ControlObjectThread cot(key);
+        cot.set(argv[i+1]->d);
+    }
+
     return 0;
 }
 
@@ -50,7 +61,7 @@ OscServer::OscServer(QObject* pParent, int port)
 
     // add method that will match the path /foo/bar, with two numbers, coerced
     // to float and int
-    lo_server_thread_add_method(m_server, "/control/set", "sd", control_set_handler, this);
+    lo_server_thread_add_method(m_server, "/control/set", NULL, control_set_handler, this);
     lo_server_thread_add_method(m_server, NULL, "d", double_handler, this);
     lo_server_thread_add_method(m_server, NULL, NULL, unknown_handler, this);
 
