@@ -9,10 +9,12 @@
 #include <AL/alc.h>
 #include <AL/alext.h>
 
+#include "configobject.h"
 #include "defs.h"
 #include "sampleutil.h"
 #include "soundmanagerutil.h"
 #include "engine/enginechannel.h"
+#include "controlobject.h"
 #include "control/vectorcontrol.h"
 
 inline void QVector3DToALfloat(const QVector3D& vector, ALfloat* pVector) {
@@ -29,9 +31,11 @@ class AudioEntity {
     virtual void orientation(ALfloat* pOrientation) = 0;
 };
 
+class AudioScene;
+
 class AudioEmitter : public AudioEntity {
   public:
-    AudioEmitter(EngineChannel* pChannel);
+    AudioEmitter(AudioScene* pScene, EngineChannel* pChannel);
     virtual ~AudioEmitter();
 
     void process(int iNumFrames);
@@ -53,6 +57,7 @@ class AudioEmitter : public AudioEntity {
     }
 
   private:
+    AudioScene* m_pScene;
     EngineChannel* m_pChannel;
     CSAMPLE* m_pConversion;
     QList<ALuint> m_buffers;
@@ -86,7 +91,7 @@ class AudioListener : public AudioEntity {
 
 class AudioScene : public QObject {
   public:
-    AudioScene(int sampleRate);
+    AudioScene(ConfigObject<ConfigValue>* pConfig, int sampleRate);
     virtual ~AudioScene();
 
     void addEmitter(EngineChannel* pChannel);
@@ -101,6 +106,12 @@ class AudioScene : public QObject {
                        const int iSampleRate);
 
   private:
+    void loadSettingsFromConfig();
+
+    ConfigObject<ConfigValue>* m_pConfig;
+    ControlObject m_rolloffFactor;
+    ControlObject m_referenceDistance;
+    ControlObject m_distanceModel;
     int m_iSampleRate;
     QMap<QString, AudioEmitter*> m_emitters;
     QList<CSAMPLE*> m_buffers;
@@ -110,6 +121,9 @@ class AudioScene : public QObject {
     ALCdevice* m_pDevice;
     ALCcontext* m_pContext;
     ALCsizei m_iFrameSize;
+
+    friend class AudioEmitter;
+    friend class AudioListener;
 };
 
 #endif /* AUDIOSCENE_H */

@@ -6,6 +6,8 @@
 #include "engine/featurecollector.h"
 #include "util/uptime.h"
 
+#define AUDIO_SCENE "[AudioScene]"
+
 #define LOAD_PROC(x,t)  ((x) = (t)alcGetProcAddress(NULL, #x))
 static LPALCLOOPBACKOPENDEVICESOFT alcLoopbackOpenDeviceSOFT;
 static LPALCISRENDERFORMATSUPPORTEDSOFT alcIsRenderFormatSupportedSOFT;
@@ -70,13 +72,21 @@ ALsizei FramesToBytes(ALsizei size, ALenum channels, ALenum type)
     return size;
 }
 
+void transform_to_rhs(ALfloat* vec3) {
+    // in firemix's coordinate system, y is z.
+    ALfloat y = vec3[1];
+    vec3[1] = vec3[2];
+    vec3[2] = y;
+}
+
 ALsizei BytesToFrames(ALsizei size, ALenum channels, ALenum type)
 {
     return size / FramesToBytes(1, channels, type);
 }
 
-AudioEmitter::AudioEmitter(EngineChannel* pChannel)
-        : m_pChannel(pChannel),
+AudioEmitter::AudioEmitter(AudioScene* pScene, EngineChannel* pChannel)
+        : m_pScene(pScene),
+          m_pChannel(pChannel),
           m_pConversion(SampleUtil::alloc(MAX_BUFFER_LEN)) {
     SampleUtil::applyGain(m_pConversion, 0, MAX_BUFFER_LEN);
 
@@ -106,6 +116,7 @@ AudioEmitter::AudioEmitter(EngineChannel* pChannel)
     alSource3f(m_source, AL_VELOCITY, 0, 0, 0);
     alSource3f(m_source, AL_DIRECTION, 0, 0, 0);
     //alSourcei(m_source, AL_SOURCE_RELATIVE, AL_TRUE);
+    //alSourcei(m_source, AL_ROLLOFF_FACTOR, 0.8);
     //alSourcei(m_source, AL_ROLLOFF_FACTOR, 0);
 
     alSourceRewind(m_source);
@@ -133,19 +144,44 @@ void AudioEmitter::process(int iNumFrames) {
         pCollector->write(features);
     }
 
+    bool print = m_pChannel->getGroup() == "[Channel1]" && false;
+    if (print) {
+        qDebug() << m_pChannel->getGroup() << vec[0] << vec[1] << vec[2];
+    }
+    transform_to_rhs(vec);
     alSourcefv(m_source, AL_POSITION, vec);
 
     velocity(vec);
+    transform_to_rhs(vec);
     alSourcefv(m_source, AL_VELOCITY, vec);
 
     orientation(vec);
+    transform_to_rhs(vec);
     alSourcefv(m_source, AL_DIRECTION, vec);
+
+    alSourcef(m_source, AL_GAIN, 1.0);
+    alSourcef(m_source, AL_MIN_GAIN, 0.0);
+    alSourcef(m_source, AL_MAX_GAIN, 2.0);
+    alSourcef(m_source, AL_MAX_DISTANCE, 1000);
+
+    if (print) {
+        qDebug() << m_pChannel->getGroup() << "rolloff" << m_pScene->m_rolloffFactor.get();
+    }
+    alSourcef(m_source, AL_ROLLOFF_FACTOR, m_pScene->m_rolloffFactor.get());
+    if (print) {
+        qDebug() << m_pChannel->getGroup() << "reference_distance" << m_pScene->m_referenceDistance.get();
+    }
+    alSourcef(m_source, AL_REFERENCE_DISTANCE, m_pScene->m_referenceDistance.get());
+    if (print) {
+        qDebug() << m_pChannel->getGroup() << "distance model" << m_pScene->m_distanceModel.get();
+    }
+    alSourcei(m_source, AL_DISTANCE_MODEL, m_pScene->m_distanceModel.get());
 }
 
 void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames,
                                  const int iSampleRate) {
     for (int i = 0; i < iNumFrames; ++i) {
-        m_pConversion[i] = (pBuffer[i*2]+ pBuffer[i*2 + 1]) * 0.5 / SHRT_MAX;
+        m_pConversion[i] = (pBuffer[i*2]+ pBuffer[i*2 + 1]) * 0.5/ SHRT_MAX;
         if (m_pConversion[i] > 1.0 || m_pConversion[i] < -1.0) {
             qDebug() << "receive buffer clipped";
         }
@@ -170,7 +206,7 @@ void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames,
                      iNumFrames * sizeof(CSAMPLE), iSampleRate);
 
         if (alGetError() != AL_NO_ERROR) {
-            qDebug() << "Error buffering data:" << alGetError();
+            //qDebug() << "Error buffering data:" << alGetError();
         }
 
         alSourceQueueBuffers(m_source, 1, &buffer);
@@ -210,10 +246,14 @@ AudioListener::AudioListener(const QString& group)
 AudioListener::~AudioListener() {
 }
 
-AudioScene::AudioScene(int sampleRate)
-        : m_iSampleRate(sampleRate),
+AudioScene::AudioScene(ConfigObject<ConfigValue>* pConfig, int sampleRate)
+        : m_pConfig(pConfig),
+          m_rolloffFactor(ConfigKey(AUDIO_SCENE, "rolloff_factor")),
+          m_referenceDistance(ConfigKey(AUDIO_SCENE, "reference_distance")),
+          m_distanceModel(ConfigKey(AUDIO_SCENE, "distance_model")),
+          m_iSampleRate(sampleRate),
           m_pInterleavedBuffer(NULL),
-          m_listener("[AudioScene]"),
+          m_listener(AUDIO_SCENE),
           m_pDevice(NULL),
           m_pContext(NULL),
           m_iFrameSize(0) {
@@ -227,8 +267,8 @@ AudioScene::AudioScene(int sampleRate)
         m_buffers.push_back(pBuffer);
     }
 
-    m_listener.m_position.set(QVector3D(500, 500, 0));
     initialize();
+    loadSettingsFromConfig();
 }
 
 AudioScene::~AudioScene() {
@@ -307,6 +347,76 @@ bool AudioScene::initialize() {
     return true;
 }
 
+bool parse3DVectorFromString(const QString& vector, QVector3D* pResult) {
+    QStringList components = vector.split(",");
+    if (components.size() != 3) {
+        return false;
+    }
+
+    bool ok = false;
+    float x = components[0].toFloat(&ok);
+    if (!ok) {
+        return false;
+    }
+    pResult->setX(x);
+
+    float y = components[1].toFloat(&ok);
+    if (!ok) {
+        return false;
+    }
+    pResult->setY(y);
+
+    float z = components[2].toFloat(&ok);
+    if (!ok) {
+        return false;
+    }
+    pResult->setZ(z);
+
+    return true;
+}
+
+void AudioScene::loadSettingsFromConfig() {
+    bool ok = false;
+
+    QString referenceDistance = m_pConfig->getValueString(
+        ConfigKey(AUDIO_SCENE, "reference_distance"), "");
+    double dReferenceDistance = referenceDistance.toDouble(&ok);
+    if (!referenceDistance.isEmpty() && ok) {
+        m_referenceDistance.set(dReferenceDistance);
+        //qDebug() << "REFERENCE_DISTANCE" << m_referenceDistance.get();
+    }
+
+    QString rolloffFactor = m_pConfig->getValueString(
+        ConfigKey(AUDIO_SCENE, "rolloff_factor"), "");
+    double dRolloffFactor = rolloffFactor.toDouble(&ok);
+    if (!rolloffFactor.isEmpty() && ok) {
+        m_rolloffFactor.set(dRolloffFactor);
+        //qDebug() << "ROLLOFF_FACTOR" << m_rolloffFactor.get();
+    }
+
+    QString distanceMode = m_pConfig->getValueString(
+        ConfigKey(AUDIO_SCENE, "distance_mode"), "AL_NONE");
+    QHash<QString, ALenum> distanceMap;
+    distanceMap["AL_INVERSE_DISTANCE"] = AL_INVERSE_DISTANCE;
+    distanceMap["AL_INVERSE_DISTANCE_CLAMPED"] = AL_INVERSE_DISTANCE_CLAMPED;
+    distanceMap["AL_LINEAR_DISTANCE"] = AL_LINEAR_DISTANCE;
+    distanceMap["AL_LINEAR_DISTANCE_CLAMPED"] = AL_LINEAR_DISTANCE_CLAMPED;
+    distanceMap["AL_EXPONENT_DISTANCE"] = AL_EXPONENT_DISTANCE;
+    distanceMap["AL_EXPONENT_DISTANCE_CLAMPED"] = AL_EXPONENT_DISTANCE_CLAMPED;
+    distanceMap["AL_NONE"] = AL_NONE;
+    //qDebug() << "alDistanceModel" << distanceMode;
+    m_distanceModel.set(distanceMap.value(distanceMode, AL_NONE));
+
+
+    QString listenerPosition = m_pConfig->getValueString(
+        ConfigKey(AUDIO_SCENE, "listener_position"), "500,500,0");
+    QVector3D pos;
+
+    if (parse3DVectorFromString(listenerPosition, &pos)) {
+        m_listener.m_position.set(pos);
+    }
+}
+
 void AudioScene::shutdown() {
     if (m_pDevice) {
         qDebug() << "Destroying OpenAL device.";
@@ -325,13 +435,18 @@ void AudioScene::onCallbackStart() {
     foreach (CSAMPLE* pBuffer, m_buffers) {
         SampleUtil::applyGain(pBuffer, 0, MAX_BUFFER_LEN);
     }
+
+    alDistanceModel(m_distanceModel.get());
+    if (alGetError() != AL_NO_ERROR) {
+        qDebug() << "Could not set distance model to:" << m_distanceModel.get();
+    }
 }
 
 void AudioScene::receiveBuffer(const QString& group, CSAMPLE* pBuffer,
                                const int iNumFrames, const int iSampleRate) {
     ScopedTimer t("AudioScene::receiveBuffer");
 
-    // Passthrough for testing.
+    // // Passthrough for testing.
     // const int num_buffers = m_buffers.size();
     // for (int j = 0; j < num_buffers; ++j) {
     //     CSAMPLE* pOutBuffer = m_buffers[j];
@@ -367,13 +482,27 @@ void AudioScene::process(const int iNumFrames) {
         pCollector->write(features);
     }
 
+    //qDebug() << "alListenerfv AL_POSITION" << vec[0] << vec[1] << vec[2];
+    transform_to_rhs(vec);
     alListenerfv(AL_POSITION, vec);
 
     m_listener.velocity(vec);
+    transform_to_rhs(vec);
     alListenerfv(AL_VELOCITY, vec);
 
-    m_listener.orientation(vec);
-    alListenerfv(AL_ORIENTATION, vec);
+    //m_listener.orientation(vec);
+    ALfloat orientation[6];
+    // At: looking at origin
+    orientation[0] = 0;
+    orientation[1] = 0;
+    orientation[2] = 0;
+    transform_to_rhs(orientation);
+
+    // Up: Vertical
+    orientation[3] = 0;
+    orientation[4] = 1;
+    orientation[5] = 0;
+    //alListenerfv(AL_ORIENTATION, vec);
 
     SampleUtil::applyGain(m_pInterleavedBuffer, 0, iNumFrames * m_buffers.size());
     alcRenderSamplesSOFT(m_pDevice, m_pInterleavedBuffer, iNumFrames);
@@ -393,7 +522,7 @@ void AudioScene::process(const int iNumFrames) {
 }
 
 void AudioScene::addEmitter(EngineChannel* pChannel) {
-    m_emitters.insert(pChannel->getGroup(), new AudioEmitter(pChannel));
+    m_emitters.insert(pChannel->getGroup(), new AudioEmitter(this, pChannel));
 }
 
 CSAMPLE* AudioScene::buffer(const AudioOutput& output) {
