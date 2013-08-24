@@ -17,7 +17,7 @@
 #include "controlobject.h"
 #include "control/vectorcontrol.h"
 
-inline void QVector3DToALfloat(const QVector3D& vector, ALfloat* pVector) {
+inline void QVector3DTofloat(const QVector3D& vector, float* pVector) {
     pVector[0] = vector.x();
     pVector[1] = vector.y();
     pVector[2] = vector.z();
@@ -26,9 +26,9 @@ inline void QVector3DToALfloat(const QVector3D& vector, ALfloat* pVector) {
 class AudioEntity {
   public:
     virtual ~AudioEntity() { }
-    virtual void position(ALfloat* pPosition) = 0;
-    virtual void velocity(ALfloat* pVelocity) = 0;
-    virtual void orientation(ALfloat* pOrientation) = 0;
+    virtual void position(float* pPosition) = 0;
+    virtual void velocity(float* pVelocity) = 0;
+    virtual void orientation(float* pOrientation) = 0;
 };
 
 class AudioScene;
@@ -41,27 +41,25 @@ class AudioEmitter : public AudioEntity {
     void process(int iNumFrames);
     void receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames, const int iSampleRate);
 
-    void position(ALfloat* pPosition) {
+    void position(float* pPosition) {
         QVector3D vec = m_pChannel->position();
-        QVector3DToALfloat(vec, pPosition);
+        QVector3DTofloat(vec, pPosition);
     }
 
-    void orientation(ALfloat* pOrientation) {
+    void orientation(float* pOrientation) {
         QVector3D vec = m_pChannel->orientation();
-        QVector3DToALfloat(vec, pOrientation);
+        QVector3DTofloat(vec, pOrientation);
     }
 
-    void velocity(ALfloat* pVelocity) {
+    void velocity(float* pVelocity) {
         QVector3D vec = m_pChannel->velocity();
-        QVector3DToALfloat(vec, pVelocity);
+        QVector3DTofloat(vec, pVelocity);
     }
 
   private:
     AudioScene* m_pScene;
     EngineChannel* m_pChannel;
     CSAMPLE* m_pConversion;
-    QList<ALuint> m_buffers;
-    ALuint m_source;
 };
 
 class AudioListener : public AudioEntity {
@@ -69,19 +67,19 @@ class AudioListener : public AudioEntity {
     explicit AudioListener(const QString& group);
     virtual ~AudioListener();
 
-    void position(ALfloat* pPosition) {
+    void position(float* pPosition) {
         QVector3D vec = m_position.get();
-        QVector3DToALfloat(vec, pPosition);
+        QVector3DTofloat(vec, pPosition);
     }
 
-    void orientation(ALfloat* pOrientation) {
+    void orientation(float* pOrientation) {
         QVector3D vec = m_orientation.get();
-        QVector3DToALfloat(vec, pOrientation);
+        QVector3DTofloat(vec, pOrientation);
     }
 
-    void velocity(ALfloat* pVelocity) {
+    void velocity(float* pVelocity) {
         QVector3D vec = m_velocity.get();
-        QVector3DToALfloat(vec, pVelocity);
+        QVector3DTofloat(vec, pVelocity);
     }
 
     Vector3DControl m_position;
@@ -117,10 +115,6 @@ class AudioScene : public QObject {
     QList<CSAMPLE*> m_buffers;
     CSAMPLE* m_pInterleavedBuffer;
     AudioListener m_listener;
-
-    ALCdevice* m_pDevice;
-    ALCcontext* m_pContext;
-    ALCsizei m_iFrameSize;
 
     friend class AudioEmitter;
     friend class AudioListener;
