@@ -55,7 +55,7 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue> * _config,
     m_pMasterSampleRate = new ControlObject(ConfigKey(group, "samplerate"), true, true);
     m_pMasterSampleRate->set(44100.);
 
-    m_pAudioScene = new AudioScene(m_pMasterSampleRate->get());
+    m_pAudioScene = new AudioScene(_config, m_pMasterSampleRate->get());
     m_pFeatureCollector = new FeatureCollector(_config);
 
     // Latency control
@@ -308,7 +308,9 @@ void EngineMaster::process(const CSAMPLE *, const CSAMPLE *pOut, const int iBuff
     m_headphoneVolumeOld = headphoneVolume;
     head_clipping->process(m_pHead, m_pHead, iBufferSize);
 
-    m_pAudioScene->process(iBufferSize/2);
+
+    m_pAudioScene->process(m_channels, masterOutput, maxChannels,
+                           iBufferSize/2);
 
     //Master/headphones interleaving is now done in
     //SoundManager::requestBuffer() - Albert Nov 18/07

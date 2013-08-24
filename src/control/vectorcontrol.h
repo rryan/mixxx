@@ -29,6 +29,18 @@ class Vector3DControl {
                          m_pVectorZ->get());
     }
 
+    double x() const {
+        return m_pVectorX->get();
+    }
+
+    double y() const {
+        return m_pVectorY->get();
+    }
+
+    double z() const {
+        return m_pVectorZ->get();
+    }
+
     void set(const QVector3D& vector) {
         m_pVectorX->set(vector.x());
         m_pVectorY->set(vector.y());

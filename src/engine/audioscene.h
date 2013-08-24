@@ -16,6 +16,7 @@
 #include "engine/enginechannel.h"
 #include "controlobject.h"
 #include "control/vectorcontrol.h"
+#include "engine/enginemaster.h"
 
 inline void QVector3DTofloat(const QVector3D& vector, float* pVector) {
     pVector[0] = vector.x();
@@ -82,9 +83,14 @@ class AudioListener : public AudioEntity {
         QVector3DTofloat(vec, pVelocity);
     }
 
+    void loadSettingsFromConfig(ConfigObject<ConfigValue>* pConfig);
+    void process();
+
+    QString m_group;
     Vector3DControl m_position;
     Vector3DControl m_orientation;
     Vector3DControl m_velocity;
+    CSAMPLE* m_pBuffer;
 };
 
 class AudioScene : public QObject {
@@ -99,7 +105,10 @@ class AudioScene : public QObject {
     bool initialize();
     void shutdown();
     void onCallbackStart();
-    void process(const int iNumFrames);
+    void process(const QList<EngineMaster::ChannelInfo*>& channels,
+                 unsigned int channelBitvector,
+                 unsigned int maxChannels,
+                 const int iNumFrames);
     void receiveBuffer(const QString& group, CSAMPLE* pBuffer, const int iNumFrames,
                        const int iSampleRate);
 
@@ -112,9 +121,7 @@ class AudioScene : public QObject {
     ControlObject m_distanceModel;
     int m_iSampleRate;
     QMap<QString, AudioEmitter*> m_emitters;
-    QList<CSAMPLE*> m_buffers;
-    CSAMPLE* m_pInterleavedBuffer;
-    AudioListener m_listener;
+    QMap<QString, AudioListener*> m_listeners;
 
     friend class AudioEmitter;
     friend class AudioListener;
