@@ -20,6 +20,11 @@ FeatureCollector::FeatureCollector(ConfigObject<ConfigValue>* pConfig)
 
     m_osc_destination = lo_address_new(host.toAscii().constData(),
                                        port.toAscii().constData());
+
+    QString port2 = "2449";
+    m_osc_destination_secondary = lo_address_new(host.toAscii().constData(),
+                                                 port2.toAscii().constData());
+
     start();
 }
 
@@ -86,6 +91,13 @@ void FeatureCollector::maybeWriteOSCFloat(const QString& group,
                 "ff", time, value) < 0) {
         qDebug() << "OSC error " << lo_address_errno(m_osc_destination)
                  << ": " << lo_address_errstr(m_osc_destination);
+    }
+    if (feature == "pos_x" || feature == "pos_y") {
+        if (lo_send(m_osc_destination_secondary, location.toAscii().constData(),
+                    "ff", time, value) < 0) {
+            qDebug() << "OSC error " << lo_address_errno(m_osc_destination)
+                     << ": " << lo_address_errstr(m_osc_destination);
+        }
     }
     if (it != pCache->end()) {
         it.value() = value;

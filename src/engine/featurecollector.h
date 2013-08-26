@@ -43,7 +43,7 @@ class FeatureCollector : public QThread {
     volatile bool m_bQuit;
     QMutex m_featuresLock;
     QList<mixxx::Features> m_features;
-    lo_address m_osc_destination;
+    lo_address m_osc_destination, m_osc_destination_secondary;
 
     QHash<QString, bool> m_silenceCache;
     QHash<QString, bool> m_beatCache;
