@@ -69,20 +69,28 @@ void AudioEmitter::receiveBuffer(CSAMPLE* pBuffer, const int iNumFrames,
                                  const int iSampleRate) {
 }
 
-AudioListener::AudioListener(const QString& group)
+AudioListener::AudioListener(const QString& group, AudioScene* pScene)
         : m_group(group),
+          m_pScene(pScene),
           m_position(ConfigKey(group, "position")),
           m_orientation(ConfigKey(group, "orientation")),
           m_velocity(ConfigKey(group, "velocity")),
-          m_pBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)) {
+          m_pBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
+          m_pStereoBuffer(SampleUtil::alloc(MAX_BUFFER_LEN)),
+          m_distanceModel(ConfigKey(group, "distance_model")) {
     SampleUtil::applyGain(m_pBuffer, 0, MAX_BUFFER_LEN);
+    SampleUtil::applyGain(m_pStereoBuffer, 0, MAX_BUFFER_LEN);
 }
 
 AudioListener::~AudioListener() {
     SampleUtil::free(m_pBuffer);
+    SampleUtil::free(m_pStereoBuffer);
 }
 
-void AudioListener::process() {
+void AudioListener::process(const QList<EngineMaster::ChannelInfo*>& channels,
+                            unsigned int channelBitvector,
+                            unsigned int maxChannels,
+                            const int iNumFrames) {
     FeatureCollector* pCollector = FeatureCollector::instance();
     if (pCollector) {
         mixxx::Features features;
@@ -93,6 +101,22 @@ void AudioListener::process() {
         features.add_pos(m_position.z());
         pCollector->write(features);
     }
+
+    while (m_channelGainCache.size() < channels.size()) {
+        m_channelGainCache.push_back(0);
+    }
+
+    m_gain.setDistanceModel(m_distanceModel.get());
+    m_gain.setRolloffFactor(m_pScene->m_rolloffFactor.get());
+    m_gain.setReferenceDistance(m_pScene->m_referenceDistance.get());
+    m_gain.setPosition(m_position.get());
+
+    ChannelMixer::mixChannels(channels, m_gain, channelBitvector, maxChannels,
+                              &m_channelGainCache, m_pStereoBuffer, iNumFrames * 2);
+
+    for (int i = 0; i < iNumFrames; ++i) {
+        m_pBuffer[i] = m_pStereoBuffer[i*2] + m_pStereoBuffer[i*2+1];
+    }
 }
 
 void AudioListener::loadSettingsFromConfig(ConfigObject<ConfigValue>* pConfig) {
@@ -102,6 +126,65 @@ void AudioListener::loadSettingsFromConfig(ConfigObject<ConfigValue>* pConfig) {
     if (parse3DVectorFromString(listenerPosition, &pos)) {
         m_position.set(pos);
     }
+
+
+    QString distanceMode = pConfig->getValueString(
+        ConfigKey(m_group, "distance_mode"), "AL_NONE");
+
+    if (!distanceMode.isEmpty()) {
+        QHash<QString, ALenum> distanceMap;
+        distanceMap["AL_INVERSE_DISTANCE"] = AL_INVERSE_DISTANCE;
+        distanceMap["AL_INVERSE_DISTANCE_CLAMPED"] = AL_INVERSE_DISTANCE_CLAMPED;
+        distanceMap["AL_LINEAR_DISTANCE"] = AL_LINEAR_DISTANCE;
+        distanceMap["AL_LINEAR_DISTANCE_CLAMPED"] = AL_LINEAR_DISTANCE_CLAMPED;
+        distanceMap["AL_EXPONENT_DISTANCE"] = AL_EXPONENT_DISTANCE;
+        distanceMap["AL_EXPONENT_DISTANCE_CLAMPED"] = AL_EXPONENT_DISTANCE_CLAMPED;
+        distanceMap["AL_NONE"] = AL_NONE;
+        //qDebug() << "alDistanceModel" << distanceMode;
+        m_distanceModel.set(distanceMap.value(distanceMode, AL_NONE));
+    }
+}
+
+double DistanceBasedGainCalculator::getGain(EngineMaster::ChannelInfo* pChannelInfo) const {
+    EngineChannel* pChannel = pChannelInfo->m_pChannel;
+    QVector3D distanceVector = pChannel->position() - m_position;
+    qreal distance = distanceVector.length();
+    qreal max_distance = 1000;
+
+    double gain = 0.0;
+    switch (m_distance_model) {
+        case AL_INVERSE_DISTANCE:
+            if (distance <= m_reference_distance) {
+                return 1.0;
+            }
+            return m_reference_distance /
+                    (m_reference_distance + m_rolloff_factor * (distance - m_reference_distance));
+
+        case AL_LINEAR_DISTANCE:
+            if (distance <= m_reference_distance) {
+                return 1.0;
+            }
+            distance = math_min(distance, max_distance);
+            return 1 - m_rolloff_factor * (distance - m_reference_distance) / (max_distance - m_reference_distance);
+        case AL_EXPONENT_DISTANCE:
+            if (distance <= m_reference_distance) {
+                return 1.0;
+            }
+            gain = pow(distance / m_reference_distance, -m_rolloff_factor);
+            if (pChannel->getGroup() == "[Channel1]") {
+                qDebug() << "AL_EXPONENT_DISTANCE" << gain
+                         << "distance" << distance
+                         << "reference_distance" << m_reference_distance
+                         << "rolloff_factor" << m_rolloff_factor;
+            }
+            return gain;
+        case AL_NONE:
+            return 1.0;
+        default:
+            break;
+    }
+    qDebug() << "WARNING UNHANDLED DISTANCE MODEL" << m_distance_model;
+    return 0.0;
 }
 
 AudioScene::AudioScene(ConfigObject<ConfigValue>* pConfig, int sampleRate)

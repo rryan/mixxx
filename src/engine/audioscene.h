@@ -63,9 +63,40 @@ class AudioEmitter : public AudioEntity {
     CSAMPLE* m_pConversion;
 };
 
+class DistanceBasedGainCalculator : public EngineMaster::GainCalculator {
+  public:
+    DistanceBasedGainCalculator()
+            : m_distance_model(AL_NONE) {
+    }
+
+    void setPosition(const QVector3D& position) {
+        m_position = position;
+    }
+
+    void setDistanceModel(ALenum model) {
+        m_distance_model = model;
+    }
+
+    void setReferenceDistance(qreal distance) {
+        m_reference_distance = distance;
+    }
+
+    void setRolloffFactor(qreal factor) {
+        m_rolloff_factor = factor;
+    }
+
+    double getGain(EngineMaster::ChannelInfo* pChannelInfo) const;
+
+  private:
+    QVector3D m_position;
+    qreal m_reference_distance;
+    qreal m_rolloff_factor;
+    ALenum m_distance_model;
+};
+
 class AudioListener : public AudioEntity {
   public:
-    explicit AudioListener(const QString& group);
+    explicit AudioListener(const QString& group, AudioScene* pScene);
     virtual ~AudioListener();
 
     void position(float* pPosition) {
@@ -84,13 +115,21 @@ class AudioListener : public AudioEntity {
     }
 
     void loadSettingsFromConfig(ConfigObject<ConfigValue>* pConfig);
-    void process();
+    void process(const QList<EngineMaster::ChannelInfo*>& channels,
+                 unsigned int channelBitvector,
+                 unsigned int maxChannels,
+                 const int iNumFrames);
 
     QString m_group;
+    AudioScene* m_pScene;
     Vector3DControl m_position;
     Vector3DControl m_orientation;
     Vector3DControl m_velocity;
     CSAMPLE* m_pBuffer;
+    CSAMPLE* m_pStereoBuffer;
+    QList<CSAMPLE> m_channelGainCache;
+    DistanceBasedGainCalculator m_gain;
+    ControlObject m_distanceModel;
 };
 
 class AudioScene : public QObject {
