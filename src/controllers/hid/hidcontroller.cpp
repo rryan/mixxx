@@ -133,6 +133,12 @@ void HidController::visit(const HidControllerPreset* preset) {
     emit(presetLoaded(getPreset()));
 }
 
+void HidController::visit(const OscControllerPreset* preset) {
+    Q_UNUSED(preset);
+    // TODO(XXX): throw a hissy fit.
+    qDebug() << "ERROR: Attempting to load a OscControllerPreset to an HidController!";
+}
+
 bool HidController::savePreset(const QString fileName) const {
     HidControllerPresetFileHandler handler;
     return handler.save(m_preset, getName(), fileName);

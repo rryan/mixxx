@@ -179,6 +179,34 @@ class Bulk(Feature):
                 'controllers/hid/hidcontrollerpresetfilehandler.cpp')
         return sources
 
+class Osc(Feature):
+    def description(self):
+        return "OSC controller support"
+
+    def enabled(self, build):
+        build.flags['osc'] = util.get_flags(build.env, 'osc', 1)
+        if int(build.flags['osc']):
+            return True
+        return False
+
+    def add_options(self, build, vars):
+        vars.Add('osc', 'Set to 1 to enable OSC controller support.', 1)
+
+    def configure(self, build, conf):
+        if not self.enabled(build):
+            return
+
+        if (not conf.CheckLib(['liblo', 'lo']) or
+            not conf.CheckHeader('lo/lo.h')):
+            raise Exception('Did not find the liblo development library or its header file, exiting!')
+        build.env.Append(CPPDEFINES = '__OSC__')
+
+    def sources(self, build):
+        sources = ['controllers/osc/osccontroller.cpp',
+                   'controllers/osc/oscenumerator.cpp',
+                   'controllers/osc/osccontrollerpresetfilehandler.cpp']
+        return sources
+
 
 class Mad(Feature):
     def description(self):

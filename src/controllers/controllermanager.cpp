@@ -18,13 +18,14 @@
 #ifdef __HSS1394__
 #include "controllers/midi/hss1394enumerator.h"
 #endif
-
 #ifdef __HID__
 #include "controllers/hid/hidenumerator.h"
 #endif
-
 #ifdef __BULK__
 #include "controllers/bulk/bulkenumerator.h"
+#endif
+#ifdef __OSC__
+#include "controllers/osc/oscenumerator.h"
 #endif
 
 namespace {
@@ -92,6 +93,9 @@ ControllerManager::ControllerManager(UserSettingsPointer pConfig)
 #endif
 #ifdef __HID__
     m_enumerators.append(new HidEnumerator());
+#endif
+#ifdef __OSC__
+    m_enumerators.append(new OscEnumerator());
 #endif
 
     m_pollTimer.setInterval(kPollIntervalMillis);
