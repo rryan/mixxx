@@ -65,8 +65,6 @@
 #include "util/compatibility.h"
 #include "playerinfo.h"
 
-#include "controllers/midiclockthread.h"
-
 #ifdef __VINYLCONTROL__
 #include "vinylcontrol/defs_vinylcontrol.h"
 #include "vinylcontrol/vinylcontrolmanager.h"
@@ -260,7 +258,6 @@ MixxxApp::MixxxApp(QApplication *pApp, const CmdlineArgs& args)
     m_pPrefDlg = NULL;
     m_pControllerManager = NULL;
     m_pRecordingManager = NULL;
-    m_pMidiClockThread = NULL;
 #ifdef __SHOUTCAST__
     m_pShoutcastManager = NULL;
 #endif
@@ -350,11 +347,6 @@ MixxxApp::MixxxApp(QApplication *pApp, const CmdlineArgs& args)
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addSampler();
     m_pPlayerManager->addPreviewDeck();
-
-    // Create the MidiClockThread
-    //m_pMidiClockThread = new MidiClockThread();
-    //m_pMidiClockThread->start();
-    //m_pMidiClockThread->doMidi();
 
 #ifdef __VINYLCONTROL__
     m_pVCManager->init();

@@ -41,7 +41,6 @@ class VinylControlManager;
 
 class DlgPreferences;
 class SoundManager;
-class MidiClockThread;
 
 #include "configobject.h"
 #include "util/cmdlineargs.h"
@@ -169,8 +168,6 @@ class MixxxApp : public QMainWindow {
     // The library management object
     Library* m_pLibrary;
 
-    //MidiClockThread* m_pMidiClockThread;
-
     // file_menu contains all items of the menubar entry "File"
     QMenu* m_pFileMenu;
     // edit_menu contains all items of the menubar entry "Edit"
@@ -242,3 +239,4 @@ class MixxxApp : public QMainWindow {
 };
 
 #endif
+

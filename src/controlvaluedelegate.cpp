@@ -140,16 +140,12 @@ ControlValueDelegate::ControlValueDelegate(QObject *parent)
         m_channelControlValues.append("hotcue_34_clear");
         m_channelControlValues.append("hotcue_35_clear");
         m_channelControlValues.append("hotcue_36_clear");
-   }
+    }
     if (m_masterControlValues.isEmpty())
     {
         m_masterControlValues.append("balance");
         m_masterControlValues.append("crossfader");
         m_masterControlValues.append("volume");
-        m_channelControlValues.append("midi_clock_out");
-        m_channelControlValues.append("midi_clock_sync");
-        m_channelControlValues.append("midi_clock_do_sync"); 
-        m_channelControlValues.append("midi_clock_channel"); 
     }
     if (m_playlistControlValues.isEmpty())
     {

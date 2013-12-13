@@ -299,6 +299,7 @@
 									<EmitOnDownPress>false</EmitOnDownPress>
 								</Connection>
 							</SliderComposed>
+
 							<!--
 							****************************************
 							 Button- Play
@@ -4492,8 +4493,8 @@
 
 			<!-- Playback control sub-widget -->
 			<WidgetGroup>
-				<Pos>60,115</Pos>
-				<Size>417,54</Size>
+				<Pos>120,115</Pos>
+				<Size>357,54</Size>
 				<Style>QGroupBox { border: 0px solid yellow; } QWidget { margin: 0; padding: 0; }</Style>
 				<Children>
 
@@ -4511,7 +4512,7 @@
 							<Pressed>btn_forward1_overdown.png</Pressed>
 							<Unpressed>btn_forward1.png</Unpressed>
 						</State>
-						<Pos>86,0</Pos>
+						<Pos>26,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],fwd</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4532,7 +4533,7 @@
 							<Pressed>btn_rewind1_overdown.png</Pressed>
 							<Unpressed>btn_rewind1.png</Unpressed>
 						</State>
-						<Pos>60,0</Pos>
+						<Pos>0,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],back</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4544,84 +4545,6 @@
 							<ButtonState>RightButton</ButtonState>
 						</Connection>
 					</PushButton>
-<!-- Button - Midi Clock -->
-	<PushButton>
-		<Tooltip>Midi Clock Out</Tooltip>
-		<Style></Style>
-		<NumberStates>2</NumberStates>
-		<State>
-			<Number>0</Number>
-			<Pressed>btn_midi_clock_out.png</Pressed>
-			<Unpressed>btn_midi_clock_out.png</Unpressed>
-		</State>
-		<State>
-			<Number>1</Number>
-			<Pressed>btn_midi_clock_out_over.png</Pressed>
-			<Unpressed>btn_midi_clock_out_over.png</Unpressed>
-		</State>
-		<Pos>30,0</Pos>
-		<Connection>
-			<ConfigKey>[Master],midi_clock_out</ConfigKey>
-			<EmitOnDownPress>true</EmitOnDownPress>
-			<ButtonState>LeftButton</ButtonState>
-		</Connection>
-	</PushButton>
-
-<!-- Button - Midi Clock -->
-	<PushButton>
-		<Tooltip>Midi Clock Sync</Tooltip>
-		<Style></Style>
-		<NumberStates>3</NumberStates>
-		<State>
-			<Number>0</Number>
-			<Pressed>btn_midi_clock_sync_unsynced.png</Pressed>
-			<Unpressed>btn_midi_clock_sync_unsynced.png</Unpressed>
-		</State>
-		<State>
-			<Number>1</Number>
-			<Pressed>btn_midi_clock_sync_syncing.png</Pressed>
-			<Unpressed>btn_midi_clock_sync_syncing.png</Unpressed>
-		</State>
-		<State>
-			<Number>2</Number>
-			<Pressed>btn_midi_clock_sync_synced.png</Pressed>
-			<Unpressed>btn_midi_clock_sync_synced.png</Unpressed>
-		</State>
-		<Pos>30,26</Pos>
-		<Connection>
-			<ConfigKey>[Master],midi_clock_do_sync</ConfigKey>
-			<EmitOnDownPress>true</EmitOnDownPress>
-			<ButtonState>LeftButton</ButtonState>
-			<ConnectValueToWidget>false</ConnectValueToWidget>
-		</Connection>
-		<Connection>
-			<ConfigKey>[Master],midi_clock_sync</ConfigKey>
-			<ConnectValueFromWidget>false</ConnectValueFromWidget>
-		</Connection>
-	</PushButton>
-	<PushButton>
-		<Tooltip>Midi Clock Channel</Tooltip>
-		<Style></Style>
-		<NumberStates>2</NumberStates>
-		<State>
-			<Number>0</Number>
-			<Pressed>btn_hotcue1_1.png</Pressed>
-			<Unpressed>btn_hotcue1_1.png</Unpressed>
-		</State>
-		<State>
-			<Number>1</Number>
-			<Pressed>btn_hotcue1_2.png</Pressed>
-			<Unpressed>btn_hotcue1_2.png</Unpressed>
-		</State>
-		<Pos>0,0</Pos>
-		<Connection>
-			<ConfigKey>[Master],midi_clock_channel</ConfigKey>
-			<EmitOnDownPress>true</EmitOnDownPress>
-			<ButtonState>LeftButton</ButtonState>
-		</Connection>
-	</PushButton>
-
-
 
 					<!--
 					****************************************
@@ -4637,7 +4560,7 @@
 							<Pressed>btn_reverse1_overdown.png</Pressed>
 							<Unpressed>btn_reverse1.png</Unpressed>
 						</State>
-						<Pos>60,26</Pos>
+						<Pos>0,26</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],reverse</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4666,7 +4589,7 @@
 							<Pressed>btn_beatloop1_0125_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_0125_over.png</Unpressed>
 						</State>
-						<Pos>152,0</Pos>
+						<Pos>92,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],beatloop_0.125_toggle</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4698,7 +4621,7 @@
 							<Pressed>btn_beatloop1_0250_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_0250_over.png</Unpressed>
 						</State>
-						<Pos>178,0</Pos>
+						<Pos>118,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],beatloop_0.25_toggle</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4730,7 +4653,7 @@
 							<Pressed>btn_beatloop1_0500_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_0500_over.png</Unpressed>
 						</State>
-						<Pos>204,0</Pos>
+						<Pos>144,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],beatloop_0.5_toggle</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4762,7 +4685,7 @@
 							<Pressed>btn_beatloop1_1_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_1_over.png</Unpressed>
 						</State>
-						<Pos>230,0</Pos>
+						<Pos>170,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],beatloop_1_toggle</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4794,7 +4717,7 @@
 							<Pressed>btn_beatloop1_2_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_2_over.png</Unpressed>
 						</State>
-						<Pos>152,26</Pos>
+						<Pos>92,26</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],beatloop_2_toggle</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4826,7 +4749,7 @@
 							<Pressed>btn_beatloop1_4_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_4_over.png</Unpressed>
 						</State>
-						<Pos>178,26</Pos>
+						<Pos>118,26</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],beatloop_4_toggle</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4858,7 +4781,7 @@
 							<Pressed>btn_beatloop1_8_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_8_over.png</Unpressed>
 						</State>
-						<Pos>204,26</Pos>
+						<Pos>144,26</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],beatloop_8_toggle</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4890,7 +4813,7 @@
 							<Pressed>btn_beatloop1_16_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_16_over.png</Unpressed>
 						</State>
-						<Pos>230,26</Pos>
+						<Pos>170,26</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],beatloop_16_toggle</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4921,7 +4844,7 @@
 							<Pressed>btn_beatloop1_halve_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_halve.png</Unpressed>
 						</State>
-						<Pos>129,0</Pos>
+						<Pos>69,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],loop_halve</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4937,7 +4860,7 @@
 							<Pressed>btn_beatloop1_double_overdown.png</Pressed>
 							<Unpressed>btn_beatloop1_double.png</Unpressed>
 						</State>
-						<Pos>257,0</Pos>
+						<Pos>197,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],loop_double</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4959,7 +4882,7 @@
 							<Pressed>btn_loop_in1_overdown.png</Pressed>
 							<Unpressed>btn_loop_in1.png</Unpressed>
 						</State>
-						<Pos>296,0</Pos>
+						<Pos>236,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],loop_in</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4975,7 +4898,7 @@
 							<Pressed>btn_loop_out1_overdown.png</Pressed>
 							<Unpressed>btn_loop_out1.png</Unpressed>
 						</State>
-						<Pos>322,0</Pos>
+						<Pos>262,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],loop_out</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -4997,7 +4920,7 @@
 							<Pressed>btn_reloop1_overdown.png</Pressed>
 							<Unpressed>btn_reloop1_over.png</Unpressed>
 						</State>
-						<Pos>296,26</Pos>
+						<Pos>236,26</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],reloop_exit</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -5031,7 +4954,7 @@
 							<Pressed>btn_hotcue1_1_overdown.png</Pressed>
 							<Unpressed>btn_hotcue1_1_over.png</Unpressed>
 						</State>
-						<Pos>364,0</Pos>
+						<Pos>304,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],hotcue_1_activate</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -5065,7 +4988,7 @@
 							<Pressed>btn_hotcue1_2_overdown.png</Pressed>
 							<Unpressed>btn_hotcue1_2_over.png</Unpressed>
 						</State>
-						<Pos>390,0</Pos>
+						<Pos>330,0</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],hotcue_2_activate</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -5099,7 +5022,7 @@
 							<Pressed>btn_hotcue1_3_overdown.png</Pressed>
 							<Unpressed>btn_hotcue1_3_over.png</Unpressed>
 						</State>
-						<Pos>364,26</Pos>
+						<Pos>304,26</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],hotcue_3_activate</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>
@@ -5133,7 +5056,7 @@
 							<Pressed>btn_hotcue1_4_overdown.png</Pressed>
 							<Unpressed>btn_hotcue1_4_over.png</Unpressed>
 						</State>
-						<Pos>390,26</Pos>
+						<Pos>330,26</Pos>
 						<Connection>
 							<ConfigKey>[Channel1],hotcue_4_activate</ConfigKey>
 							<EmitOnPressAndRelease>true</EmitOnPressAndRelease>

@@ -38,7 +38,6 @@ class ControlPushButton;
 class EngineVinylSoundEmu;
 class EngineSideChain;
 class SyncWorker;
-class ClockWorker;
 class EngineSync;
 
 class EngineMaster : public EngineObject, public AudioSource {
@@ -162,7 +161,6 @@ class EngineMaster : public EngineObject, public AudioSource {
     CSAMPLE* m_pHead;
 
     EngineWorkerScheduler* m_pWorkerScheduler;
-    ClockWorker* m_pClockWorker;
     EngineSync* m_pMasterSync;
 
     ControlObject* m_pMasterVolume;
