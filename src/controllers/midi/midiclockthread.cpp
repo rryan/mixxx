@@ -3,7 +3,7 @@
   * Midi clock out.
   */
 
-#include "controllers/midiclockthread.h"
+#include "controllers/midi/midiclockthread.h"
 
 #include <QDebug>
 #include <QDateTime>
@@ -11,6 +11,7 @@
 #include "controlobject.h"
 #include "controlobjectthread.h"
 #include "playerinfo.h"
+#include "util/compatibility.h"
 
 #include <algorithm>
 #include <functional>
@@ -20,7 +21,7 @@
 MidiClockThread::MidiClockThread() : QThread() {
 
     // Get COs
-    m_pControlSampleRate=new ControlObjectThread(ControlObject::getControl(ConfigKey("[Master]","samplerate")));
+    m_pControlSampleRate = new ControlObjectThread("[Master]", "samplerate");
 
     // New COs:
     // - midi_clock_out: whether or not the thread runs at all
@@ -28,10 +29,10 @@ MidiClockThread::MidiClockThread() : QThread() {
     // - misi_clock_do_sync: fires when a resync is requested
     // - midi_clock_out: whether or not the thread runs at all
     // - midi_clock_channel: which channel to sync to
-    m_pControlMidiClockOut=new ControlObjectThread(ControlObject::getControl(ConfigKey("[Master]","midi_clock_out")));
-    m_pControlMidiClockSync=new ControlObjectThread(ControlObject::getControl(ConfigKey("[Master]","midi_clock_sync")));
-    m_pControlMidiClockDoSync=new ControlObjectThread(ControlObject::getControl(ConfigKey("[Master]","midi_clock_do_sync")));
-    m_pControlMidiClockChannel=new ControlObjectThread(ControlObject::getControl(ConfigKey("[Master]","midi_clock_channel")));
+    m_pControlMidiClockOut = new ControlObjectThread("[Master]", "midi_clock_out");
+    m_pControlMidiClockSync = new ControlObjectThread("[Master]", "midi_clock_sync");
+    m_pControlMidiClockDoSync = new ControlObjectThread("[Master]", "midi_clock_do_sync");
+    m_pControlMidiClockChannel = new ControlObjectThread("[Master]", "midi_clock_channel");
 
     // Set initially which channel to listen to
     int channel=(int)(m_pControlMidiClockChannel->get());
@@ -78,14 +79,14 @@ void MidiClockThread::setChannel(int channel)
 // Setup all the member variable COTs for a given channel.
 void MidiClockThread::setup(QString channel)
 {
-    m_pControlBPM=new ControlObjectThread(ControlObject::getControl(ConfigKey(channel,"bpm")));
-    m_pControlTrackSamples=new ControlObjectThread(ControlObject::getControl(ConfigKey(channel,"track_samples")));
-    m_pControlPlayPosition=new ControlObjectThread(ControlObject::getControl(ConfigKey(channel,"visual_playposition")));
-    m_pControlBeatPrev=new ControlObjectThread(ControlObject::getControl(ConfigKey(channel,"beat_prev")));
+    m_pControlBPM = new ControlObjectThread(channel, "bpm");
+    m_pControlTrackSamples = new ControlObjectThread(channel, "track_samples");
+    m_pControlPlayPosition = new ControlObjectThread(channel, "visual_playposition");
+    m_pControlBeatPrev = new ControlObjectThread(channel, "beat_prev");
 
     // TODO: Many more things need to trigger a desync. I could not think of all of them, so right now only loops do.
     // Examples include: playback stop/start, scratching, etc. Anything that makes the beats irregular.
-    m_pControlBeatLoop=new ControlObjectThread(ControlObject::getControl(ConfigKey(channel,"loop_enabled")));
+    m_pControlBeatLoop = new ControlObjectThread(channel, "loop_enabled");
 }
 
 // Make all the necessary signal connections for the current channel.
@@ -122,7 +123,7 @@ void MidiClockThread::run() {
     emit(signalMidiClockStart());
 
     // Main loop
-    while(m_stop == 0)
+    while(deref(m_stop) == 0)
     {
         now=getNow();
         m_ticker_mutex.lock();
@@ -167,11 +168,11 @@ void MidiClockThread::slotBeatLoopChanged(double enabled)
 // Logic to connect the enable button to starting / stopping of the thread.
 void MidiClockThread::slotEnable(double enable)
 {
-    if(enable && m_stop)
+    if(enable && deref(m_stop))
     {
         start();
     }
-    else if(!enable && !m_stop)
+    else if(!enable && !deref(m_stop))
     {
         stop();
     }
@@ -203,7 +204,7 @@ void MidiClockThread::slotBPMChanged(double bpm)
 
 // Stop trying to sync every beat.
 void MidiClockThread::desync()
-{ 
+{
     m_pControlMidiClockSync->slotSet(SYNC_STATUS_UNSYNCED);
 }
 
@@ -247,7 +248,7 @@ void MidiClockThread::slotBeatChanged(double beat)
         interruptTimer(); // go_time has almost certainly changed.
 
         // Assuming we didn't fuck up the MIDI instrument, it is now resynced (or will be as soon as the queued ticks are emitted)
-        qDebug() << "Resynced."; 
+        qDebug() << "Resynced.";
         m_pControlMidiClockSync->slotSet(SYNC_STATUS_SYNCED);
         break;
     }
@@ -294,4 +295,3 @@ MidiClockThread::~MidiClockThread() {
     delete m_pControlBeatLoop;
     delete m_pControlMidiClockOut;
 }
-

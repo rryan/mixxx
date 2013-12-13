@@ -12,7 +12,7 @@
 #include "controllers/controllerenumerator.h"
 #include "controllers/controllerpreset.h"
 #include "controllers/controllerpresetinfo.h"
-#include "controllers/midiclockthread.h"
+#include "controllers/midi/midiclockthread.h"
 
 //Forward declaration(s)
 class Controller;
