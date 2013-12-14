@@ -58,7 +58,12 @@ TEST_F(DirectoryDAOTest, addDirTest) {
 
     // check that we don't add the directory again
     success = m_DirectoryDao.addDirectory(testdir);
-    EXPECT_EQ(SQL_ERROR, success);
+    EXPECT_EQ(ALREADY_WATCHING, success);
+
+    // check that we don't add the directory again also if the string ends with
+    // "/".
+    success = m_DirectoryDao.addDirectory(testdir + "/");
+    EXPECT_EQ(ALREADY_WATCHING, success);
 
     // check that we don't add a child directory
     success = m_DirectoryDao.addDirectory(testChild);
@@ -140,8 +145,8 @@ TEST_F(DirectoryDAOTest, relocateDirTest) {
 
     QStringList dirs = directoryDao.getDirs();
     ASSERT_EQ(2, dirs.size());
-    EXPECT_QSTRING_EQ(QString("/Test2"), dirs.at(0));
-    EXPECT_QSTRING_EQ(QString("/new"), dirs.at(1));
+    EXPECT_QSTRING_EQ("/new", dirs.at(0));
+    EXPECT_QSTRING_EQ("/Test2", dirs.at(1));
 }
 
 }  // namespace
