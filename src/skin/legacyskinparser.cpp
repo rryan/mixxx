@@ -281,7 +281,7 @@ QWidget* LegacySkinParser::parseSkin(QString skinPath, QWidget* pParent) {
 
 QWidget* LegacySkinParser::parseNode(QDomElement node) {
     QString nodeName = node.nodeName();
-    qDebug() << "parseNode" << node.nodeName() << pGrandparent;
+    qDebug() << "parseNode" << node.nodeName();
 
     // TODO(rryan) replace with a map to function pointers?
 
