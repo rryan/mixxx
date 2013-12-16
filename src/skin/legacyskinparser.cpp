@@ -435,15 +435,6 @@ QWidget* LegacySkinParser::parseSplitter(QDomElement node) {
             pSplitter->setOrientation(Qt::Horizontal);
         }
     }
-    QString backgroundPath = XmlParse::selectNodeQString(node, "Background");
-    if (backgroundPath.length() > 0) {
-        QPixmap* backgroundPixmap = WPixmapStore::getPixmapNoCache(WWidget::getPath(backgroundPath));
-        QLabel* pBackground = new QLabel(pSplitter);
-        pBackground->setPixmap(*backgroundPixmap);
-        // getPixmapNoCache allocates a new pixmap and QLabel clones it so we need
-        // to free this one.
-        delete backgroundPixmap;
-    }
 
     QDomNode childrenNode = XmlParse::selectNode(node, "Children");
 
