@@ -315,6 +315,9 @@ QWidget* LegacySkinParser::parseNode(QDomElement node) {
             pInnerWidget->setLayout(pInnerLayout);
         }
 
+        // Interpret <Size>, <SizePolicy>, <Style>, etc. tags for the root node.
+        setupWidget(node, pInnerWidget, false);
+
         m_pParent = pInnerWidget;
 
         // Descend children, should only happen for the root node.
@@ -373,8 +376,6 @@ QWidget* LegacySkinParser::parseNode(QDomElement node) {
         return parseWidgetGroup(node);
     } else if (nodeName == "WidgetStack") {
         return parseWidgetStack(node);
-    } else if (nodeName == "Style") {
-        return parseStyle(node);
     } else if (nodeName == "Spinny") {
         return parseSpinny(node);
     } else if (nodeName == "Time") {
@@ -1237,15 +1238,6 @@ const char* LegacySkinParser::safeChannelString(QString channelStr) {
     return safe;
 }
 
-QWidget* LegacySkinParser::parseStyle(QDomElement node) {
-    QString style = node.text();
-    m_pParent->setStyleSheet(style);
-    // This doesn't actually create a widget. If you return m_pParent then you
-    // risk creating loops in the widget hierarchy if someone makes <Style> in
-    // e.g. a WidgetGroup <Children> block.
-    return NULL;
-}
-
 void LegacySkinParser::setupPosition(QDomNode node, QWidget* pWidget) {
     if (!XmlParse::selectNode(node, "Pos").isNull()) {
         QString pos = XmlParse::selectNodeQString(node, "Pos");
@@ -1296,9 +1288,14 @@ void LegacySkinParser::setupSize(QDomNode node, QWidget* pWidget) {
         bool heightOk = false;
         int y = ys.toInt(&heightOk);
 
-        if (widthOk && heightOk) {
+        // -1 means do not set.
+        if (widthOk && heightOk && x >= 0 && y >= 0) {
             pWidget->setMinimumSize(x, y);
-        } else {
+        } else if (widthOk && x >= 0) {
+            pWidget->setMinimumWidth(x);
+        } else if (heightOk && y >= 0) {
+            pWidget->setMinimumHeight(y);
+        } else if (!widthOk && !heightOk) {
             qDebug() << "Could not parse widget MinimumSize:" << size;
         }
     }
@@ -1315,9 +1312,14 @@ void LegacySkinParser::setupSize(QDomNode node, QWidget* pWidget) {
         bool heightOk = false;
         int y = ys.toInt(&heightOk);
 
-        if (widthOk && heightOk) {
+        // -1 means do not set.
+        if (widthOk && heightOk && x >= 0 && y >= 0) {
             pWidget->setMaximumSize(x, y);
-        } else {
+        } else if (widthOk && x >= 0) {
+            pWidget->setMaximumWidth(x);
+        } else if (heightOk && y >= 0) {
+            pWidget->setMaximumHeight(y);
+        } else if (!widthOk && !heightOk) {
             qDebug() << "Could not parse widget MaximumSize:" << size;
         }
     }
@@ -1357,41 +1359,44 @@ void LegacySkinParser::setupSize(QDomNode node, QWidget* pWidget) {
 
         QSizePolicy sizePolicy = pWidget->sizePolicy();
 
+        bool hasHorizontalPolicy = false;
         QSizePolicy::Policy horizontalPolicy;
         if (parseSizePolicy(&xs, &horizontalPolicy)) {
             sizePolicy.setHorizontalPolicy(horizontalPolicy);
-        } else {
-            sizePolicy.setHorizontalPolicy(QSizePolicy::Fixed);
+            hasHorizontalPolicy = true;
         }
 
+        bool hasVerticalPolicy = false;
         QSizePolicy::Policy verticalPolicy;
         if (parseSizePolicy(&ys, &verticalPolicy)) {
             sizePolicy.setVerticalPolicy(verticalPolicy);
-        } else {
-            sizePolicy.setVerticalPolicy(QSizePolicy::Fixed);
+            hasVerticalPolicy = true;
         }
-
-        QSize currentSize = pWidget->size();
-        QSize minimumSize = pWidget->minimumSize();
-        QSize maximumSize = pWidget->maximumSize();
 
         bool widthOk = false;
         int x = xs.toInt(&widthOk);
-        if (!widthOk) {
-            x = currentSize.width();
+        if (widthOk) {
+            if (hasHorizontalPolicy &&
+                    sizePolicy.horizontalPolicy() == QSizePolicy::Fixed) {
+                //qDebug() << "setting width fixed to" << x;
+                pWidget->setFixedWidth(x);
+            } else {
+                //qDebug() << "setting width to" << x;
+                pWidget->setMinimumWidth(x);
+            }
         }
 
         bool heightOk = false;
         int y = ys.toInt(&heightOk);
-        if (!heightOk) {
-            y = currentSize.height();
-        }
-
-        if (sizePolicy.horizontalPolicy() == QSizePolicy::Fixed &&
-            sizePolicy.verticalPolicy() == QSizePolicy::Fixed) {
-            pWidget->setFixedSize(x, y);
-        } else {
-            pWidget->resize(x, y);
+        if (heightOk) {
+            if (hasVerticalPolicy &&
+                    sizePolicy.verticalPolicy() == QSizePolicy::Fixed) {
+                //qDebug() << "setting height fixed to" << x;
+                pWidget->setFixedHeight(y);
+            } else {
+                //qDebug() << "setting height to" << y;
+                pWidget->setMinimumHeight(y);
+            }
         }
 
         if (!hasSizePolicyNode) {
