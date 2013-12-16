@@ -281,7 +281,7 @@ QWidget* LegacySkinParser::parseSkin(QString skinPath, QWidget* pParent) {
 
 QWidget* LegacySkinParser::parseNode(QDomElement node) {
     QString nodeName = node.nodeName();
-    qDebug() << "parseNode" << node.nodeName();
+    //qDebug() << "parseNode" << node.nodeName();
 
     // TODO(rryan) replace with a map to function pointers?
 
@@ -1048,11 +1048,11 @@ QWidget* LegacySkinParser::parseTableView(QDomElement node) {
 
     // set maximum width to prevent growing to qSplitter->sizeHint()
     // Note: sizeHint() may be greater in skins for tiny screens
-    // int width = pTabWidget->minimumWidth();
-    // if (width == 0) {
-    //     width = m_pParent->minimumWidth();
-    // }
-    // pTabWidget->setMaximumWidth(width);
+    int width = pTabWidget->minimumWidth();
+    if (width == 0) {
+        width = m_pParent->minimumWidth();
+    }
+    pTabWidget->setMaximumWidth(width);
 
     QWidget* pLibraryPage = new QWidget(pTabWidget);
 
