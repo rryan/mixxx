@@ -52,6 +52,7 @@ class AubioFeatureExtractor : public FeatureExtractor {
     fvec_t* m_onset_output;
     fvec_t* m_pitch_output;
     cvec_t* m_fft_output;
+    fvec_t* m_fft_norm_output;
 };
 
 class EngineBufferFeatureExtractor : public AubioFeatureExtractor {

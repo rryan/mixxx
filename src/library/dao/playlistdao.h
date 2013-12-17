@@ -44,6 +44,8 @@ class PlaylistDAO : public QObject, public virtual DAO {
     int createPlaylist(const QString& name, const HiddenType type = PLHT_NOT_HIDDEN);
     // Delete a playlist
     void deletePlaylist(const int playlistId);
+    // Delete all tracks in playlist.
+    void clearPlaylist(const int playlistId);
     // Rename a playlist
     void renamePlaylist(const int playlistId, const QString& newName);
     // Lock or unlock a playlist

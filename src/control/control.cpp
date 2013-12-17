@@ -72,8 +72,8 @@ ControlDoublePrivate* ControlDoublePrivate::getControl(
     }
 
     if (pControl == NULL) {
-        qWarning() << "ControlDoublePrivate::getControl returning NULL for ("
-                   << key.group << "," << key.item << ")";
+        // qWarning() << "ControlDoublePrivate::getControl returning NULL for ("
+        //            << key.group << "," << key.item << ")";
     }
 
     return pControl;

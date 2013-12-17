@@ -106,6 +106,8 @@ class AutoDJFeature : public LibraryFeature {
     // Adds a random track from all loaded crates to the auto-DJ queue.
     void slotAddRandomTrack(bool);
 
+    void slotPlayAutoDJCrate(QString crate);
+
   signals:
     void enableAddRandom(bool enabled);
 };

@@ -12,4 +12,5 @@ message Features {
   optional float bpm = 7;
   repeated float pos = 8;
   optional float vumeter = 9;
+  repeated float fft = 10;
 }

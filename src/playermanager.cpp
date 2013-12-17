@@ -60,7 +60,7 @@ PlayerManager::PlayerManager(ConfigObject<ConfigValue>* pConfig,
 
     // A ton of mono outputs for 6.1 3D audio.
     // TODO(rryan): Position them. Read this from a config file?
-    const int numDomeOutputs = 7;
+    const int numDomeOutputs = 8;
     for (int i = 0; i < numDomeOutputs; ++i) {
         m_pSoundManager->registerOutput(AudioOutput(AudioOutput::DOME, 0, i),
                                         m_pEngine);

@@ -106,6 +106,12 @@ void AudioListener::process(const QList<EngineMaster::ChannelInfo*>& channels,
         m_channelGainCache.push_back(0);
     }
 
+    // if (m_group == "[Dome1]") {
+    //     qDebug() << "distance_model" << m_distanceModel.get()
+    //              << "rolloff_factor" << m_pScene->m_rolloffFactor.get()
+    //              << "reference_distance" << m_pScene->m_referenceDistance.get()
+    //              << "position" << m_position.get();
+    // }
     m_gain.setDistanceModel(m_distanceModel.get());
     m_gain.setRolloffFactor(m_pScene->m_rolloffFactor.get());
     m_gain.setReferenceDistance(m_pScene->m_referenceDistance.get());
@@ -122,6 +128,7 @@ void AudioListener::process(const QList<EngineMaster::ChannelInfo*>& channels,
 void AudioListener::loadSettingsFromConfig(ConfigObject<ConfigValue>* pConfig) {
     QString listenerPosition = pConfig->getValueString(
         ConfigKey(m_group, "position"), "500,500,0");
+    qDebug() << m_group << "position:" << listenerPosition;
     QVector3D pos;
     if (parse3DVectorFromString(listenerPosition, &pos)) {
         m_position.set(pos);
@@ -151,6 +158,14 @@ double DistanceBasedGainCalculator::getGain(EngineMaster::ChannelInfo* pChannelI
     qreal distance = distanceVector.length();
     qreal max_distance = 1000;
 
+    // if (pChannel->getGroup() == "[Channel1]") {
+    //     qDebug() << "DistanceBasedGainCalculator" << pChannel->getGroup()
+    //              << "position" << m_position << "distance" << distance
+    //              << "distance_model" << m_distance_model
+    //              << "rolloff_factor" << m_rolloff_factor
+    //              << "reference_distance" << m_reference_distance;
+    // }
+
     double gain = 0.0;
     switch (m_distance_model) {
         case AL_INVERSE_DISTANCE:
@@ -171,12 +186,12 @@ double DistanceBasedGainCalculator::getGain(EngineMaster::ChannelInfo* pChannelI
                 return 1.0;
             }
             gain = pow(distance / m_reference_distance, -m_rolloff_factor);
-            if (pChannel->getGroup() == "[Channel1]") {
-                qDebug() << "AL_EXPONENT_DISTANCE" << gain
-                         << "distance" << distance
-                         << "reference_distance" << m_reference_distance
-                         << "rolloff_factor" << m_rolloff_factor;
-            }
+            // if (pChannel->getGroup() == "[Channel1]") {
+            //     qDebug() << "AL_EXPONENT_DISTANCE" << gain
+            //              << "distance" << distance
+            //              << "reference_distance" << m_reference_distance
+            //              << "rolloff_factor" << m_rolloff_factor;
+            // }
             return gain;
         case AL_NONE:
             return 1.0;
@@ -193,10 +208,10 @@ AudioScene::AudioScene(ConfigObject<ConfigValue>* pConfig, int sampleRate)
           m_referenceDistance(ConfigKey(AUDIO_SCENE, "reference_distance")),
           m_distanceModel(ConfigKey(AUDIO_SCENE, "distance_model")),
           m_iSampleRate(sampleRate) {
-    const int num_channels = 6;
+    const int num_channels = 8;
     for (int i = 0; i < num_channels; ++i) {
         QString group = QString("[Dome%1]").arg(i+1);
-        m_listeners.insert(group, new AudioListener(group));
+        m_listeners.insert(group, new AudioListener(group, this));
     }
 
     initialize();
@@ -256,6 +271,7 @@ void AudioScene::onCallbackStart() {
     for (QMap<QString, AudioListener*>::const_iterator it = m_listeners.begin();
          it != m_listeners.end(); ++it) {
         SampleUtil::applyGain(it.value()->m_pBuffer, 0, MAX_BUFFER_LEN);
+        SampleUtil::applyGain(it.value()->m_pStereoBuffer, 0, MAX_BUFFER_LEN);
     }
 }
 
@@ -287,10 +303,9 @@ void AudioScene::process(const QList<EngineMaster::ChannelInfo*>& channels,
                          const int iNumFrames) {
     ScopedTimer t("AudioScene::process");
 
-
     for (QMap<QString, AudioListener*>::const_iterator it = m_listeners.begin();
          it != m_listeners.end(); ++it) {
-        it.value()->process();
+        it.value()->process(channels, channelBitvector, maxChannels, iNumFrames);
     }
 }
 

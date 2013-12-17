@@ -682,3 +682,13 @@ int PlaylistDAO::tracksInPlaylist(const int playlistId) {
     }
     return count;
 }
+
+void PlaylistDAO::clearPlaylist(const int playlistId) {
+    QSqlQuery query(m_database);
+    query.prepare("DELETE FROM PlaylistTracks "
+                  "WHERE playlist_id = :playlist_id");
+    query.bindValue(":playlist_id", playlistId);
+    if (!query.exec()) {
+        LOG_FAILED_QUERY(query);
+    }
+}

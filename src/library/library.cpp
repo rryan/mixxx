@@ -58,7 +58,12 @@ Library::Library(QObject* parent, ConfigObject<ConfigValue>* pConfig, bool first
     }
 #endif
 
-    addFeature(new AutoDJFeature(this, pConfig, m_pTrackCollection));
+    AutoDJFeature* pAutoDJFeature = new AutoDJFeature(
+        this, pConfig, m_pTrackCollection);
+    connect(this, SIGNAL(playAutoDJCrate(QString)),
+            pAutoDJFeature, SLOT(slotPlayAutoDJCrate(QString)));
+    addFeature(pAutoDJFeature);
+
     m_pPlaylistFeature = new PlaylistFeature(this, m_pTrackCollection, m_pConfig);
     addFeature(m_pPlaylistFeature);
     m_pCrateFeature = new CrateFeature(this, m_pTrackCollection, m_pConfig);

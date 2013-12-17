@@ -430,6 +430,10 @@ MixxxApp::MixxxApp(QApplication *pApp, const CmdlineArgs& args)
     //  but do not set up controllers until the end of the application startup
     qDebug() << "Creating ControllerManager";
     m_pControllerManager = new ControllerManager(m_pConfig);
+    connect(m_pControllerManager, SIGNAL(loadLocationToPlayer(QString, QString)),
+            m_pLibrary, SLOT(slotLoadLocationToPlayer(QString, QString)));
+    connect(m_pControllerManager, SIGNAL(playAutoDJCrate(QString)),
+            m_pLibrary, SIGNAL(playAutoDJCrate(QString)));
 
     WaveformWidgetFactory::create();
     WaveformWidgetFactory::instance()->setConfig(m_pConfig);

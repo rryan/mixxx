@@ -311,7 +311,12 @@ int SoundManager::setupDevices() {
             isOutput = true;
             // following keeps us from asking for a channel buffer EngineMaster
             // doesn't have -- bkgood
-            const CSAMPLE* pBuffer = m_registeredSources.value(out)->buffer(out);
+            const AudioSource* pSource = m_registeredSources.value(out);
+            if (pSource == NULL) {
+                qDebug() << "AudioSource returned null for" << out.getString();
+                continue;
+            }
+            const CSAMPLE* pBuffer = pSource->buffer(out);
             if (pBuffer == NULL) {
                 qDebug() << "AudioSource returned null for" << out.getString();
                 continue;

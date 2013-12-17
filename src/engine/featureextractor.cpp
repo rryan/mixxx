@@ -25,6 +25,7 @@ void EngineBufferFeatureExtractor::process(CSAMPLE* pBuffer, const int iNumChann
                                            const int iFramesPerBuffer) {
     AubioFeatureExtractor::process(pBuffer, iNumChannels, iFramesPerBuffer);
 
+
     FeatureCollector* pCollector = FeatureCollector::instance();
     if (pCollector) {
         mixxx::Features features;
@@ -37,6 +38,8 @@ void EngineBufferFeatureExtractor::process(CSAMPLE* pBuffer, const int iNumChann
         }
         pCollector->write(features);
     }
+
+
 }
 
 AubioFeatureExtractor::AubioFeatureExtractor(const char* pGroup, int iSampleRate)
@@ -107,6 +110,7 @@ void AubioFeatureExtractor::init(int iSampleRate) {
 
     m_aubio_fft = new_aubio_fft(AUBIO_FFT_WINSIZE);
     m_fft_output = new_cvec(AUBIO_FFT_WINSIZE/2);
+    m_fft_norm_output = new_fvec(AUBIO_FFT_WINSIZE/2);
 
     char* tempo_method = "default";
     m_aubio_tempo = new_aubio_tempo(tempo_method,
@@ -176,6 +180,10 @@ void AubioFeatureExtractor::processBuffer() {
             if (bpm > 0) {
                 features.set_bpm(bpm);
             }
+        }
+        aubio_fft_get_norm(m_fft_norm_output, m_fft_output);
+        for (int i = 0; i < AUBIO_FFT_WINSIZE; ++i) {
+            features.add_fft(fvec_read_sample(m_fft_norm_output, i));
         }
         features.set_pitch(pitch);
         pCollector->write(features);

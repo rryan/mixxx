@@ -234,4 +234,3 @@ class MixxxApp : public QMainWindow {
 };
 
 #endif
-

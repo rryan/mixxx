@@ -36,6 +36,8 @@ class FeatureCollector : public QThread {
     void maybeWriteOSCFloat(const QString& group, const QString& feature,
                             float time, float value, QHash<QString, float>* cache,
                             bool no_cache=false);
+    void writeOSCFloatValues(QString group, QString feature,
+                             float time, const QList<float>& values);
 
     static FeatureCollector* s_pInstance;
 

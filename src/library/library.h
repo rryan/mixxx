@@ -67,6 +67,7 @@ public:
     void slotCreateCrate();
     void onSkinLoadFinished();
 
+
   signals:
     void showTrackModel(QAbstractItemModel* model);
     void switchToView(const QString& view);
@@ -76,6 +77,7 @@ public:
     void search(const QString& text);
     void searchCleared();
     void searchStarting();
+    void playAutoDJCrate(QString crate);
 
   private:
     ConfigObject<ConfigValue>* m_pConfig;

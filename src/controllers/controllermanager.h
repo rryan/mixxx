@@ -43,6 +43,8 @@ class ControllerManager : public QObject {
     void requestSetUpDevices();
     void requestShutdown();
     void requestSave(bool onlyActive);
+    void loadLocationToPlayer(QString location, QString group);
+    void playAutoDJCrate(QString crate);
 
   public slots:
     void updateControllerList();

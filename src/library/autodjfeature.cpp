@@ -344,4 +344,23 @@ void AutoDJFeature::onRightClickChild(const QPoint& globalPos,
     }
 }
 
+void AutoDJFeature::slotPlayAutoDJCrate(QString crate) {
+    PlaylistDAO& playlistDao = m_pTrackCollection->getPlaylistDAO();
+
+    if (m_pAutoDJView) {
+
+        m_pAutoDJView->toggleAutoDJButton(false);
+    }
+
+
+    int iAutoDJPlaylistId = playlistDao.getPlaylistIdFromName(AUTODJ_TABLE);
+    if (iAutoDJPlaylistId < 0) {
+        return;
+    }
+    playlistDao.clearPlaylist(iAutoDJPlaylistId);
+
+    // Display the newly-added track.
+    m_pAutoDJView->onShow();
+}
+
 #endif // __AUTODJCRATES__

@@ -92,6 +92,10 @@ ControllerManager::ControllerManager(ConfigObject<ConfigValue>* pConfig)
 #endif
 
     m_pOscServer = new OscServer(this, 2448);
+    connect(m_pOscServer, SIGNAL(loadLocationToPlayer(QString, QString)),
+            this, SIGNAL(loadLocationToPlayer(QString, QString)));
+    connect(m_pOscServer, SIGNAL(playAutoDJCrate(QString)),
+            this, SIGNAL(playAutoDJCrate(QString)));
 
     m_pollTimer.setInterval(kPollIntervalMillis);
     connect(&m_pollTimer, SIGNAL(timeout()),

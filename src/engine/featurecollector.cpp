@@ -68,6 +68,12 @@ void FeatureCollector::maybeWriteOSCBool(const QString& group,
         qDebug() << "OSC error " << lo_address_errno(m_osc_destination)
                  << ": " << lo_address_errstr(m_osc_destination);
     }
+    // if (lo_send(m_osc_destination_secondary, location.toAscii().constData(),
+    //             (value ? "fT" : "fF"), time) < 0) {
+    //     qDebug() << "OSC error " << lo_address_errno(m_osc_destination)
+    //              << ": " << lo_address_errstr(m_osc_destination);
+    // }
+
     if (it != pCache->end()) {
         it.value() = value;
     } else {
@@ -104,6 +110,30 @@ void FeatureCollector::maybeWriteOSCFloat(const QString& group,
     } else {
         pCache->insert(group, value);
     }
+}
+
+void FeatureCollector::writeOSCFloatValues(QString group,
+                                           QString feature,
+                                           float time,
+                                           const QList<float>& values) {
+    // QString location = locationForFeature(group, feature);
+    // QString type = "f";
+    // lo_bundle bundle;
+
+    // for (int i = 0; i < values.size(); ++i) {
+    //     type += "f";
+    // }
+
+
+
+
+    // if (lo_send(m_osc_destination, location.toAscii().constData(),
+    //             type.toAscii().constData(), time,
+    //             (value ? "fT" : "fF"), time) < 0) {
+    //     qDebug() << "OSC error " << lo_address_errno(m_osc_destination)
+    //              << ": " << lo_address_errstr(m_osc_destination);
+    // }
+
 }
 
 void FeatureCollector::process() {
@@ -150,6 +180,14 @@ void FeatureCollector::process() {
             maybeWriteOSCFloat(group, "vumeter", feature.time(), feature.vumeter(),
                                &m_vumeterCache);
         }
+
+        // if (feature.has_fft()) {
+        //     QList<float> fft;
+        //     for (int i = 0; i < feature.fft_size(); ++i) {
+        //         fft.push_back(feature.fft(i)));
+        //     }
+        //     writeOSCFloatValues(group, "fft", feature.time(), fft);
+        // }
 
         if (feature.pos_size() == 3) {
             maybeWriteOSCFloat(group, "pos_x", feature.time(), feature.pos(0), &m_posXCache, true);
