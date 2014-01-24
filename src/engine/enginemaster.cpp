@@ -35,6 +35,7 @@
 #include "engine/sync/enginesync.h"
 #include "sampleutil.h"
 #include "util/timer.h"
+#include "util/trace.h"
 #include "playermanager.h"
 #include "engine/channelmixer.h"
 
@@ -48,7 +49,12 @@ EngineMaster::EngineMaster(ConfigObject<ConfigValue>* _config,
                            bool bRampingGain)
         : m_bRampingGain(bRampingGain),
           m_headphoneMasterGainOld(0.0),
-          m_headphoneVolumeOld(1.0) {
+          m_headphoneVolumeOld(1.0),
+          m_bMasterOutputConnected(false),
+          m_bHeadphoneOutputConnected(false) {
+    m_bBusOutputConnected[0] = false;
+    m_bBusOutputConnected[1] = false;
+    m_bBusOutputConnected[2] = false;
     m_pWorkerScheduler = new EngineWorkerScheduler(this);
     m_pWorkerScheduler->start();
 
@@ -279,7 +285,7 @@ void EngineMaster::process(const int iBufferSize) {
         QThread::currentThread()->setObjectName("Engine");
         haveSetName = true;
     }
-    ScopedTimer t("EngineMaster::process");
+    Trace t("EngineMaster::process");
 
     int iSampleRate = static_cast<int>(m_pMasterSampleRate->get());
     // Update internal master sync.
@@ -291,7 +297,6 @@ void EngineMaster::process(const int iBufferSize) {
     unsigned int headphoneOutput = 0;
 
     // Prepare each channel for output
-    Timer timer("EngineMaster::process channels");
     processChannels(busChannelConnectionFlags, &headphoneOutput, iBufferSize);
 
     // Compute headphone mix
@@ -301,8 +306,6 @@ void EngineMaster::process(const int iBufferSize) {
     CSAMPLE cmaster_gain = 0.5*(cf_val+1.);
     // qDebug() << "head val " << cf_val << ", head " << chead_gain
     //          << ", master " << cmaster_gain;
-
-    timer.elapsed(true);
 
     // Mix all the enabled headphone channels together.
     m_headphoneGain.setGain(chead_gain);
@@ -493,5 +496,43 @@ const CSAMPLE* EngineMaster::buffer(AudioOutput output) const {
         break;
     default:
         return NULL;
+    }
+}
+
+void EngineMaster::onOutputConnected(AudioOutput output) {
+    switch (output.getType()) {
+        case AudioOutput::MASTER:
+            m_bMasterOutputConnected = true;
+            break;
+        case AudioOutput::HEADPHONES:
+            m_bHeadphoneOutputConnected = true;
+            break;
+        case AudioOutput::BUS:
+            m_bBusOutputConnected[output.getIndex()] = true;
+            break;
+        case AudioOutput::DECK:
+            // We don't track enabled decks.
+            break;
+        default:
+            break;
+    }
+}
+
+void EngineMaster::onOutputDisconnected(AudioOutput output) {
+    switch (output.getType()) {
+        case AudioOutput::MASTER:
+            m_bMasterOutputConnected = false;
+            break;
+        case AudioOutput::HEADPHONES:
+            m_bHeadphoneOutputConnected = false;
+            break;
+        case AudioOutput::BUS:
+            m_bBusOutputConnected[output.getIndex()] = false;
+            break;
+        case AudioOutput::DECK:
+            // We don't track enabled decks.
+            break;
+        default:
+            break;
     }
 }

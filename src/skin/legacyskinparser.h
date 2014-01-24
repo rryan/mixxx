@@ -19,6 +19,8 @@ class MixxxKeyboard;
 class PlayerManager;
 class ControllerManager;
 class SkinContext;
+class WLabel;
+class ControlObject;
 
 class LegacySkinParser : public QObject, public SkinParser {
     Q_OBJECT
@@ -50,34 +52,41 @@ class LegacySkinParser : public QObject, public SkinParser {
     QDomElement loadTemplate(const QString& path);
 
     // Parsers for each node
-    QWidget* parseWidgetGroup(QDomElement node);
-    QWidget* parseWidgetStack(QDomElement node);
-    QWidget* parseBackground(QDomElement node, QWidget* pOuterWidget, QWidget* pInnerWidget);
-    QWidget* parsePushButton(QDomElement node);
-    QWidget* parseSliderComposed(QDomElement node);
-    QWidget* parseVisual(QDomElement node);
-    QWidget* parseOverview(QDomElement node);
+
+    // Most widgets can use parseStandardWidget.
+    template <class T>
+    QWidget* parseStandardWidget(QDomElement element, bool timerListener=false);
+
+    // Label widgets.
+    template <class T>
+    QWidget* parseLabelWidget(QDomElement element);
+    void setupLabelWidget(QDomElement element, WLabel* pLabel);
     QWidget* parseText(QDomElement node);
-    QWidget* parseTime(QDomElement node);
     QWidget* parseTrackProperty(QDomElement node);
-    QWidget* parseVuMeter(QDomElement node);
-    QWidget* parseStatusLight(QDomElement node);
-    QWidget* parseDisplay(QDomElement node);
     QWidget* parseNumberRate(QDomElement node);
     QWidget* parseNumberPos(QDomElement node);
-    QWidget* parseNumberBpm(QDomElement node);
-    QWidget* parseNumber(QDomElement node);
-    QWidget* parseLabel(QDomElement node);
-    QWidget* parseKnob(QDomElement node);
-    QWidget* parseKnobComposed(QDomElement node);
-    QWidget* parseTableView(QDomElement node);
-    QWidget* parseSpinny(QDomElement node);
-    QWidget* parseSearchBox(QDomElement node);
+
+    // Legacy pre-1.12.0 skin support.
+    QWidget* parseBackground(QDomElement node, QWidget* pOuterWidget, QWidget* pInnerWidget);
+
+    // Grouping / layout.
+    QWidget* parseWidgetGroup(QDomElement node);
+    QWidget* parseWidgetStack(QDomElement node);
     QWidget* parseSplitter(QDomElement node);
+
+    // Visual widgets.
+    QWidget* parseVisual(QDomElement node);
+    QWidget* parseOverview(QDomElement node);
+    QWidget* parseSpinny(QDomElement node);
+
+    // Library widgets.
+    QWidget* parseTableView(QDomElement node);
+    QWidget* parseSearchBox(QDomElement node);
     QWidget* parseLibrary(QDomElement node);
     QWidget* parseLibrarySidebar(QDomElement node);
-    QWidget* parseKey(QDomElement node);
+
     QWidget* parseBattery(QDomElement node);
+    // Renders a template.
     QList<QWidget*> parseTemplate(QDomElement node);
 
     void setupPosition(QDomNode node, QWidget* pWidget);
@@ -92,6 +101,9 @@ class LegacySkinParser : public QObject, public SkinParser {
 
     QString lookupNodeGroup(QDomElement node);
     static const char* safeChannelString(QString channelStr);
+    ControlObject* controlFromConfigNode(QDomElement element,
+                                         const QString& nodeName,
+                                         bool* created);
 
     ConfigObject<ConfigValue>* m_pConfig;
     MixxxKeyboard* m_pKeyboard;
