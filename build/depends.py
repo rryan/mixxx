@@ -525,6 +525,7 @@ class MixxxCore(Feature):
                    "controlpotmeter.cpp",
                    "controllinpotmeter.cpp",
                    "controlpushbutton.cpp",
+                   "controlindicator.cpp",
                    "controlttrotary.cpp",
 
                    "preferences/dlgpreferencepage.cpp",
@@ -591,7 +592,7 @@ class MixxxCore(Feature):
                    "engine/cuecontrol.cpp",
                    "engine/quantizecontrol.cpp",
                    "engine/clockcontrol.cpp",
-                   "engine/readaheadmanager.cpp",
+                   "engine/readaheadmanager.cpp", 
                    "cachingreader.cpp",
                    "cachingreaderworker.cpp",
 
@@ -654,6 +655,8 @@ class MixxxCore(Feature):
                    "widget/wtime.cpp",
                    "widget/wkey.cpp",
                    "widget/wbattery.cpp",
+                   "widget/wcombobox.cpp",
+                   "widget/wsplitter.cpp",
 
                    "mathstuff.cpp",
 
@@ -762,6 +765,7 @@ class MixxxCore(Feature):
                    "waveform/waveformfactory.cpp",
                    "waveform/waveformwidgetfactory.cpp",
                    "waveform/vsyncthread.cpp",
+                   "waveform/guitick.cpp",
                    "waveform/renderers/waveformwidgetrenderer.cpp",
                    "waveform/renderers/waveformrendererabstract.cpp",
                    "waveform/renderers/waveformrenderbackground.cpp",
@@ -843,6 +847,7 @@ class MixxxCore(Feature):
                    "util/sleepableqthread.cpp",
                    "util/statsmanager.cpp",
                    "util/stat.cpp",
+                   "util/time.cpp",
                    "util/timer.cpp",
                    "util/performancetimer.cpp",
                    "util/version.cpp",
@@ -896,7 +901,7 @@ class MixxxCore(Feature):
         map(Qt.uic(build), ui_files)
 
         if build.platform_is_windows:
-            sources.append("util/battery/batterywin.cpp")
+            sources.append("util/battery/batterywindows.cpp")
             # Add Windows resource file with icons and such
             # force manifest file creation, apparently not necessary for all
             # people but necessary for this committers handicapped windows
@@ -904,9 +909,9 @@ class MixxxCore(Feature):
             if build.toolchain_is_msvs:
                 build.env.Append(LINKFLAGS="/MANIFEST")
         elif build.platform_is_osx:
-            #Need extra room for code signing (App Store)
-            build.env.Append(LINKFLAGS="-headerpad=ffff")
-            build.env.Append(LINKFLAGS="-headerpad_max_install_names")
+            # Need extra room for code signing (App Store)
+            build.env.Append(LINKFLAGS="-Wl,-headerpad,ffff")
+            build.env.Append(LINKFLAGS="-Wl,-headerpad_max_install_names")
             sources.append("util/mac.cpp")
             sources.append("util/battery/batterymac.cpp")
         elif build.platform_is_linux:
@@ -1020,21 +1025,15 @@ class MixxxCore(Feature):
                 build.platform_is_bsd:
             mixxx_files = [
                 ('SETTINGS_PATH', '.mixxx/'),
-                ('BPMSCHEME_FILE', 'mixxxbpmscheme.xml'),
-                ('SETTINGS_FILE', 'mixxx.cfg'),
-                ('TRACK_FILE', 'mixxxtrack.xml')]
+                ('SETTINGS_FILE', 'mixxx.cfg')]
         elif build.platform_is_osx:
             mixxx_files = [
                 ('SETTINGS_PATH', 'Library/Application Support/Mixxx/'),
-                ('BPMSCHEME_FILE', 'mixxxbpmscheme.xml'),
-                ('SETTINGS_FILE', 'mixxx.cfg'),
-                ('TRACK_FILE', 'mixxxtrack.xml')]
+                ('SETTINGS_FILE', 'mixxx.cfg')]
         elif build.platform_is_windows:
             mixxx_files = [
                 ('SETTINGS_PATH', 'Local Settings/Application Data/Mixxx/'),
-                ('BPMSCHEME_FILE', 'mixxxbpmscheme.xml'),
-                ('SETTINGS_FILE', 'mixxx.cfg'),
-                ('TRACK_FILE', 'mixxxtrack.xml')]
+                ('SETTINGS_FILE', 'mixxx.cfg')]
         # Escape the filenames so they don't end up getting screwed up in the
         # shell.
         mixxx_files = [(k, r'\"%s\"' % v) for k, v in mixxx_files]

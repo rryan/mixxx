@@ -13,7 +13,7 @@ const QString BatteryLinux::s_sCurrentRateKeyword = "present rate";
 
 BatteryLinux::BatteryLinux(QObject* pParent, const QString& infoFile,
                            const QString& stateFile)
-        : Battery(parent),
+        : Battery(pParent),
           m_sInfoFile(infoFile),
           m_sStateFile(stateFile) {
 }
@@ -36,7 +36,7 @@ void BatteryLinux::read() {
                                     maximumCapacity, currentRate);
 }
 
-Battery::ChargingState BatteryLinux::readChargingState() {
+Battery::ChargingState BatteryLinux::readChargingState() const {
     QFile qfFile(m_sStateFile);
     if(!qfFile.open(QFile::ReadOnly)) {
         qDebug() << "Error opening " << m_sStateFile;
