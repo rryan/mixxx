@@ -14,10 +14,10 @@
 #include <QFileSystemWatcher>
 
 #include "configobject.h"
-#include "util/alphabetafilter.h"
 #include "controllers/softtakeover.h"
 #include "controllers/controllerpreset.h"
 #include "qtscript-bytearray/bytearrayclass.h"
+#include "engine/scratchcontroller.h"
 
 // Forward declaration(s)
 class Controller;
@@ -165,9 +165,6 @@ class ControllerEngine : public QObject {
     // Scratching functions & variables
     void scratchProcess(int timerId);
 
-    bool isDeckPlaying(const QString& group);
-    double getDeckRate(const QString& group);
-
     Controller* m_pController;
     bool m_bDebug;
     bool m_bPopups;
@@ -185,11 +182,7 @@ class ControllerEngine : public QObject {
     ByteArrayClass* m_pBaClass;
     // 256 (default) available virtual decks is enough I would think.
     //  If more are needed at run-time, these will move to the heap automatically
-    QVarLengthArray<int> m_intervalAccumulator;
-    QVarLengthArray<uint> m_lastMovement;
-    QVarLengthArray<double> m_dx, m_rampTo, m_rampFactor;
-    QVarLengthArray<bool> m_ramp, m_brakeActive;
-    QVarLengthArray<AlphaBetaFilter*> m_scratchFilters;
+    QVarLengthArray<ScratchController*> m_scratchControllers;
     QHash<int, int> m_scratchTimers;
     mutable QHash<QString, QScriptValue> m_scriptValueCache;
     // Filesystem watcher for script auto-reload

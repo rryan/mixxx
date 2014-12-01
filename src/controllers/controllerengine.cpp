@@ -21,12 +21,15 @@
 // (closure compatible version of connectControl)
 #include <QUuid>
 
-const int kDecks = 16;
+const int kDecks = 4;
 
 // Use 1ms for the Alpha-Beta dt. We're assuming the OS actually gives us a 1ms
 // timer.
 const int kScratchTimerMs = 1;
 const double kAlphaBetaDt = kScratchTimerMs / 1000.0;
+// Default filter values were concluded experimentally for time code vinyl.
+const double kDefaultAlpha = 1.0 / 512.0;
+const double kDefaultBeta = 1.0 / 512.0 / 1024.0;
 
 ControllerEngine::ControllerEngine(Controller* controller)
         : m_pEngine(NULL),
@@ -38,29 +41,20 @@ ControllerEngine::ControllerEngine(Controller* controller)
     qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
 
     // Pre-allocate arrays for average number of virtual decks
-    m_intervalAccumulator.resize(kDecks);
-    m_lastMovement.resize(kDecks);
-    m_dx.resize(kDecks);
-    m_rampTo.resize(kDecks);
-    m_ramp.resize(kDecks);
-    m_scratchFilters.resize(kDecks);
-    m_rampFactor.resize(kDecks);
-    m_brakeActive.resize(kDecks);
-    // Initialize arrays used for testing and pointers
+    m_scratchControllers.resize(kDecks);
     for (int i = 0; i < kDecks; ++i) {
-        m_dx[i] = 0.0;
-        m_scratchFilters[i] = new AlphaBetaFilter();
-        m_ramp[i] = false;
+        QString group = PlayerManager::groupForDeck(0);
+        m_scratchControllers[i] = new ScratchController(group);
     }
 
     initializeScriptEngine();
 }
 
 ControllerEngine::~ControllerEngine() {
-    // Clean up
+    // Clean up scratch processors.
     for (int i = 0; i < kDecks; ++i) {
-        delete m_scratchFilters[i];
-        m_scratchFilters[i] = NULL;
+        delete m_scratchControllers[i];
+        m_scratchControllers[i] = NULL;
     }
 
     // Delete the script engine, first clearing the pointer so that
@@ -1166,37 +1160,6 @@ void ControllerEngine::timerEvent(QTimerEvent *event) {
     }
 }
 
-double ControllerEngine::getDeckRate(const QString& group) {
-    double rate = 0.0;
-    ControlObjectThread* pRate = getControlObjectThread(group, "rate");
-    if (pRate != NULL) {
-        rate = pRate->get();
-    }
-    ControlObjectThread* pRateDir = getControlObjectThread(group, "rate_dir");
-    if (pRateDir != NULL) {
-        rate *= pRateDir->get();
-    }
-    ControlObjectThread* pRateRange = getControlObjectThread(group, "rateRange");
-    if (pRateRange != NULL) {
-        rate *= pRateRange->get();
-    }
-
-    // Add 1 since the deck is playing
-    rate += 1.0;
-
-    // See if we're in reverse play
-    ControlObjectThread* pReverse = getControlObjectThread(group, "reverse");
-    if (pReverse != NULL && pReverse->get() == 1) {
-        rate = -rate;
-    }
-    return rate;
-}
-
-bool ControllerEngine::isDeckPlaying(const QString& group) {
-    ControlObjectThread* pPlay = getControlObjectThread(group, "play");
-    return pPlay->get() > 0.0;
-}
-
 /* -------- ------------------------------------------------------
     Purpose: Enables scratching for relative controls
     Input:   Virtual deck to scratch,
@@ -1208,9 +1171,14 @@ bool ControllerEngine::isDeckPlaying(const QString& group) {
     -------- ------------------------------------------------------ */
 void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
                                      double alpha, double beta, bool ramp) {
+    ScratchController* pScratchController = m_scratchControllers[deck];
+    if (pScratchController == NULL) {
+        qWarning() << "NULL ScratchController for deck" << deck;
+        return;
+    }
 
     // If we're already scratching this deck, override that with this request
-    if (m_dx[deck]) {
+    if (pScratchController->enabled()) {
         //qDebug() << "Already scratching deck" << deck << ". Overriding.";
         int timerId = m_scratchTimers.key(deck);
         killTimer(timerId);
@@ -1226,56 +1194,20 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
         return;
     }
 
-    m_dx[deck] = 1.0 / intervalsPerSecond;
-    m_intervalAccumulator[deck] = 0.0;
-    m_ramp[deck] = false;
-    m_rampFactor[deck] = 0.001;
-    m_brakeActive[deck] = false;
+    const double tickScaleFactor = 1.0 / intervalsPerSecond;
 
-    // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
-
-    // Ramp velocity, default to stopped.
-    double initVelocity = 0.0;
-
-    ControlObjectThread* pScratch2Enable =
-            getControlObjectThread(group, "scratch2_enable");
-
-    // If ramping is desired, figure out the deck's current speed
-    if (ramp) {
-        // See if the deck is already being scratched
-        if (pScratch2Enable != NULL && pScratch2Enable->get() == 1) {
-            // If so, set the filter's initial velocity to the scratch speed
-            ControlObjectThread* pScratch2 =
-                    getControlObjectThread(group, "scratch2");
-            if (pScratch2 != NULL) {
-                initVelocity = pScratch2->get();
-            }
-        } else if (isDeckPlaying(group)) {
-            // If the deck is playing, set the filter's initial velocity to the
-            // playback speed
-            initVelocity = getDeckRate(group);
-        }
+    // If alpha or beta are not provided then use the defaults.
+    if (alpha == 0.0 || beta == 0.0) {
+        alpha = kDefaultAlpha;
+        beta = kDefaultBeta;
     }
-
-    // Initialize scratch filter
-    if (alpha && beta) {
-        m_scratchFilters[deck]->init(kAlphaBetaDt, initVelocity, alpha, beta);
-    } else {
-        // Use filter's defaults if not specified
-        m_scratchFilters[deck]->init(kAlphaBetaDt, initVelocity);
-    }
+    pScratchController->enable(kAlphaBetaDt, tickScaleFactor, alpha, beta, ramp);
 
     // 1ms is shortest possible, OS dependent
     int timerId = startTimer(kScratchTimerMs);
 
     // Associate this virtual deck with this timer for later processing
     m_scratchTimers[timerId] = deck;
-
-    // Set scratch2_enable
-    if (pScratch2Enable != NULL) {
-        pScratch2Enable->slotSet(1);
-    }
 }
 
 /* -------- ------------------------------------------------------
@@ -1284,8 +1216,12 @@ void ControllerEngine::scratchEnable(int deck, int intervalsPerRev, double rpm,
     Output:  -
     -------- ------------------------------------------------------ */
 void ControllerEngine::scratchTick(int deck, int interval) {
-    m_lastMovement[deck] = Time::elapsedMsecs();
-    m_intervalAccumulator[deck] += interval;
+    ScratchController* pScratchController = m_scratchControllers[deck];
+    if (pScratchController == NULL) {
+        qWarning() << "NULL ScratchController for deck" << deck;
+        return;
+    }
+    pScratchController->tick(interval);
 }
 
 /* -------- ------------------------------------------------------
@@ -1295,76 +1231,19 @@ void ControllerEngine::scratchTick(int deck, int interval) {
     -------- ------------------------------------------------------ */
 void ControllerEngine::scratchProcess(int timerId) {
     int deck = m_scratchTimers[timerId];
-    // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
-    AlphaBetaFilter* filter = m_scratchFilters[deck];
-    if (!filter) {
-        qWarning() << "Scratch filter pointer is null on deck" << deck;
+
+    ScratchController* pScratchController = m_scratchControllers[deck];
+    if (pScratchController == NULL) {
+        qWarning() << "NULL ScratchController for deck" << deck;
         return;
     }
 
-    const double oldRate = filter->predictedVelocity();
+    pScratchController->process();
 
-    // Give the filter a data point:
-
-    // If we're ramping to end scratching and the wheel hasn't been turned very
-    // recently (spinback after lift-off,) feed fixed data
-    if (m_ramp[deck] &&
-        ((Time::elapsedMsecs() - m_lastMovement[deck]) > 0)) {
-        filter->observation(m_rampTo[deck] * m_rampFactor[deck]);
-        // Once this code path is run, latch so it always runs until reset
-        //m_lastMovement[deck] += 1000;
-    } else {
-        // This will (and should) be 0 if no net ticks have been accumulated
-        // (i.e. the wheel is stopped)
-        filter->observation(m_dx[deck] * m_intervalAccumulator[deck]);
-    }
-
-    const double newRate = filter->predictedVelocity();
-
-    // Actually do the scratching
-    ControlObjectThread* pScratch2 = getControlObjectThread(group, "scratch2");
-    if (pScratch2 == NULL) {
-        return; // abort and maybe it'll work on the next pass
-    }
-    pScratch2->slotSet(newRate);
-
-    // Reset accumulator
-    m_intervalAccumulator[deck] = 0;
-
-    // If we're ramping and the current rate is really close to the rampTo value
-    // or we're in brake mode and have crossed over the zero value, end
-    // scratching
-    if ((m_ramp[deck] && fabs(m_rampTo[deck] - newRate) <= 0.00001) ||
-        (m_brakeActive[deck] && (
-            (oldRate > 0.0 && newRate < 0.0) ||
-            (oldRate < 0.0 && newRate > 0.0)))) {
-        // Not ramping no mo'
-        m_ramp[deck] = false;
-
-        if (m_brakeActive[deck]) {
-            // If in brake mode, set scratch2 rate to 0 and turn off the play button.
-            pScratch2->slotSet(0.0);
-            ControlObjectThread* pPlay = getControlObjectThread(group, "play");
-            if (pPlay != NULL) {
-                pPlay->slotSet(0.0);
-            }
-        }
-
-        // Clear scratch2_enable to end scratching.
-        ControlObjectThread* pScratch2Enable =
-                getControlObjectThread(group, "scratch2_enable");
-        if (pScratch2Enable == NULL) {
-            return; // abort and maybe it'll work on the next pass
-        }
-        pScratch2Enable->slotSet(0);
-
-        // Remove timer
+    // If processing disabled the filter, kill this timer.
+    if (!pScratchController->enabled()) {
         killTimer(timerId);
         m_scratchTimers.remove(timerId);
-
-        m_dx[deck] = 0.0;
-        m_brakeActive[deck] = false;
     }
 }
 
@@ -1374,27 +1253,14 @@ void ControllerEngine::scratchProcess(int timerId) {
     Output:  -
     -------- ------------------------------------------------------ */
 void ControllerEngine::scratchDisable(int deck, bool ramp) {
-    // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
-
-    m_rampTo[deck] = 0.0;
-
-    // If no ramping is desired, disable scratching immediately
-    if (!ramp) {
-        // Clear scratch2_enable
-        ControlObjectThread* pScratch2Enable = getControlObjectThread(group, "scratch2_enable");
-        if (pScratch2Enable != NULL) {
-            pScratch2Enable->slotSet(0);
-        }
-        // Can't return here because we need scratchProcess to stop the timer.
-        // So it's still actually ramping, we just won't hear or see it.
-    } else if (isDeckPlaying(group)) {
-        // If so, set the target velocity to the playback speed
-        m_rampTo[deck] = getDeckRate(group);
+    ScratchController* pScratchController = m_scratchControllers[deck];
+    if (pScratchController == NULL) {
+        qWarning() << "NULL ScratchController for deck" << deck;
+        return;
     }
 
-    m_lastMovement[deck] = Time::elapsedMsecs();
-    m_ramp[deck] = true;    // Activate the ramping in scratchProcess()
+    // We don't disable the timer here -- we wait for scratchProcess.
+    pScratchController->disable(ramp);
 }
 
 /* -------- ------------------------------------------------------
@@ -1404,10 +1270,12 @@ void ControllerEngine::scratchDisable(int deck, bool ramp) {
     Output:  True if so
     -------- ------------------------------------------------------ */
 bool ControllerEngine::isScratching(int deck) {
-    // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
-    // Don't report that we are scratching if we're ramping.
-    return getValue(group, "scratch2_enable") > 0 && !m_ramp[deck];
+    ScratchController* pScratchController = m_scratchControllers[deck];
+    if (pScratchController == NULL) {
+        qWarning() << "NULL ScratchController for deck" << deck;
+        return false;
+    }
+    return pScratchController->isScratching();
 }
 
 /*  -------- ------------------------------------------------------
@@ -1446,44 +1314,24 @@ void ControllerEngine::spinback(int deck, bool activate, double factor, double r
     Output:  -
     -------- ------------------------------------------------------ */
 void ControllerEngine::brake(int deck, bool activate, double factor, double rate) {
-    // PlayerManager::groupForDeck is 0-indexed.
-    QString group = PlayerManager::groupForDeck(deck - 1);
+    ScratchController* pScratchController = m_scratchControllers[deck];
+    if (pScratchController == NULL) {
+        qWarning() << "NULL ScratchController for deck" << deck;
+        return;
+    }
 
     // kill timer when both enabling or disabling
     int timerId = m_scratchTimers.key(deck);
     killTimer(timerId);
     m_scratchTimers.remove(timerId);
 
-    // enable/disable scratch2 mode
-    ControlObjectThread* pScratch2Enable = getControlObjectThread(group, "scratch2_enable");
-    if (pScratch2Enable != NULL) {
-        pScratch2Enable->slotSet(activate ? 1 : 0);
-    }
-
-    // used in scratchProcess for the different timer behavior we need
-    m_brakeActive[deck] = activate;
+    pScratchController->brake(activate, kAlphaBetaDt, factor, rate,
+                              kDefaultAlpha, kDefaultBeta);
 
     if (activate) {
-        // store the new values for this spinback/brake effect
-        m_rampFactor[deck] = rate * factor / 100000.0; // approx 1 second for a factor of 1
-        m_rampTo[deck] = 0.0;
-
-        // setup timer and set scratch2
+        // setup scratch timer
         int timerId = startTimer(kScratchTimerMs);
         m_scratchTimers[timerId] = deck;
 
-        ControlObjectThread* pScratch2 = getControlObjectThread(group, "scratch2");
-        if (pScratch2 != NULL) {
-            pScratch2->slotSet(rate);
-        }
-
-        // setup the filter using the default values of alpha and beta
-        AlphaBetaFilter* filter = m_scratchFilters[deck];
-        if (filter != NULL) {
-            filter->init(kAlphaBetaDt, rate);
-        }
-
-        // activate the ramping in scratchProcess()
-        m_ramp[deck] = true;
     }
 }
