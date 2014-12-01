@@ -14,6 +14,7 @@
 #include "engine/enginecontrol.h"
 #include "engine/ratecontrol.h"
 #include "engine/positionscratchcontroller.h"
+#include "engine/simplejogwheel.h"
 
 #include <QtDebug>
 
@@ -156,11 +157,13 @@ RateControl::RateControl(QString group,
     // this control.
     m_pScratch2Scratching->set(1.0);
 
-
+    // Do not ignore no-ops.
     m_pJog = new ControlObject(ConfigKey(group, "jog"));
     m_pJogFilter = new Rotary();
     // FIXME: This should be dependent on sample rate/block size or something
     m_pJogFilter->setFilterLength(25);
+
+    m_pSimpleJogWheel = new SimpleJogWheel(NULL, group);
 
     // Update Internal Settings
     // Set Pitchbend Mode
@@ -203,6 +206,7 @@ RateControl::~RateControl() {
     delete m_pJog;
     delete m_pJogFilter;
     delete m_pScratchController;
+    delete m_pSimpleJogWheel;
 }
 
 void RateControl::setBpmControl(BpmControl* bpmcontrol) {
@@ -414,6 +418,8 @@ SyncMode RateControl::getSyncMode() const {
 double RateControl::calculateRate(double baserate, bool paused,
                                   int iSamplesPerBuffer,
                                   bool* reportScratching) {
+    m_pSimpleJogWheel->process();
+
     *reportScratching = false;
     double rate = (paused ? 0 : 1.0);
     double searching = m_pRateSearch->get();

@@ -57,9 +57,9 @@ void MidiOutputHandler::controlChanged(double value) {
         qWarning() << "MIDI device" << m_pController->getName() << "not open for output!";
     } else if (byte3 != 0xFF) {
         if (m_pController->debugging()) {
-            qDebug() << "sending MIDI bytes:" << m_mapping.output.status
-                     << ", " << m_mapping.output.control << ", "
-                     << byte3 ;
+            // qDebug() << "sending MIDI bytes:" << m_mapping.output.status
+            //          << ", " << m_mapping.output.control << ", "
+            //          << byte3 ;
         }
         m_pController->sendShortMsg(m_mapping.output.status,
                                     m_mapping.output.control, byte3);

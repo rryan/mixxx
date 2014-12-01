@@ -1,7 +1,11 @@
+#include <QtDebug>
+
 #include "engine/scratchcontroller.h"
 
 #include "util/time.h"
 #include "util/math.h"
+
+const bool sDebug = true;
 
 ScratchController::ScratchController(const QString& group)
         : m_ticks(0),
@@ -28,6 +32,10 @@ bool ScratchController::isScratching() const {
 
 void ScratchController::enable(double dt, double tickScaleFactor,
                                double alpha, double beta, bool ramp) {
+    if (sDebug) {
+        qDebug() << "ScratchController::enable" << dt << tickScaleFactor
+                 << alpha << beta << ramp;
+    }
     m_bEnabled = true;
     m_ticks = 0;
     m_tickScaleFactor = tickScaleFactor;
@@ -59,6 +67,9 @@ void ScratchController::enable(double dt, double tickScaleFactor,
 }
 
 void ScratchController::disable(bool ramp) {
+    if (sDebug) {
+        qDebug() << "ScratchController::disable" << ramp;
+    }
     // By default, ramp to zero.
     m_dRampTo = 0.0;
 
@@ -81,6 +92,10 @@ void ScratchController::disable(bool ramp) {
 
 void ScratchController::brake(bool activate, double dt, double factor, double rate,
                               double alpha, double beta) {
+    if (sDebug) {
+        qDebug() << "ScratchController::brake" << activate << dt << factor
+                 << rate << alpha << beta;
+    }
     m_scratchEnable.set(activate ? 1.0 : 0.0);
 
     // used in process() for the different timer behavior we need
@@ -140,6 +155,10 @@ void ScratchController::process() {
     // Get the new rate and actually do the scratching
     const double newRate = m_filter.predictedVelocity();
     m_scratchRate.set(newRate);
+
+    if (sDebug) {
+        qDebug() << "ScratchController::process" << oldRate << "->" << newRate;
+    }
 
     // If we're ramping and the current rate is really close to the rampTo value
     // or we're in brake mode and have crossed over the zero value, end

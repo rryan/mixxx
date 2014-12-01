@@ -12,6 +12,10 @@ class ScratchController {
         return m_bEnabled;
     }
 
+    bool ramping() const {
+        return m_bRamping;
+    }
+
     bool isScratching() const;
 
     void enable(double dt, double tickScaleFactor,
