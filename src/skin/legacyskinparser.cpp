@@ -568,6 +568,8 @@ QList<QWidget*> LegacySkinParser::parseNode(QDomElement node) {
         parseSingletonDefinition(node);
     } else if (nodeName == "SingletonContainer") {
         result = wrapWidget(parseStandardWidget<WSingletonContainer>(node));
+    } else if (nodeName == "Window") {
+        result = wrapWidget(parseWindow(node));
     } else {
         SKIN_WARNING(node, *m_pContext) << "Invalid node name in skin:"
                                        << nodeName;
@@ -609,6 +611,17 @@ QWidget* LegacySkinParser::parseSplitter(QDomElement node) {
 
     m_pParent = pOldParent;
     return pSplitter;
+}
+
+QWidget* LegacySkinParser::parseWindow(QDomElement node) {
+    // Identical to a WidgetGroup but with no parent.
+    QWidget* pOldParent = m_pParent;
+    m_pParent = NULL;
+    QWidget* pWindow = parseWidgetGroup(node);
+    m_pParent = pOldParent;
+    // Return NULL to prevent the widget from being added to another. (For
+    // example, when nested inside a WidgetGroup children list.)
+    return NULL;
 }
 
 QWidget* LegacySkinParser::parseWidgetGroup(QDomElement node) {
