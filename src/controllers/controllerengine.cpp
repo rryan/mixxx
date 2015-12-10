@@ -9,6 +9,7 @@
 #include "controllers/controllerengine.h"
 
 #include "controllers/controller.h"
+#include "controllers/script/require.h"
 #include "controlobject.h"
 #include "controlobjectthread.h"
 #include "errordialoghandler.h"
@@ -27,6 +28,7 @@ const int kDecks = 16;
 // timer.
 const int kScratchTimerMs = 1;
 const double kAlphaBetaDt = kScratchTimerMs / 1000.0;
+
 
 ControllerEngine::ControllerEngine(Controller* controller)
         : m_pEngine(NULL),
@@ -191,6 +193,11 @@ void ControllerEngine::initializeScriptEngine() {
     // Make this ControllerEngine instance available to scripts as 'engine'.
     QScriptValue engineGlobalObject = m_pEngine->globalObject();
     engineGlobalObject.setProperty("engine", m_pEngine->newQObject(this));
+
+    // Provide 'require' to let the script import modules.
+    ScriptRequire::initializeModule(m_pEngine->currentContext(), m_pEngine,
+                                    &engineGlobalObject);
+
 
     if (m_pController) {
         qDebug() << "Controller in script engine is:" << m_pController->getName();

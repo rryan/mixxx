@@ -145,6 +145,8 @@ class ControllerEngine : public QObject {
     void errorDialogButton(QString key, QMessageBox::StandardButton button);
 
   private:
+    static QScriptValue require(QScriptContext* context, QScriptEngine* engine);
+
     bool evaluate(QString scriptName, QList<QString> scriptPaths);
     bool internalExecute(QString scriptCode);
     bool internalExecute(QScriptValue thisObject, QString scriptCode);
@@ -158,7 +160,6 @@ class ControllerEngine : public QObject {
 
     void callFunctionOnObjects(QList<QString>, QString, QScriptValueList args = QScriptValueList());
     bool checkException();
-    QScriptEngine *m_pEngine;
 
     ControlObjectThread* getControlObjectThread(QString group, QString name);
 
@@ -168,6 +169,7 @@ class ControllerEngine : public QObject {
     bool isDeckPlaying(const QString& group);
     double getDeckRate(const QString& group);
 
+    QScriptEngine* m_pEngine;
     Controller* m_pController;
     bool m_bDebug;
     bool m_bPopups;

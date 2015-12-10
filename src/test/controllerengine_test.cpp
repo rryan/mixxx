@@ -257,4 +257,20 @@ TEST_F(ControllerEngineTest, automaticReaction) {
     co->set(2.5);
 }
 
+TEST_F(ControllerEngineTest, require) {
+    ScopedTemporaryFile requiredScript(makeTemporaryFile(
+        "var pass = function() { engine.setValue('[Channel1]', 'co', 1.0); }\n"
+        "exports = { 'pass': pass };\n"));
+
+    ScopedTemporaryFile script(makeTemporaryFile(
+        QString("var test = require('%1');"
+                "test.pass();").arg(requiredScript->fileName())));
+
+    ScopedControl co(new ControlObject(ConfigKey("[Channel1]", "co")));
+    cEngine->evaluate(script->fileName());
+    EXPECT_FALSE(cEngine->hasErrors(script->fileName()));
+
+    EXPECT_DOUBLE_EQ(1.0, co->get());
+}
+
 }

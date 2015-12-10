@@ -649,6 +649,7 @@ class MixxxCore(Feature):
 
                    "controllers/controller.cpp",
                    "controllers/controllerengine.cpp",
+                   "controllers/script/require.cpp",
                    "controllers/controllerenumerator.cpp",
                    "controllers/controllerlearningeventfilter.cpp",
                    "controllers/controllermanager.cpp",
