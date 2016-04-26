@@ -15,9 +15,7 @@ GLWaveformRendererFilteredSignal::GLWaveformRendererFilteredSignal(
 
 }
 
-GLWaveformRendererFilteredSignal::~GLWaveformRendererFilteredSignal() {
-
-}
+GLWaveformRendererFilteredSignal::~GLWaveformRendererFilteredSignal() = default;
 
 void GLWaveformRendererFilteredSignal::onSetup(const QDomNode& /*node*/) {
 
@@ -41,7 +39,7 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 
@@ -103,18 +101,20 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
                  visualIndex < lastVisualIndex;
                  visualIndex += 2) {
 
-                if (visualIndex < 0)
+                if (visualIndex < 0) {
                     continue;
+                }
 
-                if (visualIndex > dataSize - 1)
+                if (visualIndex > dataSize - 1) {
                     break;
+                }
 
-                maxLow[0] = (float)data[visualIndex].filtered.low;
-                maxMid[0] = (float)data[visualIndex].filtered.mid;
-                maxHigh[0] = (float)data[visualIndex].filtered.high;
-                maxLow[1] = (float)data[visualIndex+1].filtered.low;
-                maxMid[1] = (float)data[visualIndex+1].filtered.mid;
-                maxHigh[1] = (float)data[visualIndex+1].filtered.high;
+                maxLow[0] = static_cast<float>(data[visualIndex].filtered.low);
+                maxMid[0] = static_cast<float>(data[visualIndex].filtered.mid);
+                maxHigh[0] = static_cast<float>(data[visualIndex].filtered.high);
+                maxLow[1] = static_cast<float>(data[visualIndex+1].filtered.low);
+                maxMid[1] = static_cast<float>(data[visualIndex+1].filtered.mid);
+                maxHigh[1] = static_cast<float>(data[visualIndex+1].filtered.high);
 
                 meanIndex = visualIndex;
 
@@ -136,10 +136,11 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
         glLoadIdentity();
-        if (m_alignment == Qt::AlignBottom)
+        if (m_alignment == Qt::AlignBottom) {
             glOrtho(firstVisualIndex, lastVisualIndex, 0.0, 255.0, -10.0, 10.0);
-        else
+        } else {
             glOrtho(firstVisualIndex, lastVisualIndex, 255.0, 0.0, -10.0, 10.0);
+        }
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -155,18 +156,20 @@ void GLWaveformRendererFilteredSignal::draw(QPainter* painter, QPaintEvent* /*ev
                  visualIndex < lastVisualIndex;
                  visualIndex += 2) {
 
-                if (visualIndex < 0)
+                if (visualIndex < 0) {
                     continue;
+                }
 
-                if (visualIndex > dataSize - 1)
+                if (visualIndex > dataSize - 1) {
                     break;
+                }
 
-                maxLow[0] = (float)data[visualIndex].filtered.low;
-                maxLow[1] = (float)data[visualIndex+1].filtered.low;
-                maxMid[0] = (float)data[visualIndex].filtered.mid;
-                maxMid[1] = (float)data[visualIndex+1].filtered.mid;
-                maxHigh[0] = (float)data[visualIndex].filtered.high;
-                maxHigh[1] = (float)data[visualIndex+1].filtered.high;
+                maxLow[0] = static_cast<float>(data[visualIndex].filtered.low);
+                maxLow[1] = static_cast<float>(data[visualIndex+1].filtered.low);
+                maxMid[0] = static_cast<float>(data[visualIndex].filtered.mid);
+                maxMid[1] = static_cast<float>(data[visualIndex+1].filtered.mid);
+                maxHigh[0] = static_cast<float>(data[visualIndex].filtered.high);
+                maxHigh[1] = static_cast<float>(data[visualIndex+1].filtered.high);
 
                 glColor4f(m_lowColor_r, m_lowColor_g, m_lowColor_b, 0.8);
                 glVertex2f(float(visualIndex),0.f);

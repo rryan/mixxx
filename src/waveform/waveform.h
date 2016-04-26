@@ -25,13 +25,13 @@ union WaveformData {
     } filtered;
     int m_i;
 
-    WaveformData() {}
-    WaveformData(int i) { m_i = i;}
+    WaveformData() = default;
+    explicit WaveformData(int i) { m_i = i;}
 };
 
 class Waveform {
   public:
-    explicit Waveform(const QByteArray pData = QByteArray());
+    explicit Waveform(const QByteArray data = QByteArray());
     Waveform(int audioSampleRate, int audioSamples,
              int desiredVisualSampleRate, int maxVisualSamples);
 

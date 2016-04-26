@@ -5,5 +5,4 @@ WaveformRendererAbstract::WaveformRendererAbstract(WaveformWidgetRenderer* wavef
           m_dirty(true) {
 }
 
-WaveformRendererAbstract::~WaveformRendererAbstract() {
-}
+WaveformRendererAbstract::~WaveformRendererAbstract() = default;

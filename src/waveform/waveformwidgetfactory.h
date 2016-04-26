@@ -7,8 +7,8 @@
 
 #include "util/singleton.h"
 #include "preferences/usersettings.h"
-#include "waveform/widgets/waveformwidgettype.h"
 #include "waveform/waveform.h"
+#include "waveform/widgets/waveformwidgettype.h"
 #include "skin/skincontext.h"
 #include "util/performancetimer.h"
 
@@ -40,7 +40,7 @@ class WaveformWidgetHolder {
   private:
     WaveformWidgetHolder(WaveformWidgetAbstract* waveformWidget,
                          WWaveformViewer* waveformViewer,
-                         const QDomNode& skinNode,
+                         const QDomNode& node,
                          const SkinContext& skinContext);
 
     WaveformWidgetAbstract* m_waveformWidget;
@@ -94,13 +94,13 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
     int isOverviewNormalized() const { return m_overviewNormalized;}
 
     const QVector<WaveformWidgetAbstractHandle> getAvailableTypes() const { return m_waveformWidgetHandles;}
-    void getAvailableVSyncTypes(QList<QPair<int, QString > >* list);
+    void getAvailableVSyncTypes(QList<QPair<int, QString > >* pList);
     void destroyWidgets();
 
     void addTimerListener(QWidget* pWidget);
 
     void startVSync(GuiTick* pGuiTick);
-    void setVSyncType(int vsType);
+    void setVSyncType(int type);
     int getVSyncType();
 
     void notifyZoomChange(WWaveformViewer *viewer);
@@ -113,7 +113,7 @@ class WaveformWidgetFactory : public QObject, public Singleton<WaveformWidgetFac
 
   protected:
     WaveformWidgetFactory();
-    virtual ~WaveformWidgetFactory();
+    ~WaveformWidgetFactory() override;
 
     friend class Singleton<WaveformWidgetFactory>;
 

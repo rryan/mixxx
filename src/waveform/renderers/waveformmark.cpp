@@ -56,7 +56,7 @@ void WaveformMark::setup(const QString& group, const QDomNode& node,
 // called from WaveformMarkSet::setup() for hot cues
 // TODO(XXX): subclass and override WaveformMark::setup
 void WaveformMark::setKeyAndIndex(const ConfigKey& key, int i) {
-    DEBUG_ASSERT(m_pPointCos == NULL);
+    DEBUG_ASSERT(m_pPointCos == nullptr);
     m_pPointCos = new ControlObjectSlave(key);
     m_text = m_text.arg(i);
 }

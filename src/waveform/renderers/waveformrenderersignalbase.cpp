@@ -12,15 +12,15 @@
 WaveformRendererSignalBase::WaveformRendererSignalBase(
         WaveformWidgetRenderer* waveformWidgetRenderer)
     : WaveformRendererAbstract(waveformWidgetRenderer),
-      m_pEQEnabled(NULL),
-      m_pLowFilterControlObject(NULL),
-      m_pMidFilterControlObject(NULL),
-      m_pHighFilterControlObject(NULL),
-      m_pLowKillControlObject(NULL),
-      m_pMidKillControlObject(NULL),
-      m_pHighKillControlObject(NULL),
+      m_pEQEnabled(nullptr),
+      m_pLowFilterControlObject(nullptr),
+      m_pMidFilterControlObject(nullptr),
+      m_pHighFilterControlObject(nullptr),
+      m_pLowKillControlObject(nullptr),
+      m_pMidKillControlObject(nullptr),
+      m_pHighKillControlObject(nullptr),
       m_alignment(Qt::AlignCenter),
-      m_pColors(NULL),
+      m_pColors(nullptr),
       m_axesColor_r(0),
       m_axesColor_g(0),
       m_axesColor_b(0),
@@ -53,20 +53,27 @@ WaveformRendererSignalBase::~WaveformRendererSignalBase() {
 }
 
 void WaveformRendererSignalBase::deleteControls() {
-    if (m_pEQEnabled)
+    if (m_pEQEnabled) {
         delete m_pEQEnabled;
-    if (m_pLowFilterControlObject)
+    }
+    if (m_pLowFilterControlObject) {
         delete m_pLowFilterControlObject;
-    if (m_pMidFilterControlObject)
+    }
+    if (m_pMidFilterControlObject) {
         delete m_pMidFilterControlObject;
-    if (m_pHighFilterControlObject)
+    }
+    if (m_pHighFilterControlObject) {
         delete m_pHighFilterControlObject;
-    if (m_pLowKillControlObject)
+    }
+    if (m_pLowKillControlObject) {
         delete m_pLowKillControlObject;
-    if (m_pMidKillControlObject)
+    }
+    if (m_pMidKillControlObject) {
         delete m_pMidKillControlObject;
-    if (m_pHighKillControlObject)
+    }
+    if (m_pHighKillControlObject) {
         delete m_pHighKillControlObject;
+    }
 }
 
 bool WaveformRendererSignalBase::init() {
@@ -135,7 +142,7 @@ void WaveformRendererSignalBase::setup(const QDomNode& node,
 void WaveformRendererSignalBase::getGains(float* pAllGain, float* pLowGain,
                                           float* pMidGain, float* pHighGain) {
     WaveformWidgetFactory* factory = WaveformWidgetFactory::instance();
-    if (pAllGain != NULL) {
+    if (pAllGain != nullptr) {
         float allGain = m_waveformRenderer->getGain();
         allGain *= factory->getVisualGain(::WaveformWidgetFactory::All);
         *pAllGain = allGain;
@@ -172,13 +179,13 @@ void WaveformRendererSignalBase::getGains(float* pAllGain, float* pLowGain,
             }
         }
 
-        if (pLowGain != NULL) {
+        if (pLowGain != nullptr) {
             *pLowGain = lowGain;
         }
-        if (pMidGain != NULL) {
+        if (pMidGain != nullptr) {
             *pMidGain = midGain;
         }
-        if (pHighGain != NULL) {
+        if (pHighGain != nullptr) {
             *pHighGain = highGain;
         }
     }

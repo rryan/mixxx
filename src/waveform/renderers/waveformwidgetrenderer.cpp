@@ -27,18 +27,18 @@ WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group)
       m_audioSamplePerPixel(1.0),
 
       // Really create some to manage those;
-      m_visualPlayPosition(NULL),
+      m_visualPlayPosition(nullptr),
       m_playPos(-1),
       m_playPosVSample(0),
-      m_pRateControlObject(NULL),
+      m_pRateControlObject(nullptr),
       m_rate(0.0),
-      m_pRateRangeControlObject(NULL),
+      m_pRateRangeControlObject(nullptr),
       m_rateRange(0.0),
-      m_pRateDirControlObject(NULL),
+      m_pRateDirControlObject(nullptr),
       m_rateDir(0.0),
-      m_pGainControlObject(NULL),
+      m_pGainControlObject(nullptr),
       m_gain(1.0),
-      m_pTrackSamplesControlObject(NULL),
+      m_pTrackSamplesControlObject(nullptr),
       m_trackSamples(0.0) {
 
     //qDebug() << "WaveformWidgetRenderer";
@@ -60,8 +60,9 @@ WaveformWidgetRenderer::WaveformWidgetRenderer(const char* group)
 WaveformWidgetRenderer::~WaveformWidgetRenderer() {
     //qDebug() << "~WaveformWidgetRenderer";
 
-    for (int i = 0; i < m_rendererStack.size(); ++i)
-        delete m_rendererStack[i];
+    for (auto&& i : m_rendererStack) {
+        delete i;
+    }
 
     delete m_pRateControlObject;
     delete m_pRateRangeControlObject;
@@ -90,8 +91,8 @@ bool WaveformWidgetRenderer::init() {
     m_pTrackSamplesControlObject = new ControlObjectSlave(
             m_group, "track_samples");
 
-    for (int i = 0; i < m_rendererStack.size(); ++i) {
-        if (!m_rendererStack[i]->init()) {
+    for (auto&& i : m_rendererStack) {
+        if (!i->init()) {
             return false;
         }
     }
@@ -234,16 +235,16 @@ void WaveformWidgetRenderer::draw(QPainter* painter, QPaintEvent* event) {
 void WaveformWidgetRenderer::resize(int width, int height) {
     m_width = width;
     m_height = height;
-    for (int i = 0; i < m_rendererStack.size(); ++i) {
-        m_rendererStack[i]->setDirty(true);
-        m_rendererStack[i]->onResize();
+    for (auto&& i : m_rendererStack) {
+        i->setDirty(true);
+        i->onResize();
     }
 }
 
 void WaveformWidgetRenderer::setup(const QDomNode& node, const SkinContext& context) {
     m_colors.setup(node, context);
-    for (int i = 0; i < m_rendererStack.size(); ++i) {
-        m_rendererStack[i]->setup(node, context);
+    for (auto&& i : m_rendererStack) {
+        i->setup(node, context);
     }
 }
 
@@ -257,7 +258,7 @@ void WaveformWidgetRenderer::setTrack(TrackPointer track) {
     //used to postpone first display until track sample is actually available
     m_trackSamples = -1.0;
 
-    for (int i = 0; i < m_rendererStack.size(); ++i) {
-        m_rendererStack[i]->onSetTrack();
+    for (auto&& i : m_rendererStack) {
+        i->onSetTrack();
     }
 }

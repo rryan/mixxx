@@ -55,7 +55,7 @@ class WaveformWidgetRenderer {
     //stable and deterministic
     // Transform sample index to pixel in track.
     inline double transformSampleIndexInRendererWorld(int sampleIndex) const {
-        const double relativePosition = (double)sampleIndex / (double)m_trackSamples;
+        const double relativePosition = static_cast<double>(sampleIndex) / static_cast<double>(m_trackSamples);
         return transformPositionInRendererWorld(relativePosition);
     }
     // Transform position (percentage of track) to pixel in track.
@@ -77,7 +77,7 @@ class WaveformWidgetRenderer {
 
     template< class T_Renderer>
     inline T_Renderer* addRenderer() {
-        T_Renderer* renderer = new T_Renderer(this);
+        auto renderer = new T_Renderer(this);
         m_rendererStack.push_back(renderer);
         return renderer;
     }

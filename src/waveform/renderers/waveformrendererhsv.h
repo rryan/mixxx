@@ -7,12 +7,12 @@
 class WaveformRendererHSV : public WaveformRendererSignalBase {
   public:
     explicit WaveformRendererHSV(
-        WaveformWidgetRenderer* waveformWidget);
-    virtual ~WaveformRendererHSV();
+        WaveformWidgetRenderer* waveformWidgetRenderer);
+    ~WaveformRendererHSV() override;
 
-    virtual void onSetup(const QDomNode& node);
+    void onSetup(const QDomNode& node) override;
 
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    void draw(QPainter* painter, QPaintEvent* event) override;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(WaveformRendererHSV);

@@ -11,14 +11,14 @@ class GLSLWaveformRendererSignal : public WaveformRendererSignalBase {
   public:
     explicit GLSLWaveformRendererSignal(
             WaveformWidgetRenderer* waveformWidgetRenderer, bool rgbShader);
-    virtual ~GLSLWaveformRendererSignal();
+    ~GLSLWaveformRendererSignal() override;
 
-    virtual bool onInit();
-    virtual void onSetup(const QDomNode& node);
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    bool onInit() override;
+    void onSetup(const QDomNode& node) override;
+    void draw(QPainter* painter, QPaintEvent* event) override;
 
-    virtual void onSetTrack();
-    virtual void onResize();
+    void onSetTrack() override;
+    void onResize() override;
 
     void debugClick();
     bool loadShaders();
@@ -47,18 +47,18 @@ class GLSLWaveformRendererSignal : public WaveformRendererSignalBase {
 
 class GLSLWaveformRendererFilteredSignal : public GLSLWaveformRendererSignal {
   public:
-    GLSLWaveformRendererFilteredSignal(
+    explicit GLSLWaveformRendererFilteredSignal(
         WaveformWidgetRenderer* waveformWidgetRenderer)
         : GLSLWaveformRendererSignal(waveformWidgetRenderer, false) {}
-    virtual ~GLSLWaveformRendererFilteredSignal() {}
+    ~GLSLWaveformRendererFilteredSignal() override = default;
 };
 
 class GLSLWaveformRendererRGBSignal : public GLSLWaveformRendererSignal {
   public:
-    GLSLWaveformRendererRGBSignal(
+    explicit GLSLWaveformRendererRGBSignal(
         WaveformWidgetRenderer* waveformWidgetRenderer)
         : GLSLWaveformRendererSignal(waveformWidgetRenderer, true) {}
-    virtual ~GLSLWaveformRendererRGBSignal() {}
+    ~GLSLWaveformRendererRGBSignal() override = default;
 };
 
 #endif // GLWAVEFORMRENDERERSIGNALSHADER_H

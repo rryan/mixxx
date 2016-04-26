@@ -21,10 +21,10 @@ class ControlObject;
 class WaveformRenderMarkRange : public WaveformRendererAbstract {
   public:
     explicit WaveformRenderMarkRange(WaveformWidgetRenderer* waveformWidgetRenderer);
-    virtual ~WaveformRenderMarkRange();
+    ~WaveformRenderMarkRange() override;
 
-    virtual void setup(const QDomNode& node, const SkinContext& context);
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    void setup(const QDomNode& node, const SkinContext& context) override;
+    void draw(QPainter* painter, QPaintEvent* event) override;
 
   private:
     void generateImages();

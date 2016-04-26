@@ -18,8 +18,7 @@ WaveformRenderMarkRange::WaveformRenderMarkRange(WaveformWidgetRenderer* wavefor
     WaveformRendererAbstract(waveformWidgetRenderer) {
 }
 
-WaveformRenderMarkRange::~WaveformRenderMarkRange() {
-}
+WaveformRenderMarkRange::~WaveformRenderMarkRange() = default;
 
 void WaveformRenderMarkRange::setup(const QDomNode& node, const SkinContext& context) {
     m_markRanges.clear();
@@ -45,9 +44,7 @@ void WaveformRenderMarkRange::draw(QPainter *painter, QPaintEvent * /*event*/) {
         generateImages();
     }
 
-    for (unsigned int i = 0; i < m_markRanges.size(); i++) {
-        WaveformMarkRange& markRange = m_markRanges[i];
-
+    for (const auto& markRange : m_markRanges) {
         // If the mark range is not active we should not draw it.
         if (!markRange.active()) {
             continue;
@@ -62,10 +59,11 @@ void WaveformRenderMarkRange::draw(QPainter *painter, QPaintEvent * /*event*/) {
         double endPosition = m_waveformRenderer->transformSampleIndexInRendererWorld(endSample);
 
         //range not in the current display
-        if (startPosition > m_waveformRenderer->getWidth() || endPosition < 0)
+        if (startPosition > m_waveformRenderer->getWidth() || endPosition < 0) {
             continue;
+        }
 
-        QImage* selectedImage = NULL;
+        QImage* selectedImage = nullptr;
 
         selectedImage = markRange.enabled() ? &markRange.m_activeImage : &markRange.m_disabledImage;
 
@@ -79,8 +77,8 @@ void WaveformRenderMarkRange::draw(QPainter *painter, QPaintEvent * /*event*/) {
 }
 
 void WaveformRenderMarkRange::generateImages() {
-    for (unsigned int i = 0; i < m_markRanges.size(); i++) {
-        m_markRanges[i].generateImage(m_waveformRenderer->getWidth(), m_waveformRenderer->getHeight());
+    for (const auto& markRange : m_markRanges) {
+        markRange.generateImage(m_waveformRenderer->getWidth(), m_waveformRenderer->getHeight());
     }
     setDirty(false);
 }

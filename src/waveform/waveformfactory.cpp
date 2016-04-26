@@ -1,6 +1,6 @@
 #include <QtDebug>
 
-#include "waveform/waveformfactory.h"
+#include "library/dao/analysisdao.h"
 #include "waveform/waveform.h"
 
 // static

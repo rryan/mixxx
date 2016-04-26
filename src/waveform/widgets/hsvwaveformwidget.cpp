@@ -2,8 +2,8 @@
 
 #include <QPainter>
 
-#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrendermark.h"
 #include "waveform/renderers/waveformrendermarkrange.h"
 #include "waveform/renderers/waveformrendererhsv.h"
@@ -28,8 +28,7 @@ HSVWaveformWidget::HSVWaveformWidget(const char* group, QWidget* parent)
     m_initSuccess = init();
 }
 
-HSVWaveformWidget::~HSVWaveformWidget() {
-}
+HSVWaveformWidget::~HSVWaveformWidget() = default;
 
 void HSVWaveformWidget::castToQWidget() {
     m_widget = static_cast<QWidget*>(this);

@@ -13,8 +13,7 @@ GLVSyncTestRenderer::GLVSyncTestRenderer(
       m_drawcount(0) {
 }
 
-GLVSyncTestRenderer::~GLVSyncTestRenderer() {
-}
+GLVSyncTestRenderer::~GLVSyncTestRenderer() = default;
 
 void GLVSyncTestRenderer::onSetup(const QDomNode &node) {
     Q_UNUSED(node);
@@ -49,7 +48,7 @@ void GLVSyncTestRenderer::draw(QPainter* painter, QPaintEvent* /*event*/) {
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 

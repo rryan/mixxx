@@ -19,12 +19,12 @@ class WaveformRendererEndOfTrack : public WaveformRendererAbstract {
     static const int s_maxAlpha = 125;
     explicit WaveformRendererEndOfTrack(
             WaveformWidgetRenderer* waveformWidgetRenderer);
-    virtual ~WaveformRendererEndOfTrack();
+    ~WaveformRendererEndOfTrack() override;
 
-    virtual bool init();
-    virtual void setup(const QDomNode& node, const SkinContext& context);
-    virtual void onResize();
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    bool init() override;
+    void setup(const QDomNode& node, const SkinContext& context) override;
+    void onResize() override;
+    void draw(QPainter* painter, QPaintEvent* event) override;
 
   private:
     ControlObjectSlave* m_pEndOfTrackControl;

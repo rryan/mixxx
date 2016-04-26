@@ -4,8 +4,8 @@
 
 #include "waveform/widgets/qtwaveformwidget.h"
 
-#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/qtwaveformrendererfilteredsignal.h"
 #include "waveform/renderers/waveformrendererpreroll.h"
 #include "waveform/renderers/waveformrendermark.h"
@@ -41,8 +41,7 @@ QtWaveformWidget::QtWaveformWidget(const char* group, QWidget* parent)
     m_initSuccess = init();
 }
 
-QtWaveformWidget::~QtWaveformWidget() {
-}
+QtWaveformWidget::~QtWaveformWidget() = default;
 
 void QtWaveformWidget::castToQWidget() {
     m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
@@ -61,7 +60,7 @@ mixxx::Duration QtWaveformWidget::render() {
     // this may delayed until previous buffer swap finished
     QPainter painter(this);
     t1 = timer.restart();
-    draw(&painter, NULL);
+    draw(&painter, nullptr);
     //t2 = timer.restart();
     //glFinish();
     //t3 = timer.restart();

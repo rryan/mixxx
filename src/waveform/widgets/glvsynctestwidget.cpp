@@ -2,9 +2,9 @@
 
 #include <QPainter>
 
-#include "waveform/sharedglcontext.h"
-#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
+#include "waveform/sharedglcontext.h"
 #include "waveform/renderers/glwaveformrenderersimplesignal.h"
 #include "waveform/renderers/glvsynctestrenderer.h"
 #include "waveform/renderers/waveformrendererpreroll.h"
@@ -62,7 +62,7 @@ mixxx::Duration GLVSyncTestWidget::render() {
     // this may delayed until previous buffer swap finished
     QPainter painter(this);
     t1 = timer.restart();
-    draw(&painter, NULL);
+    draw(&painter, nullptr);
     //t2 = timer.restart();
     glFinish();
     //t3 = timer.restart();

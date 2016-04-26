@@ -3,8 +3,8 @@
 #include <QtDebug>
 
 #include "waveform/widgets/glwaveformwidget.h"
-#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/qtwaveformrendererfilteredsignal.h"
 #include "waveform/renderers/glwaveformrendererfilteredsignal.h"
 #include "waveform/renderers/waveformrendererpreroll.h"
@@ -12,8 +12,8 @@
 #include "waveform/renderers/waveformrendermarkrange.h"
 #include "waveform/renderers/waveformrendererendoftrack.h"
 #include "waveform/renderers/waveformrenderbeat.h"
-#include "waveform/sharedglcontext.h"
 #include "util/performancetimer.h"
+#include "waveform/sharedglcontext.h"
 
 GLWaveformWidget::GLWaveformWidget(const char* group, QWidget* parent)
         : QGLWidget(parent, SharedGLContext::getWidget()),
@@ -41,8 +41,7 @@ GLWaveformWidget::GLWaveformWidget(const char* group, QWidget* parent)
     m_initSuccess = init();
 }
 
-GLWaveformWidget::~GLWaveformWidget() {
-}
+GLWaveformWidget::~GLWaveformWidget() = default;
 
 void GLWaveformWidget::castToQWidget() {
     m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
@@ -61,7 +60,7 @@ mixxx::Duration GLWaveformWidget::render() {
     // this may delayed until previous buffer swap finished
     QPainter painter(this);
     t1 = timer.restart();
-    draw(&painter, NULL);
+    draw(&painter, nullptr);
     //t2 = timer.restart();
     // glFinish();
     //t3 = timer.restart();

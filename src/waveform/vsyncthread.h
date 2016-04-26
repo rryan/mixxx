@@ -45,21 +45,21 @@ class VSyncThread : public QThread {
     static void swapGl(QGLWidget* glw, int index);
 
     VSyncThread(QObject* pParent, GuiTick* pGuiTick);
-    ~VSyncThread();
+    ~VSyncThread() override;
 
-    void run();
+    void run() override;
     void stop();
 
     bool waitForVideoSync(QGLWidget* glw);
     int elapsed();
     int usToNextSync();
-    void setUsSyncIntervalTime(int usSyncTimer);
-    void setVSyncType(int mode);
+    void setUsSyncIntervalTime(int syncTime);
+    void setVSyncType(int type);
     int droppedFrames();
     void setSwapWait(int sw);
     int usFromTimerToNextSync(const PerformanceTimer& timer);
     void vsyncSlotFinished();
-    void getAvailableVSyncTypes(QList<QPair<int, QString > >* list);
+    void getAvailableVSyncTypes(QList<QPair<int, QString > >* pList);
     void setupSync(QGLWidget* glw, int index);
     void waitUntilSwap(QGLWidget* glw);
 

@@ -54,7 +54,7 @@ void WaveformMarkSet::setup(const QString& group, const QDomNode& node,
             QString hotCueControlItem = "hotcue_" + QString::number(i) + "_position";
             ControlObject* pHotcue = ControlObject::getControl(
                     ConfigKey(group, hotCueControlItem));
-            if (pHotcue == NULL) {
+            if (pHotcue == nullptr) {
                 continue;
             }
 

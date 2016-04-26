@@ -10,8 +10,7 @@ WaveformRenderBackground::WaveformRenderBackground(
           m_backgroundColor(0, 0, 0) {
 }
 
-WaveformRenderBackground::~WaveformRenderBackground() {
-}
+WaveformRenderBackground::~WaveformRenderBackground() = default;
 
 void WaveformRenderBackground::setup(const QDomNode& node,
                                      const SkinContext& context) {

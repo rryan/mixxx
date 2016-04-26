@@ -1,7 +1,7 @@
 #ifndef WAVEFORMFACTORY_H
 #define WAVEFORMFACTORY_H
 
-#include "library/dao/analysisdao.h"
+#include "waveform/waveformfactory.h"
 
 class Waveform;
 

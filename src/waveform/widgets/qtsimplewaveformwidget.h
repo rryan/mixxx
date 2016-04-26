@@ -9,10 +9,10 @@ class QtSimpleWaveformWidget : public QGLWidget, public WaveformWidgetAbstract {
     Q_OBJECT
   public:
     QtSimpleWaveformWidget(const char* group, QWidget* parent);
-    virtual ~QtSimpleWaveformWidget();
+    ~QtSimpleWaveformWidget() override;
 
 
-    virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::GLSimpleWaveform; }
+    WaveformWidgetType::Type getType() const override { return WaveformWidgetType::GLSimpleWaveform; }
 
     static inline QString getWaveformWidgetName() { return tr("Simple") + " - Qt"; }
     static inline bool useOpenGl() { return true; }
@@ -20,9 +20,9 @@ class QtSimpleWaveformWidget : public QGLWidget, public WaveformWidgetAbstract {
     static inline bool developerOnly() { return false; }
 
   protected:
-    virtual void castToQWidget();
-    virtual void paintEvent(QPaintEvent* event);
-    virtual mixxx::Duration render();
+    void castToQWidget() override;
+    void paintEvent(QPaintEvent* event) override;
+    mixxx::Duration render() override;
 
   private:
     friend class WaveformWidgetFactory;

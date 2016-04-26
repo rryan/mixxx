@@ -50,13 +50,13 @@ Waveform::Waveform(int audioSampleRate, int audioSamples,
         } else {
             // Waveform Summary (Overview)
             if (audioSamples > maxVisualSamples) {
-                m_visualSampleRate = (double)maxVisualSamples *
-                        (double)audioSampleRate / (double)audioSamples;
+                m_visualSampleRate = static_cast<double>(maxVisualSamples) *
+                        static_cast<double>(audioSampleRate) / static_cast<double>(audioSamples);
             } else {
                 m_visualSampleRate = audioSampleRate;
             }
         }
-        m_audioVisualRatio = (double)audioSampleRate / (double)m_visualSampleRate;
+        m_audioVisualRatio = static_cast<double>(audioSampleRate) / m_visualSampleRate;
         numberOfVisualSamples = (audioSamples / m_audioVisualRatio) + 1;
         numberOfVisualSamples += numberOfVisualSamples%2;
     }
@@ -64,8 +64,7 @@ Waveform::Waveform(int audioSampleRate, int audioSamples,
     setCompletion(0);
 }
 
-Waveform::~Waveform() {
-}
+Waveform::~Waveform() = default;
 
 QByteArray Waveform::toByteArray() const {
     io::Waveform waveform;

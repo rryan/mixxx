@@ -2,8 +2,8 @@
 
 #include "waveform/widgets/emptywaveformwidget.h"
 
-#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 
 EmptyWaveformWidget::EmptyWaveformWidget(const char* group, QWidget* parent)
         : QWidget(parent),
@@ -17,8 +17,7 @@ EmptyWaveformWidget::EmptyWaveformWidget(const char* group, QWidget* parent)
     m_initSuccess = init();
 }
 
-EmptyWaveformWidget::~EmptyWaveformWidget() {
-}
+EmptyWaveformWidget::~EmptyWaveformWidget() = default;
 
 void EmptyWaveformWidget::castToQWidget() {
     m_widget = static_cast<QWidget*>(this);

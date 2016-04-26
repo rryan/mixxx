@@ -8,10 +8,10 @@ class ControlObject;
 class GLWaveformRendererFilteredSignal : public WaveformRendererSignalBase {
   public:
     explicit GLWaveformRendererFilteredSignal(WaveformWidgetRenderer* waveformWidgetRenderer);
-    virtual ~GLWaveformRendererFilteredSignal();
+    ~GLWaveformRendererFilteredSignal() override;
 
-    virtual void onSetup(const QDomNode &node);
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    void onSetup(const QDomNode &node) override;
+    void draw(QPainter* painter, QPaintEvent* event) override;
 };
 
 #endif // GLWAVEFROMRENDERERFILTEREDSIGNAL_H

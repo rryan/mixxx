@@ -11,13 +11,13 @@ class ControlObject;
 class QtWaveformRendererFilteredSignal : public WaveformRendererSignalBase {
   public:
     explicit QtWaveformRendererFilteredSignal(WaveformWidgetRenderer* waveformWidgetRenderer);
-    virtual ~QtWaveformRendererFilteredSignal();
+    ~QtWaveformRendererFilteredSignal() override;
 
-    virtual void onSetup(const QDomNode &node);
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    void onSetup(const QDomNode &node) override;
+    void draw(QPainter* painter, QPaintEvent* event) override;
 
   protected:
-    virtual void onResize();
+    void onResize() override;
     int buildPolygon();
 
   protected:

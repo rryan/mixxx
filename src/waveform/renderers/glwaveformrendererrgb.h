@@ -8,10 +8,10 @@ class ControlObject;
 class GLWaveformRendererRGB : public WaveformRendererSignalBase {
   public:
     explicit GLWaveformRendererRGB(WaveformWidgetRenderer* waveformWidgetRenderer);
-    virtual ~GLWaveformRendererRGB();
+    ~GLWaveformRendererRGB() override;
 
-    virtual void onSetup(const QDomNode& node);
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    void onSetup(const QDomNode& node) override;
+    void draw(QPainter* painter, QPaintEvent* event) override;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(GLWaveformRendererRGB);

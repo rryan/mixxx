@@ -10,10 +10,10 @@
 class WaveformRendererPreroll : public WaveformRendererAbstract {
   public:
     explicit WaveformRendererPreroll(WaveformWidgetRenderer* waveformWidgetRenderer);
-    virtual ~WaveformRendererPreroll();
+    ~WaveformRendererPreroll() override;
 
-    virtual void setup(const QDomNode& node, const SkinContext& context);
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    void setup(const QDomNode& node, const SkinContext& context) override;
+    void draw(QPainter* painter, QPaintEvent* event) override;
 
   private:
     QColor m_color;

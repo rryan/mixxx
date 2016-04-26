@@ -11,8 +11,8 @@ class ControlObject;
 class GuiTick : public QObject {
     Q_OBJECT
   public:
-    GuiTick(QObject* pParent = NULL);
-    ~GuiTick();
+    explicit GuiTick(QObject* pParent = nullptr);
+    ~GuiTick() override;
     void process();
 
   private:

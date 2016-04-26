@@ -12,7 +12,7 @@ class SharedGLContext {
     static const QGLWidget* getWidget();
     static void setWidget(const QGLWidget* pWidget);
   private:
-    SharedGLContext() { }
+    SharedGLContext() = default;
     static const QGLWidget* s_pSharedGLWidget;
 };
 

@@ -14,8 +14,7 @@ GLWaveformRendererRGB::GLWaveformRendererRGB(
 
 }
 
-GLWaveformRendererRGB::~GLWaveformRendererRGB() {
-}
+GLWaveformRendererRGB::~GLWaveformRendererRGB() = default;
 
 void GLWaveformRendererRGB::onSetup(const QDomNode& /* node */) {
 }
@@ -37,7 +36,7 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 
@@ -103,9 +102,9 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
                     break;
                 }
 
-                float left_low    = lowGain  * (float) data[visualIndex].filtered.low;
-                float left_mid    = midGain  * (float) data[visualIndex].filtered.mid;
-                float left_high   = highGain * (float) data[visualIndex].filtered.high;
+                float left_low    = lowGain  * static_cast<float>( data[visualIndex].filtered.low);
+                float left_mid    = midGain  * static_cast<float>( data[visualIndex].filtered.mid);
+                float left_high   = highGain * static_cast<float>( data[visualIndex].filtered.high);
                 float left_all    = sqrtf(left_low * left_low + left_mid * left_mid + left_high * left_high) * kHeightScaleFactor;
                 float left_red    = left_low  * m_rgbLowColor_r + left_mid  * m_rgbMidColor_r + left_high  * m_rgbHighColor_r;
                 float left_green  = left_low  * m_rgbLowColor_g + left_mid  * m_rgbMidColor_g + left_high  * m_rgbHighColor_g;
@@ -117,9 +116,9 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
                     glVertex2f(visualIndex, left_all);
                 }
 
-                float right_low   = lowGain  * (float) data[visualIndex+1].filtered.low;
-                float right_mid   = midGain  * (float) data[visualIndex+1].filtered.mid;
-                float right_high  = highGain * (float) data[visualIndex+1].filtered.high;
+                float right_low   = lowGain  * static_cast<float>( data[visualIndex+1].filtered.low);
+                float right_mid   = midGain  * static_cast<float>( data[visualIndex+1].filtered.mid);
+                float right_high  = highGain * static_cast<float>( data[visualIndex+1].filtered.high);
                 float right_all   = sqrtf(right_low * right_low + right_mid * right_mid + right_high * right_high) * kHeightScaleFactor;
                 float right_red   = right_low * m_rgbLowColor_r + right_mid * m_rgbMidColor_r + right_high * m_rgbHighColor_r;
                 float right_green = right_low * m_rgbLowColor_g + right_mid * m_rgbMidColor_g + right_high * m_rgbHighColor_g;
@@ -167,9 +166,9 @@ void GLWaveformRendererRGB::draw(QPainter* painter, QPaintEvent* /*event*/) {
                     break;
                 }
 
-                float low  = lowGain  * (float) math_max(data[visualIndex].filtered.low,  data[visualIndex+1].filtered.low);
-                float mid  = midGain  * (float) math_max(data[visualIndex].filtered.mid,  data[visualIndex+1].filtered.mid);
-                float high = highGain * (float) math_max(data[visualIndex].filtered.high, data[visualIndex+1].filtered.high);
+                float low  = lowGain  * static_cast<float>( math_max(data[visualIndex].filtered.low,  data[visualIndex+1].filtered.low));
+                float mid  = midGain  * static_cast<float>( math_max(data[visualIndex].filtered.mid,  data[visualIndex+1].filtered.mid));
+                float high = highGain * static_cast<float>( math_max(data[visualIndex].filtered.high, data[visualIndex+1].filtered.high));
 
                 float all = sqrtf(low * low + mid * mid + high * high) * kHeightScaleFactor;
 

@@ -1,8 +1,8 @@
 #include "glrgbwaveformwidget.h"
 
-#include "waveform/sharedglcontext.h"
-#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
+#include "waveform/sharedglcontext.h"
 #include "waveform/renderers/glwaveformrendererrgb.h"
 #include "waveform/renderers/waveformrendererpreroll.h"
 #include "waveform/renderers/waveformrendermark.h"
@@ -38,9 +38,7 @@ GLRGBWaveformWidget::GLRGBWaveformWidget(const char* group, QWidget* parent)
     m_initSuccess = init();
 }
 
-GLRGBWaveformWidget::~GLRGBWaveformWidget() {
-
-}
+GLRGBWaveformWidget::~GLRGBWaveformWidget() = default;
 
 void GLRGBWaveformWidget::castToQWidget() {
     m_widget = static_cast<QWidget*>(static_cast<QGLWidget*>(this));
@@ -59,7 +57,7 @@ mixxx::Duration GLRGBWaveformWidget::render() {
     // this may delayed until previous buffer swap finished
     QPainter painter(this);
     t1 = timer.restart();
-    draw(&painter, NULL);
+    draw(&painter, nullptr);
     //t2 = timer.restart();
     // glFinish();
     //t3 = timer.restart();

@@ -9,7 +9,7 @@
 class WaveformSignalColors {
   public:
     WaveformSignalColors();
-    virtual ~WaveformSignalColors() {}
+    virtual ~WaveformSignalColors() = default;
 
     bool setup(const QDomNode &node, const SkinContext& context);
 

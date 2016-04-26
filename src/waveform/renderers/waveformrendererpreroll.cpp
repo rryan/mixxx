@@ -14,8 +14,7 @@ WaveformRendererPreroll::WaveformRendererPreroll(WaveformWidgetRenderer* wavefor
   : WaveformRendererAbstract(waveformWidgetRenderer) {
 }
 
-WaveformRendererPreroll::~WaveformRendererPreroll() {
-}
+WaveformRendererPreroll::~WaveformRendererPreroll() = default;
 
 void WaveformRendererPreroll::setup(const QDomNode& node, const SkinContext& context) {
     m_color.setNamedColor(context.selectString(node, "SignalColor"));
@@ -58,11 +57,11 @@ void WaveformRendererPreroll::draw(QPainter* painter, QPaintEvent* event) {
         // Draw at most one not or halve visible polygon at the widget borders
         if (index > (numberOfSamples + ((polyWidth + 1) * samplesPerPixel))) {
             int rest = index - numberOfSamples;
-            rest %= (int)((polyWidth + 1) * samplesPerPixel);
+            rest %= static_cast<int>((polyWidth + 1) * samplesPerPixel);
             index = numberOfSamples + rest;
         }
 
-        polygon.translate(((qreal)index) / samplesPerPixel, 0);
+        polygon.translate((static_cast<qreal>(index)) / samplesPerPixel, 0);
         while (index > 0) {
             painter->drawPolygon(polygon);
             polygon.translate(-(polyWidth + 1), 0);

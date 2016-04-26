@@ -5,8 +5,8 @@
 #include <QTime>
 
 #include "vsyncthread.h"
-#include "util/performancetimer.h"
 #include "util/event.h"
+#include "util/performancetimer.h"
 #include "util/counter.h"
 #include "util/math.h"
 #include "waveform/guitick.h"
@@ -153,10 +153,10 @@ void VSyncThread::setUsSyncIntervalTime(int syncTime) {
 }
 
 void VSyncThread::setVSyncType(int type) {
-    if (type >= (int)VSyncThread::ST_COUNT) {
+    if (type >= static_cast<int>(VSyncThread::ST_COUNT)) {
         type = VSyncThread::ST_TIMER;
     }
-    m_vSyncMode = (enum VSyncMode)type;
+    m_vSyncMode = static_cast<enum VSyncMode>(type);
     m_droppedFrames = 0;
     m_vSyncTypeChanged = true;
 }
@@ -186,10 +186,10 @@ void VSyncThread::vsyncSlotFinished() {
 }
 
 void VSyncThread::getAvailableVSyncTypes(QList<QPair<int, QString > >* pList) {
-    for (int i = (int)VSyncThread::ST_TIMER; i < (int)VSyncThread::ST_COUNT; i++) {
+    for (int i = static_cast<int>(VSyncThread::ST_TIMER); i < static_cast<int>(VSyncThread::ST_COUNT); i++) {
         //if (isAvailable(type))  // TODO
         {
-            enum VSyncMode mode = (enum VSyncMode)i;
+            enum VSyncMode mode = static_cast<enum VSyncMode>(i);
 
             QString name;
             switch (mode) {

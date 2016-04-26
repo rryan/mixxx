@@ -13,11 +13,11 @@ GLSLWaveformRendererSignal::GLSLWaveformRendererSignal(WaveformWidgetRenderer* w
           m_textureId(0),
           m_loadedWaveform(0),
           m_frameBuffersValid(false),
-          m_framebuffer(NULL),
+          m_framebuffer(nullptr),
           m_bDumpPng(false),
           m_shadersValid(false),
           m_rgbShader(rgbShader),
-          m_frameShaderProgram(NULL) {
+          m_frameShaderProgram(nullptr) {
 }
 
 GLSLWaveformRendererSignal::~GLSLWaveformRendererSignal() {
@@ -85,7 +85,7 @@ bool GLSLWaveformRendererSignal::loadTexture() {
     TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
     ConstWaveformPointer waveform;
     int dataSize = 0;
-    const WaveformData* data = NULL;
+    const WaveformData* data = nullptr;
 
     if (trackInfo) {
         waveform = trackInfo->getWaveform();
@@ -103,20 +103,22 @@ bool GLSLWaveformRendererSignal::loadTexture() {
         glGenTextures(1, &m_textureId);
 
         int error = glGetError();
-        if (error)
+        if (error) {
             qDebug() << "GLSLWaveformRendererSignal::loadTexture - m_textureId" << m_textureId << "error" << error;
+        }
     }
 
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 
     int error = glGetError();
-    if (error)
+    if (error) {
         qDebug() << "GLSLWaveformRendererSignal::loadTexture - bind error" << error;
+    }
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    if (waveform != NULL && data != NULL) {
+    if (waveform != nullptr && data != nullptr) {
         // Waveform ensures that getTextureSize is a multiple of
         // getTextureStride so there is no rounding here.
         int textureWidth = waveform->getTextureStride();
@@ -125,8 +127,9 @@ bool GLSLWaveformRendererSignal::loadTexture() {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeigth, 0,
                      GL_RGBA, GL_UNSIGNED_BYTE, data);
         int error = glGetError();
-        if (error)
+        if (error) {
             qDebug() << "GLSLWaveformRendererSignal::loadTexture - glTexImage2D error" << error;
+        }
     } else {
         glDeleteTextures(1,&m_textureId);
         m_textureId = 0;
@@ -139,8 +142,9 @@ bool GLSLWaveformRendererSignal::loadTexture() {
 
 void GLSLWaveformRendererSignal::createGeometry() {
 
-    if (m_unitQuadListId != -1)
+    if (m_unitQuadListId != -1) {
         return;
+    }
 
 #ifndef __OPENGLES__
 
@@ -181,15 +185,16 @@ void GLSLWaveformRendererSignal::createFrameBuffers()
     int bufferWidth = m_waveformRenderer->getWidth();
     int bufferHeight = m_waveformRenderer->getHeight();
 
-    if (m_framebuffer)
+    if (m_framebuffer) {
         delete m_framebuffer;
+    }
 
     //should work with any version of OpenGl
     m_framebuffer = new QGLFramebufferObject(bufferWidth * 4, bufferHeight * 4);
 
-    if (!m_framebuffer->isValid())
+    if (!m_framebuffer->isValid()) {
         qWarning() << "GLSLWaveformRendererSignal::createFrameBuffer - frame buffer not valid";
-
+    }
     m_frameBuffersValid = m_framebuffer->isValid();
 
     //qDebug() << m_waveformRenderer->getWidth();
@@ -200,18 +205,15 @@ void GLSLWaveformRendererSignal::createFrameBuffers()
 bool GLSLWaveformRendererSignal::onInit() {
     m_loadedWaveform = 0;
 
-    if (!m_frameShaderProgram)
+    if (!m_frameShaderProgram) {
         m_frameShaderProgram = new QGLShaderProgram();
+    }
 
     if (!loadShaders()) {
         return false;
     }
     createGeometry();
-    if (!loadTexture()) {
-        return false;
-    }
-
-    return true;
+    return loadTexture();
 }
 
 void GLSLWaveformRendererSignal::onSetup(const QDomNode& node) {
@@ -248,7 +250,7 @@ void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 
@@ -302,8 +304,8 @@ void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
         m_frameShaderProgram->setUniformValue("textureSize", waveform->getTextureSize());
         m_frameShaderProgram->setUniformValue("textureStride", waveform->getTextureStride());
 
-        m_frameShaderProgram->setUniformValue("firstVisualIndex", (float)firstVisualIndex);
-        m_frameShaderProgram->setUniformValue("lastVisualIndex", (float)lastVisualIndex);
+        m_frameShaderProgram->setUniformValue("firstVisualIndex", static_cast<float>(firstVisualIndex));
+        m_frameShaderProgram->setUniformValue("lastVisualIndex", static_cast<float>(lastVisualIndex));
 
         m_frameShaderProgram->setUniformValue("allGain", allGain);
         m_frameShaderProgram->setUniformValue("lowGain", lowGain);

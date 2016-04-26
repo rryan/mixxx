@@ -15,8 +15,7 @@ QtWaveformRendererSimpleSignal::QtWaveformRendererSimpleSignal(WaveformWidgetRen
 
 }
 
-QtWaveformRendererSimpleSignal::~QtWaveformRendererSimpleSignal() {
-}
+QtWaveformRendererSimpleSignal::~QtWaveformRendererSimpleSignal() = default;
 
 void QtWaveformRendererSimpleSignal::onSetup(const QDomNode& node) {
     Q_UNUSED(node);
@@ -54,7 +53,7 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 
@@ -64,9 +63,9 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
     painter->resetTransform();
 
     float allGain(1.0);
-    getGains(&allGain, NULL, NULL, NULL);
+    getGains(&allGain, nullptr, nullptr, nullptr);
 
-    double heightGain = allGain * (double)m_waveformRenderer->getHeight()/255.0;
+    double heightGain = allGain * static_cast<double>(m_waveformRenderer->getHeight())/255.0;
     if (m_alignment == Qt::AlignTop) {
         painter->translate(0.0, 0.0);
         painter->scale(1.0, heightGain);
@@ -94,13 +93,14 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
 
     // Represents the # of waveform data points per horizontal pixel.
     const double gain = (lastVisualIndex - firstVisualIndex) /
-            (double)m_waveformRenderer->getWidth();
+            static_cast<double>(m_waveformRenderer->getWidth());
 
     //NOTE(vrince) Please help me find a better name for "channelSeparation"
     //this variable stand for merged channel ... 1 = merged & 2 = separated
     int channelSeparation = 2;
-    if (m_alignment != Qt::AlignCenter)
+    if (m_alignment != Qt::AlignCenter) {
         channelSeparation = 1;
+    }
 
     for (int channel = 0; channel < channelSeparation; ++channel) {
         int startPixel = 0;
@@ -109,8 +109,9 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
         double direction = 1.0;
 
         //Reverse display for merged bottom channel
-        if (m_alignment == Qt::AlignBottom)
+        if (m_alignment == Qt::AlignBottom) {
             direction = -1.0;
+        }
 
         if (channel == 1) {
             startPixel = m_waveformRenderer->getWidth() - 1;
@@ -196,7 +197,7 @@ void QtWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
                 maxAll = math_max(maxAll, all);
             }
 
-            m_polygon.append(QPointF(x, (float)maxAll * direction));
+            m_polygon.append(QPointF(x, static_cast<float>(maxAll) * direction));
         }
     }
 

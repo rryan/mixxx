@@ -14,8 +14,7 @@ WaveformRendererRGB::WaveformRendererRGB(
         : WaveformRendererSignalBase(waveformWidgetRenderer) {
 }
 
-WaveformRendererRGB::~WaveformRendererRGB() {
-}
+WaveformRendererRGB::~WaveformRendererRGB() = default;
 
 void WaveformRendererRGB::onSetup(const QDomNode& /* node */) {
 }
@@ -38,7 +37,7 @@ void WaveformRendererRGB::draw(QPainter* painter,
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 
@@ -56,7 +55,7 @@ void WaveformRendererRGB::draw(QPainter* painter,
 
     // Represents the # of waveform data points per horizontal pixel.
     const double gain = (lastVisualIndex - firstVisualIndex) /
-            (double)m_waveformRenderer->getWidth();
+            static_cast<double>(m_waveformRenderer->getWidth());
 
     // Per-band gain from the EQ knobs.
     float allGain(1.0), lowGain(1.0), midGain(1.0), highGain(1.0);
@@ -64,7 +63,7 @@ void WaveformRendererRGB::draw(QPainter* painter,
 
     QColor color;
 
-    const float halfHeight = (float)m_waveformRenderer->getHeight()/2.0;
+    const float halfHeight = static_cast<float>(m_waveformRenderer->getHeight())/2.0;
 
     const float heightFactor = allGain*halfHeight/255.0;
 
@@ -142,17 +141,17 @@ void WaveformRendererRGB::draw(QPainter* painter,
                 case Qt::AlignBottom :
                     painter->drawLine(
                         x, m_waveformRenderer->getHeight(),
-                        x, m_waveformRenderer->getHeight() - (int)(heightFactor*(float)math_max(maxAllA,maxAllB)));
+                        x, m_waveformRenderer->getHeight() - static_cast<int>(heightFactor*static_cast<float>(math_max(maxAllA,maxAllB))));
                     break;
                 case Qt::AlignTop :
                     painter->drawLine(
                         x, 0,
-                        x, (int)(heightFactor*(float)math_max(maxAllA,maxAllB)));
+                        x, static_cast<int>(heightFactor*static_cast<float>(math_max(maxAllA,maxAllB))));
                     break;
                 default :
                     painter->drawLine(
-                        x, (int)(halfHeight-heightFactor*(float)maxAllA),
-                        x, (int)(halfHeight+heightFactor*(float)maxAllB));
+                        x, static_cast<int>(halfHeight-heightFactor*static_cast<float>(maxAllA)),
+                        x, static_cast<int>(halfHeight+heightFactor*static_cast<float>(maxAllB)));
             }
         }
     }

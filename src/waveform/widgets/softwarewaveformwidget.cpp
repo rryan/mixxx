@@ -2,8 +2,8 @@
 
 #include <QPainter>
 
-#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrenderbackground.h"
+#include "waveform/renderers/waveformwidgetrenderer.h"
 #include "waveform/renderers/waveformrendermark.h"
 #include "waveform/renderers/waveformrendermarkrange.h"
 #include "waveform/renderers/waveformrendererfilteredsignal.h"
@@ -28,8 +28,7 @@ SoftwareWaveformWidget::SoftwareWaveformWidget(const char* group, QWidget* paren
     m_initSuccess = init();
 }
 
-SoftwareWaveformWidget::~SoftwareWaveformWidget() {
-}
+SoftwareWaveformWidget::~SoftwareWaveformWidget() = default;
 
 void SoftwareWaveformWidget::castToQWidget() {
     m_widget = static_cast<QWidget*>(this);

@@ -5,9 +5,9 @@
 #include <QString>
 
 #include "waveform/renderers/waveformwidgetrenderer.h"
-#include "waveformwidgettype.h"
 #include "trackinfoobject.h"
 #include "util/duration.h"
+#include "waveformwidgettype.h"
 
 class VSyncThread;
 
@@ -18,8 +18,8 @@ class VSyncThread;
 
 class WaveformWidgetAbstract : public WaveformWidgetRenderer {
   public:
-    WaveformWidgetAbstract(const char* group);
-    virtual ~WaveformWidgetAbstract();
+    explicit WaveformWidgetAbstract(const char* group);
+    ~WaveformWidgetAbstract() override;
 
     //Type is use by the factory to safely up-cast waveform widgets
     virtual WaveformWidgetType::Type getType() const = 0;

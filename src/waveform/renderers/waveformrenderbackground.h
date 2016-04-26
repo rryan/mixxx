@@ -15,10 +15,10 @@ class WaveformWidgetRenderer;
 class WaveformRenderBackground : public WaveformRendererAbstract {
   public:
     explicit WaveformRenderBackground(WaveformWidgetRenderer* waveformWidgetRenderer);
-    virtual ~WaveformRenderBackground();
+    ~WaveformRenderBackground() override;
 
-    virtual void setup(const QDomNode& node, const SkinContext& context);
-    virtual void draw(QPainter* painter, QPaintEvent* event);
+    void setup(const QDomNode& node, const SkinContext& context) override;
+    void draw(QPainter* painter, QPaintEvent* event) override;
 
   private:
     void generateImage();

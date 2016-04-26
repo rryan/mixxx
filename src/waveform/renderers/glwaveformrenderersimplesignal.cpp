@@ -14,8 +14,7 @@ GLWaveformRendererSimpleSignal::GLWaveformRendererSimpleSignal(
 
 }
 
-GLWaveformRendererSimpleSignal::~GLWaveformRendererSimpleSignal() {
-}
+GLWaveformRendererSimpleSignal::~GLWaveformRendererSimpleSignal() = default;
 
 void GLWaveformRendererSimpleSignal::onSetup(const QDomNode& node) {
     Q_UNUSED(node);
@@ -43,7 +42,7 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
     }
 
     const WaveformData* data = waveform->data();
-    if (data == NULL) {
+    if (data == nullptr) {
         return;
     }
 
@@ -65,7 +64,7 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     float allGain(1.0);
-    getGains(&allGain, NULL, NULL, NULL);
+    getGains(&allGain, nullptr, nullptr, nullptr);
 
     float maxAll[2];
 
@@ -101,14 +100,16 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
                  visualIndex < lastVisualIndex;
                  visualIndex += 2) {
 
-                if (visualIndex < 0)
+                if (visualIndex < 0) {
                     continue;
+                }
 
-                if (visualIndex > dataSize - 1)
+                if (visualIndex > dataSize - 1) {
                     break;
+                }
 
-                maxAll[0] = (float)data[visualIndex].filtered.all;
-                maxAll[1] = (float)data[visualIndex+1].filtered.all;
+                maxAll[0] = static_cast<float>(data[visualIndex].filtered.all);
+                maxAll[1] = static_cast<float>(data[visualIndex+1].filtered.all);
                 glColor4f(m_signalColor_r, m_signalColor_g, m_signalColor_b, 0.9);
                 glVertex2f(visualIndex,maxAll[0]);
                 glVertex2f(visualIndex,-1.f*maxAll[1]);
@@ -119,10 +120,11 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
         glLoadIdentity();
-        if (m_alignment == Qt::AlignBottom)
+        if (m_alignment == Qt::AlignBottom) {
             glOrtho(firstVisualIndex, lastVisualIndex, 0.0, 255.0, -10.0, 10.0);
-        else
+        } else {
             glOrtho(firstVisualIndex, lastVisualIndex, 255.0, 0.0, -10.0, 10.0);
+        }
 
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
@@ -138,14 +140,16 @@ void GLWaveformRendererSimpleSignal::draw(QPainter* painter, QPaintEvent* /*even
                  visualIndex < lastVisualIndex;
                  visualIndex += 2) {
 
-                if (visualIndex < 0)
+                if (visualIndex < 0) {
                     continue;
+                }
 
-                if (visualIndex > dataSize - 1)
+                if (visualIndex > dataSize - 1) {
                     break;
+                }
 
-                maxAll[0] = (float)data[visualIndex].filtered.all;
-                maxAll[1] = (float)data[visualIndex+1].filtered.all;
+                maxAll[0] = static_cast<float>(data[visualIndex].filtered.all);
+                maxAll[1] = static_cast<float>(data[visualIndex+1].filtered.all);
                 glColor4f(m_signalColor_r, m_signalColor_g, m_signalColor_b, 0.8);
                 glVertex2f(float(visualIndex),0.f);
                 glVertex2f(float(visualIndex),math_max(maxAll[0],maxAll[1]));

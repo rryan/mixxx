@@ -16,26 +16,28 @@ WaveformRenderBeat::WaveformRenderBeat(WaveformWidgetRenderer* waveformWidgetRen
     m_beats.resize(128);
 }
 
-WaveformRenderBeat::~WaveformRenderBeat() {
-}
+WaveformRenderBeat::~WaveformRenderBeat() = default;
 
 void WaveformRenderBeat::setup(const QDomNode& node, const SkinContext& context) {
     m_beatColor.setNamedColor(context.selectString(node, "BeatColor"));
     m_beatColor = WSkinColor::getCorrectColor(m_beatColor).toRgb();
 
-    if (m_beatColor.alphaF() > 0.99)
+    if (m_beatColor.alphaF() > 0.99) {
         m_beatColor.setAlphaF(0.9);
+    }
 }
 
 void WaveformRenderBeat::draw(QPainter* painter, QPaintEvent* /*event*/) {
     TrackPointer trackInfo = m_waveformRenderer->getTrackInfo();
 
-    if (!trackInfo)
+    if (!trackInfo) {
         return;
+    }
 
     BeatsPointer trackBeats = trackInfo->getBeats();
-    if (!trackBeats)
+    if (!trackBeats) {
         return;
+    }
 
     const int trackSamples = m_waveformRenderer->getTrackSamples();
     if (trackSamples <= 0) {
@@ -73,7 +75,7 @@ void WaveformRenderBeat::draw(QPainter* painter, QPaintEvent* /*event*/) {
         double xBeatPoint = m_waveformRenderer->transformSampleIndexInRendererWorld(beatPosition);
 
         xBeatPoint = qRound(xBeatPoint);
-        
+
         // If we don't have enough space, double the size.
         if (beatCount >= m_beats.size()) {
             m_beats.resize(m_beats.size() * 2);

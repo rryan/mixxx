@@ -9,9 +9,9 @@ class GLVSyncTestWidget : public QGLWidget, public WaveformWidgetAbstract {
     Q_OBJECT
   public:
     GLVSyncTestWidget(const char* group, QWidget* parent);
-    virtual ~GLVSyncTestWidget();
+    ~GLVSyncTestWidget() override;
 
-    virtual WaveformWidgetType::Type getType() const { return WaveformWidgetType::GLVSyncTest; }
+    WaveformWidgetType::Type getType() const override { return WaveformWidgetType::GLVSyncTest; }
 
     static inline QString getWaveformWidgetName() { return tr("VSyncTest"); }
     static inline bool useOpenGl() { return true; }
@@ -19,9 +19,9 @@ class GLVSyncTestWidget : public QGLWidget, public WaveformWidgetAbstract {
     static inline bool developerOnly() { return true; }
 
   protected:
-    virtual void castToQWidget();
-    virtual void paintEvent(QPaintEvent* event);
-    virtual mixxx::Duration render();
+    void castToQWidget() override;
+    void paintEvent(QPaintEvent* event) override;
+    mixxx::Duration render() override;
 
   private:
     friend class WaveformWidgetFactory;

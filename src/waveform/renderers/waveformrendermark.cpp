@@ -37,8 +37,9 @@ void WaveformRenderMark::draw(QPainter* painter, QPaintEvent* /*event*/) {
     for (int i = 0; i < m_marks.size(); i++) {
         WaveformMark& mark = m_marks[i];
 
-        if (!mark.m_pPointCos)
+        if (!mark.m_pPointCos) {
             continue;
+        }
 
         // Generate image on first paint can't be done in setup since we need
         // render widget to be resized yet ...
@@ -105,7 +106,7 @@ void WaveformRenderMark::generateMarkImage(WaveformMark& mark) {
         labelRectHeight = wordRect.height() + 2*marginY + 4 ;
 
         QRectF labelRect(0, 0,
-                (float)labelRectWidth, (float)labelRectHeight);
+                static_cast<float>(labelRectWidth), static_cast<float>(labelRectHeight));
 
         mark.m_image = QImage(labelRectWidth+1,
                 m_waveformRenderer->getHeight(),
