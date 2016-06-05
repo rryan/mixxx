@@ -13,21 +13,29 @@
 #include <QTextStream>
 #include <QUrl>
 #include <QtDebug>
+#include <QSslSocket>
+
+#ifdef QT_NO_OPENSSL
+#error Mixxx requires Qt built with OpenSSL support.
+#endif
 
 #include "musicbrainz/acoustidclient.h"
 #include "musicbrainz/gzip.h"
 #include "musicbrainz/network.h"
 
+namespace {
 // see API-KEY site here http://acoustid.org/application/496
 // I registered the KEY for version 1.12 -- kain88 (may 2013)
-const QString CLIENT_APIKEY = "czKxnkyO";
-const QString ACOUSTID_URL = "http://api.acoustid.org/v2/lookup";
-const int AcoustidClient::m_DefaultTimeout = 5000; // msec
+const char* kClientApiKey = "czKxnkyO";
+const char* kAcoustIdHttpUrl = "http://api.acoustid.org/v2/lookup";
+const char* kAcoustIdHttpsUrl = "https://api.acoustid.org/v2/lookup";
+const int kDefaultTimeout = 5000; // msec
+}  // namespace
 
 AcoustidClient::AcoustidClient(QObject* parent)
-              : QObject(parent),
-                m_network(this),
-                m_timeouts(m_DefaultTimeout, this) {
+        : QObject(parent),
+          m_network(this),
+          m_timeouts(kDefaultTimeout, this) {
 }
 
 void AcoustidClient::setTimeout(int msec) {
@@ -37,17 +45,26 @@ void AcoustidClient::setTimeout(int msec) {
 void AcoustidClient::start(int id, const QString& fingerprint, int duration) {
     QUrl url;
     url.addQueryItem("format", "xml");
-    url.addQueryItem("client", CLIENT_APIKEY);
+    url.addQueryItem("client", kClientApiKey);
     url.addQueryItem("duration", QString::number(duration));
     url.addQueryItem("meta", "recordingids");
     url.addQueryItem("fingerprint", fingerprint);
     QByteArray body = url.encodedQuery();
 
-    QNetworkRequest req(QUrl::fromEncoded(ACOUSTID_URL.toAscii()));
+    QByteArray apiUrl;
+    if (QSslSocket::supportsSsl()) {
+        apiUrl = kAcoustIdHttpsUrl;
+    } else {
+        qDebug() << "Qt was built without SSL support. Falling back to HTTP access to AcoustId.";
+        apiUrl = kAcoustIdHttpUrl;
+
+    }
+
+    QNetworkRequest req(QUrl::fromEncoded(apiUrl));
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     req.setRawHeader("Content-Encoding", "gzip");
 
-    qDebug() << "AcoustIdClient POST request:" << ACOUSTID_URL
+    qDebug() << "AcoustIdClient POST request:" << apiUrl
              << "body:" << body;
 
     QNetworkReply* reply = m_network.post(req, gzipCompress(body));
@@ -83,9 +100,7 @@ void AcoustidClient::requestFinished() {
     if (status != 200) {
         QTextStream body(reply);
         qDebug() << "AcoustIdClient POST reply status:" << status << "body:" << body.readAll();
-        emit(networkError(
-             reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
-             "AcoustID"));
+        emit(networkError(status, "AcoustID"));
         return;
     }
 

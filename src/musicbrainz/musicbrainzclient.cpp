@@ -15,18 +15,26 @@
 #include <QXmlStreamReader>
 #include <QUrl>
 
+#ifdef QT_NO_OPENSSL
+#error Mixxx requires Qt built with SSL support.
+#endif
+#include <QSslSocket>
+
 #include "musicbrainz/musicbrainzclient.h"
 #include "util/version.h"
 #include "defs_urls.h"
 
-const QString MusicBrainzClient::m_TrackUrl = "http://musicbrainz.org/ws/2/recording/";
-const QString MusicBrainzClient::m_DateRegex = "^[12]\\d{3}";
-const int MusicBrainzClient::m_DefaultTimeout = 5000; // msec
+namespace {
+const char* kMusicBrainzHTTPTrackApi = "http://musicbrainz.org/ws/2/recording/";
+const char* kMusicBrainzHTTPSTrackApi = "https://musicbrainz.org/ws/2/recording/";
+const char* kDateRegex = "^[12]\\d{3}";
+const int kDefaultTimeout = 5000;   // msec
+}  // namespace
 
 MusicBrainzClient::MusicBrainzClient(QObject* parent)
-                 : QObject(parent),
-                   m_network(this),
-                   m_timeouts(m_DefaultTimeout, this) {
+        : QObject(parent),
+          m_network(this),
+          m_timeouts(kDefaultTimeout, this) {
 }
 
 void MusicBrainzClient::start(int id, const QString& mbid) {
@@ -35,7 +43,15 @@ void MusicBrainzClient::start(int id, const QString& mbid) {
     QList<Param> parameters;
     parameters << Param("inc", "artists+releases+media");
 
-    QUrl url(m_TrackUrl + mbid);
+    QString trackUrl;
+    if (QSslSocket::supportsSsl()) {
+        trackUrl = kMusicBrainzHTTPSTrackApi + mbid;
+    } else {
+        qDebug() << "Qt was built without SSL support. Falling back to HTTP access to MusicBrainz.";
+        trackUrl = kMusicBrainzHTTPTrackApi + mbid;
+    }
+
+    QUrl url(trackUrl);
     url.setQueryItems(parameters);
     qDebug() << "MusicBrainzClient GET request:" << url.toString();
     QNetworkRequest req(url);
@@ -89,9 +105,7 @@ void MusicBrainzClient::requestFinished() {
     // a status of 404 the same as a 200 but it will produce an empty list of
     // results.
     if (status != 200 && status != 404) {
-        emit(networkError(
-             reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(),
-             "MusicBrainz"));
+        emit(networkError(status, "MusicBrainz"));
         return;
     }
 
@@ -199,7 +213,7 @@ MusicBrainzClient::Release MusicBrainzClient::parseRelease(QXmlStreamReader& rea
             if (name == "title") {
                 ret.m_album = reader.readElementText();
             } else if (name == "date") {
-                QRegExp regex(m_DateRegex);
+                QRegExp regex(kDateRegex);
                 if (regex.indexIn(reader.readElementText()) == 0) {
                 ret.m_year = regex.cap(0).toInt();
                 }
