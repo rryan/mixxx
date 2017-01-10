@@ -18,22 +18,13 @@
 
 struct ReverbGroupState {
     ReverbGroupState() {
-        // Default damping value.
-        prev_bandwidth = 0.5;
-        prev_damping = 0.5;
         reverb.init();
         reverb.activate();
-        crossfade_buffer = SampleUtil::alloc(MAX_BUFFER_LEN);
     }
 
-    ~ReverbGroupState() {
-        SampleUtil::free(crossfade_buffer);
-    }
+    ~ReverbGroupState() = default;
 
     MixxxPlateX2 reverb;
-    CSAMPLE* crossfade_buffer;
-    double prev_bandwidth;
-    double prev_damping;
 };
 
 class ReverbEffect : public PerChannelEffectProcessor<ReverbGroupState> {
@@ -59,7 +50,9 @@ class ReverbEffect : public PerChannelEffectProcessor<ReverbGroupState> {
     }
 
     EngineEffectParameter* m_pBandWidthParameter;
+    EngineEffectParameter* m_pDecayParameter;
     EngineEffectParameter* m_pDampingParameter;
+    EngineEffectParameter* m_pBlendParameter;
 
     DISALLOW_COPY_AND_ASSIGN(ReverbEffect);
 };

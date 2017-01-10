@@ -27,28 +27,51 @@ EffectManifest ReverbEffect::getManifest() {
     time->setId("bandwidth");
     time->setName(QObject::tr("Bandwidth"));
     time->setShortName(QObject::tr("BW"));
-    time->setDescription(QObject::tr("Higher bandwidth values cause more "
-            "bright (high-frequency) tones to be included"));
+    time->setDescription(QObject::tr("Bandwidth of the low pass filter at the input. "
+            "Higher values result in less attenuation of high frequencies."));
     time->setControlHint(EffectManifestParameter::CONTROL_KNOB_LINEAR);
     time->setSemanticHint(EffectManifestParameter::SEMANTIC_UNKNOWN);
     time->setUnitsHint(EffectManifestParameter::UNITS_UNKNOWN);
-    time->setDefaultLinkType(EffectManifestParameter::LINK_LINKED);
-    time->setDefaultLinkInversion(EffectManifestParameter::LinkInversion::INVERTED);
-    time->setMinimum(0.0005);
-    time->setDefault(0.5);
-    time->setMaximum(1.0);
+    time->setMinimum(0);
+    time->setDefault(1);
+    time->setMaximum(1);
+
+    EffectManifestParameter* decay = manifest.addParameter();
+    decay->setId("decay");
+    decay->setName(QObject::tr("Decay"));
+    decay->setDescription(QObject::tr("Lower decay values cause reverberations to die out more quickly."));
+    decay->setControlHint(EffectManifestParameter::CONTROL_KNOB_LINEAR);
+    decay->setSemanticHint(EffectManifestParameter::SEMANTIC_UNKNOWN);
+    decay->setUnitsHint(EffectManifestParameter::UNITS_UNKNOWN);
+    decay->setMinimum(0);
+    decay->setDefault(0.5);
+    decay->setMaximum(1);
 
     EffectManifestParameter* damping = manifest.addParameter();
     damping->setId("damping");
     damping->setName(QObject::tr("Damping"));
     damping->setDescription(QObject::tr("Higher damping values cause "
-            "reverberations to die out more quickly."));
+            "high frequencies to decay more quickly than low frequencies."));
     damping->setControlHint(EffectManifestParameter::CONTROL_KNOB_LINEAR);
     damping->setSemanticHint(EffectManifestParameter::SEMANTIC_UNKNOWN);
     damping->setUnitsHint(EffectManifestParameter::UNITS_UNKNOWN);
-    damping->setMinimum(0.005);
-    damping->setDefault(0.5);
-    damping->setMaximum(1.0);
+    damping->setMinimum(0);
+    damping->setDefault(0);
+    damping->setMaximum(1);
+
+    EffectManifestParameter* blend = manifest.addParameter();
+    blend->setId("blend");
+    blend->setName(QObject::tr("Blend"));
+    blend->setDescription(QObject::tr("Wet/Dry mix. Higher blend values causes a larger amount of"
+            "reverb to be added to the signal path"));
+    blend->setControlHint(EffectManifestParameter::CONTROL_KNOB_LINEAR);
+    blend->setSemanticHint(EffectManifestParameter::SEMANTIC_UNKNOWN);
+    blend->setUnitsHint(EffectManifestParameter::UNITS_UNKNOWN);
+    blend->setDefaultLinkType(EffectManifestParameter::LINK_LINKED);
+    blend->setDefaultLinkInversion(EffectManifestParameter::LinkInversion::NOT_INVERTED);
+    blend->setMinimum(0);
+    blend->setDefault(0);
+    blend->setMaximum(1);
 
     return manifest;
 }
@@ -56,7 +79,9 @@ EffectManifest ReverbEffect::getManifest() {
 ReverbEffect::ReverbEffect(EngineEffect* pEffect,
                              const EffectManifest& manifest)
         : m_pBandWidthParameter(pEffect->getParameterById("bandwidth")),
-          m_pDampingParameter(pEffect->getParameterById("damping")) {
+          m_pDecayParameter(pEffect->getParameterById("decay")),
+          m_pDampingParameter(pEffect->getParameterById("damping")),
+          m_pBlendParameter(pEffect->getParameterById("blend")) {
     Q_UNUSED(manifest);
 }
 
@@ -74,48 +99,15 @@ void ReverbEffect::processChannel(const ChannelHandle& handle,
     Q_UNUSED(handle);
     Q_UNUSED(enableState);
     Q_UNUSED(groupFeatures);
-    Q_UNUSED(sampleRate);
-    CSAMPLE bandwidth = m_pBandWidthParameter->value();
-    CSAMPLE damping = m_pDampingParameter->value();
 
-    // Flip value around.  Assumes max allowable is 1.0.
-    damping = 1.0 - damping;
+    const auto bandwidth = m_pBandWidthParameter->value();
+    const auto decay = m_pDecayParameter->value();
+    const auto damping = m_pDampingParameter->value();
+    const auto blend = m_pBlendParameter->value();
 
-    bool params_changed = (damping != pState->prev_damping ||
-                           bandwidth != pState->prev_bandwidth);
+    // Set the sample rate (TODO XXX: Maybe we want to call .init() after this?)
+    pState->reverb.setSampleRate(sampleRate);
 
-    pState->reverb.setBandwidth(bandwidth);
-    pState->reverb.setDecay(damping);
-
-    for (uint i = 0; i + 1 < numSamples; i += 2) {
-        CSAMPLE mono_sample = (pInput[i] + pInput[i + 1]) / 2;
-        CSAMPLE xl, xr;
-
-        // sample_t is typedefed to be the same as CSAMPLE, so no cast needed.
-        pState->reverb.process(mono_sample, damping, &xl, &xr);
-
-        pOutput[i] = xl;
-        pOutput[i + 1] = xr;
-    }
-
-    if (params_changed) {
-        pState->reverb.setBandwidth(pState->prev_bandwidth);
-        pState->reverb.setDecay(pState->prev_damping);
-
-        for (uint i = 0; i + 1 < numSamples; i += 2) {
-            CSAMPLE mono_sample = (pInput[i] + pInput[i + 1]) / 2;
-            CSAMPLE xl, xr;
-
-            pState->reverb.process(mono_sample, pState->prev_damping, &xl, &xr);
-
-            pState->crossfade_buffer[i] = xl;
-            pState->crossfade_buffer[i + 1] = xr;
-        }
-
-        pState->prev_bandwidth = bandwidth;
-        pState->prev_damping = damping;
-
-        SampleUtil::linearCrossfadeBuffers(
-                pOutput, pOutput, pState->crossfade_buffer, numSamples);
-    }
+    // Process the buffer using the new current parameter values
+    pState->reverb.processBuffer(pInput, pOutput, numSamples, bandwidth, decay, damping, blend);
 }
