@@ -105,9 +105,6 @@ void ReverbEffect::processChannel(const ChannelHandle& handle,
     const auto damping = m_pDampingParameter->value();
     const auto blend = m_pBlendParameter->value();
 
-    // Set the sample rate (TODO XXX: Maybe we want to call .init() after this?)
     pState->reverb.setSampleRate(sampleRate);
-
-    // Process the buffer using the new current parameter values
     pState->reverb.processBuffer(pInput, pOutput, numSamples, bandwidth, decay, damping, blend);
 }

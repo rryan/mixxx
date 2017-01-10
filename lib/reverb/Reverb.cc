@@ -458,3 +458,10 @@ void MixxxPlateX2::processBuffer(const sample_t* in, sample_t* out, const uint f
 	}
 }
 
+void MixxxPlateX2::setSampleRate(const double sampleRate) {
+	if (fs != sampleRate) {
+		fs = sampleRate;
+		init();
+		activate();
+	}
+}

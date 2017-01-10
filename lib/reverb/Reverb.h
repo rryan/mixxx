@@ -223,9 +223,7 @@ class PlateX2
 /// (timrae) Define our own interface instead of using the original LADAP plugin interface
 class MixxxPlateX2 : public PlateStub {
 	public:
-		void setSampleRate(const double sampleRate) {
-			 fs = sampleRate;
-		}
+		void setSampleRate(const double sampleRate);
 
 		void processBuffer(const sample_t* in, sample_t* out, const uint frames, const sample_t bandwidthParam, 
 									const sample_t decayParam, const sample_t dampingParam, const sample_t blendParam);
