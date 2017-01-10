@@ -80,7 +80,7 @@ class Delay
 		inline sample_t putget (sample_t x) {put(x); return get();}
 
 		/* fractional lookup, linear interpolation */
-		inline sample_t get_linear (float f)
+		inline sample_t get_linear (sample_t f)
 			{
 				int n;
 				fistp (f, n); /* read: i = (int) f; relies on FPTruncateMode */
@@ -90,7 +90,7 @@ class Delay
 			}
 
 		/* fractional lookup, cubic interpolation */
-		inline sample_t get_cubic (float f)
+		inline sample_t get_cubic (sample_t f)
 			{
 				int n;
 				fistp (f, n); /* see FPTruncateMode */

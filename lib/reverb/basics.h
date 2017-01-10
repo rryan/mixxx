@@ -46,7 +46,7 @@
 #include <stdio.h>
 
 #include "util/types.h"
-typedef CSAMPLE sample_t;
+typedef double sample_t;
 
 // NOTE(rryan): 3/2014 Added these for the MSVC build.
 #include <QtGlobal>

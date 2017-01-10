@@ -189,7 +189,7 @@ PlateStub::init()
 	f_lfo = -1;
 
 #	define L(i) ((int) (l[i] * fs))
-	static float l[] = {
+	static double l[] = {
 		0.004771345048889486, 0.0035953092974026408,
 		0.01273478713752898, 0.0093074829474816042,
 		0.022579886428547427, 0.030509727495715868,
@@ -221,7 +221,7 @@ PlateStub::init()
 #	undef L
 
 #	define T(i) ((int) (t[i] * fs))
-	static float t[] = {
+	static double t[] = {
 		0.0089378717113000241, 0.099929437854910791, 0.064278754074123853,
 		0.067067638856221232, 0.066866032727394914, 0.006283391015086859,
 		0.01186116057928161, 0.12187090487550822, 0.041262054366452743,
@@ -431,7 +431,7 @@ Descriptor<PlateX2>::setup()
 #endif
 
 // (timrae) we have our left / right samples interleaved in the same array, so use slightly modified version of PlateX2::cycle
-void MixxxPlateX2::processBuffer(const sample_t* in, sample_t* out, const uint frames, const sample_t bandwidthParam, 
+void MixxxPlateX2::processBuffer(const CSAMPLE* in, CSAMPLE* out, const uint frames, const sample_t bandwidthParam,
 								const sample_t decayParam, const sample_t dampingParam, const sample_t blendParam) {
 	// set bandwidth
 	input.bandwidth.set(exp(-M_PI * (1. - (.005 + .994*bandwidthParam))));
@@ -442,15 +442,15 @@ void MixxxPlateX2::processBuffer(const sample_t* in, sample_t* out, const uint f
 	tank.damping[0].set(damp);
 	tank.damping[1].set(damp);
 	// set blend
-	sample_t blend = pow(blendParam, 1.53);
-	sample_t dry = 1 - blend;
+	CSAMPLE blend = pow(blendParam, 1.53);
+	CSAMPLE dry = 1 - blend;
 
 	// the modulated lattices interpolate, which needs truncated float
 	DSP::FPTruncateMode _truncate;
 
 	// loop through the buffer, processing each sample
 	for (uint i = 0; i + 1 < frames; i += 2) {
-		sample_t mono_sample = (in[i] + in[i + 1]) / 2;
+		CSAMPLE mono_sample = (in[i] + in[i + 1]) / 2;
 		sample_t xl, xr;
 		PlateStub::process(mono_sample, decay, &xl, &xr);
 		out[i] = blend*xl + dry*in[i];

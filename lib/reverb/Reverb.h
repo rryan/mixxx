@@ -118,7 +118,7 @@ class JVRev
 class ModLattice
 {
 	public:
-		float n0, width;
+		double n0, width;
 
 		DSP::Delay delay;
 		DSP::Sine lfo;
@@ -150,7 +150,7 @@ class PlateStub
 {
 	public:
 		sample_t f_lfo;
-		float fs = 44100; // (timrae) define sample rate
+		double fs = 44100; // (timrae) define sample rate
 
 		sample_t indiff1, indiff2, dediff1, dediff2;
 
@@ -225,7 +225,7 @@ class MixxxPlateX2 : public PlateStub {
 	public:
 		void setSampleRate(const double sampleRate);
 
-		void processBuffer(const sample_t* in, sample_t* out, const uint frames, const sample_t bandwidthParam, 
+		void processBuffer(const CSAMPLE* in, CSAMPLE* out, const uint frames, const sample_t bandwidthParam,
 									const sample_t decayParam, const sample_t dampingParam, const sample_t blendParam);
 };
 
