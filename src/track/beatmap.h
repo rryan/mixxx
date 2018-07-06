@@ -13,7 +13,7 @@
 
 #include "track/track.h"
 #include "track/beats.h"
-#include "proto/beats.pb.h"
+#include "src/proto/beats.pb.h"
 
 #define BEAT_MAP_VERSION "BeatMap-1.0"
 

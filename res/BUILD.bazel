@@ -1,0 +1,14 @@
+load("//build/bazel:qt.bzl", "qt_qrc_library")
+
+qt_qrc_library(
+    name = "mixxx_qrc",
+    src = "mixxx.qrc",
+    data = [
+        "//:LICENSE",
+        "schema.xml",
+    ] +
+    glob(["shaders/*"]) +
+    glob(["images/**"]) +
+    glob(["translations/*.qm"]),
+    visibility = ["//visibility:public"],
+)

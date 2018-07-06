@@ -1,0 +1,26 @@
+filegroup(
+  name = "protoc",
+  srcs = ['protobuf/bin/protoc'],
+  visibility = ["//visibility:public"],
+)
+
+cc_library(
+  name = "protobuf",
+  srcs = ["protobuf/lib/libprotobuf.dylib"],
+  hdrs = glob(["protobuf/include/**/*.h"]),
+  includes = ["protobuf/include"],
+)
+
+cc_library(
+  name = "protobuf-lite",
+  srcs = ["protobuf/lib/libprotobuf-lite.dylib"],
+  hdrs = glob(["protobuf/include/**/*.h"]),
+  includes = ["protobuf/include"],
+)
+
+proto_lang_toolchain(
+    name = "cc_toolchain",
+    command_line = "--cpp_out=$(OUT)",
+    runtime = ":protobuf",
+    visibility = ["//visibility:public"],
+)

@@ -18,7 +18,7 @@
 #include "track/track.h"
 #include "util/db/dbconnectionpool.h"
 
-#include <gtest/gtest.h>
+#include <gtest/gtest_prod.h>
 
 class ScannerTask;
 class LibraryScannerDlg;

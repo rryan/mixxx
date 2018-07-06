@@ -431,8 +431,24 @@ Descriptor<PlateX2>::setup()
 #endif
 
 
-#include <util/rampingvalue.h>
 // (timrae) we have our left / right samples interleaved in the same array, so use slightly modified version of PlateX2::cycle
+template <typename T>
+class RampingValue {
+  public:
+    RampingValue(const T& initial, const T& final, int steps) {
+        m_value = initial;
+        m_increment = (final - initial) / steps;
+    }
+
+    T getNext() {
+        return m_value += m_increment;
+    }
+
+  private:
+    T m_value;
+    T m_increment;
+};
+
 void MixxxPlateX2::processBuffer(const sample_t* in, sample_t* out, const uint frames,
                                  const sample_t bandwidthParam,
                                  const sample_t decayParam,
@@ -458,4 +474,3 @@ void MixxxPlateX2::processBuffer(const sample_t* in, sample_t* out, const uint f
         PlateStub::process(mono_sample, decay, &out[i], &out[i+1]);
     }
  }
-

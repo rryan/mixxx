@@ -43,7 +43,9 @@
 #include "controllers/keyboard/keyboardeventfilter.h"
 #include "mixer/playermanager.h"
 #include "recording/recordingmanager.h"
+#ifdef __BROADCAST__
 #include "broadcast/broadcastmanager.h"
+#endif
 #include "skin/legacyskinparser.h"
 #include "skin/skinloader.h"
 #include "soundio/soundmanager.h"
