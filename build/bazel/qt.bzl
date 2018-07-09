@@ -1,5 +1,88 @@
 # Originally copied from https://github.com/bbreslauer/qt-bazel-example
 
+BUILD_TEMPLATE = """
+
+"""
+
+load(":pkg_config.bzl", "find_pkgconfig", "get_cflags", "get_linkopts", "extract_includes", "extract_defines")
+
+def _impl(ctx):
+  which_moc = ctx.which('moc')
+  qtdir = ctx.os.environ.get('QTDIR')
+  if qtdir:
+    print('Found Qt via $QTDIR:', qtdir)
+  elif which_moc:
+    # Get prefix from bin/moc
+    print('Found Qt via moc:', which_moc)
+    qtdir = ctx.path(which_moc).dirname.dirname
+
+  qtdir_path = ctx.path(qtdir)
+  bin_path = qtdir_path.get_child('bin')
+
+  moc_path = bin_path.get_child('moc')
+  uic_path = bin_path.get_child('uic')
+  rcc_path = bin_path.get_child('rcc')
+
+  ctx.symlink(qtdir, 'qt')
+  #ctx.file("BUILD.bazel", BUILD_TEMPLATE)
+
+  libraries = ""
+
+  lib_path = qtdir_path.get_child('lib')
+  pkgconfig_path = lib_path.get_child('pkgconfig')
+
+  pkg_config = find_pkgconfig(ctx)
+
+  blacklist = ["Qt5Designer"]
+  qt_modules = [pc_file.basename.split('.')[0] for pc_file in pkgconfig_path.readdir()]
+  qt_modules = [mod for mod in qt_modules if mod not in blacklist]
+
+  include_path = qtdir_path.get_child('include')
+  includes = ', '.join(['"qt/include/%s"' % subdir.basename for subdir in include_path.readdir()])
+
+  #for module in qt_modules:
+  #  includes.append('"qt/include/%s"' % module)
+  #includes = ', '.join(includes)
+
+  for module in qt_modules:
+    pc_args = [pkg_config.value, module]
+
+    cflags = get_cflags(ctx, pc_args)
+    _, cflags = extract_includes(cflags.value)
+    defines, cflags = extract_defines(cflags)
+    cflags = ' '.join([str(flag) for flag in cflags])
+    linkopts = get_linkopts(ctx, pc_args)
+    linkopts = ' '.join([str(opt) for opt in linkopts.value])
+    defines = ', '.join(['"%s"' % define for define in defines])
+
+    libraries += (
+"""cc_library(
+  name = "%s",
+  srcs = [],
+  copts = ["%s"],
+  defines = [%s],
+  linkopts = ["%s"],
+  deps = [":headers"],
+)
+""" % (module, cflags, defines, linkopts))
+  ctx.template("BUILD.bazel", Label("//build/bazel:BUILD.qt"), {
+    "%{libraries}": libraries,
+    "%{includes}": includes,
+  })
+
+
+_qt5_repository_rule = repository_rule(
+  implementation=_impl,
+  attrs={
+
+  },
+  environ = ["QTDIR"],
+)
+
+def qt5_package():
+  _qt5_repository_rule(name="qt5")
+
+
 def qt_ui_library(name, ui, deps):
   """Compiles a QT UI file and makes a library for it.
 
@@ -16,7 +99,8 @@ def qt_ui_library(name, ui, deps):
       name = "%s_uic" % name,
       srcs = [ui],
       outs = [dest_path],
-      cmd = "/Users/rjryan/.homebrew/Cellar/qt/5.10.1/bin/uic $(locations %s) -o $@" % ui,
+      cmd = "$(location @qt5//:uic) $(locations %s) -o $@" % ui,
+      tools = ["@qt5//:uic"],
   )
 
   native.cc_library(
@@ -32,13 +116,14 @@ def qt_qrc_library(name, src, data, **kwargs):
     name = "%s_qrc" % name,
     srcs = [src] + data,
     outs = ["qrc_%s.cpp" % name],
-    cmd = "/Users/rjryan/.homebrew/Cellar/qt/5.10.1/bin/rcc $(location %s) -o $@" % src,
+    cmd = "$(location @qt5//:rcc) $(location %s) -o $@" % src,
+    tools = ["@qt5//:rcc"],
   )
 
   native.cc_library(
     name = name,
     srcs = ["qrc_%s.cpp" % name],
-    deps = ["@Qt5Core//:lib"],
+    deps = ["@qt5//:Qt5Core"],
     alwayslink = 1,
     **kwargs)
 
@@ -55,7 +140,8 @@ def qt_moc_header(hdr):
       outs = [dest_path],
       # cmd =  "/Users/rjryan/.homebrew/Cellar/qt/5.10.1/bin/moc $(location %s) -o $@ -f'%s'" \
       #   % (hdr, '%s/%s' % (PACKAGE_NAME, hdr)),
-      cmd = "/Users/rjryan/.homebrew/Cellar/qt/5.10.1/bin/moc $(location %s) -o $@ -f'%s'" % (hdr, hdr),
+      cmd = "$(location @qt5//:moc) $(location %s) -o $@ -f'%s'" % (hdr, hdr),
+      tools = ["@qt5//:moc"],
   )
   return ":%s_moc" % hdr.replace('/', '_')
 
@@ -83,8 +169,9 @@ def qt_cc_library(name, src, hdr, normal_hdrs=[], deps=None, ui=None,
       name = "%s_moc" % name,
       srcs = [hdr],
       outs = [dest_path],
-      cmd =  "/Users/rjryan/.homebrew/Cellar/qt/5.10.1/bin/moc $(location %s) -o $@ -f'%s'" \
+      cmd =  "$(location @qt5//:moc) $(location %s) -o $@ -f'%s'" \
         % (hdr, '%s/%s' % (PACKAGE_NAME, hdr)),
+      tools = ["@qt5//:moc"],
   )
   srcs = [src, ":%s_moc" % name]
 

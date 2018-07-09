@@ -29,7 +29,7 @@ def _fail(repo_ctx, message, tail=""):
     message = "\nError processing {}: {}".format(modname, message)
   return error(message)
 
-def _find(repo_ctx):
+def find_pkgconfig(repo_ctx):
   pkg_config = unwrap(repo_ctx).which("pkg-config")
   if pkg_config == None:
     return _fail(repo_ctx, "Unable to find pkg-config executable")
@@ -68,7 +68,8 @@ def _check_version(repo_ctx, pc_args):
   else:
     return success(True)
 
-def _cflags(repo_ctx, pc_args):
+def get_cflags(repo_ctx, pc_args):
+  print(pc_args)
   result = unwrap(repo_ctx).execute(pc_args + ["--cflags"])
   if result.return_code != 0:
     return _fail(repo_ctx, "Unable to determine cflags", result.stderr)
@@ -82,7 +83,7 @@ def _include_dir(repo_ctx, pc_args):
   stdout = result.stdout
   return success([arg for arg in stdout.strip().split(" ") if arg])
 
-def _linkopts(repo_ctx, pc_args):
+def get_linkopts(repo_ctx, pc_args):
   result = unwrap(repo_ctx).execute(pc_args + ["--static", "--libs"])
   if result.return_code != 0:
     return _fail(repo_ctx, "Unable to determine linkopts", result.stderr)
@@ -98,10 +99,10 @@ def _extract_prefix(flags, prefix):
       remain += [arg]
   return stripped, remain
 
-def _extract_includes(cflags):
+def extract_includes(cflags):
   return _extract_prefix(cflags, "-I")
 
-def _extract_defines(cflags):
+def extract_defines(cflags):
   return _extract_prefix(cflags, "-D")
 
 def _symlink_directories(repo_ctx, basename, pathnames):
@@ -119,8 +120,8 @@ def _symlink_directories(repo_ctx, basename, pathnames):
   return result
 
 def _parse_cflags(repo_ctx, cflags, include_dir):
-  includes, cflags = _extract_includes(cflags)
-  defines, cflags = _extract_defines(cflags)
+  includes, cflags = extract_includes(cflags)
+  defines, cflags = extract_defines(cflags)
   if cflags:
     print("In pkg-config module {}, unhandled cflags: {}".format(
           repo_ctx.attr.modname, cflags))
@@ -134,7 +135,7 @@ def _parse_cflags(repo_ctx, cflags, include_dir):
   return includes, defines
 
 def setup_pkg_config_package(repo_ctx):
-  pkg_config = _find(repo_ctx)
+  pkg_config = find_pkgconfig(repo_ctx)
   if pkg_config.error != None:
     return pkg_config
   pc_args = [pkg_config.value, repo_ctx.attr.modname]
@@ -144,7 +145,7 @@ def setup_pkg_config_package(repo_ctx):
   version = _check_version(repo_ctx, pc_args)
   if version.error != None:
     return version
-  cflags = _cflags(repo_ctx, pc_args)
+  cflags = get_cflags(repo_ctx, pc_args)
   if cflags.error != None:
     return cflags
 
@@ -152,7 +153,7 @@ def setup_pkg_config_package(repo_ctx):
   if include_dir.error != None:
     return include_dir
 
-  linkopts = _linkopts(repo_ctx, pc_args)
+  linkopts = get_linkopts(repo_ctx, pc_args)
   if linkopts.error != None:
     return linkopts
 

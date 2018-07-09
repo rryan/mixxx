@@ -1,3 +1,5 @@
+load("//build/bazel:qt.bzl", "qt_moc_header")
+
 cc_library(
     name = "fidlib",
     hdrs = ["fidlib/fidlib.h"],
@@ -89,13 +91,16 @@ cc_library(
         "qtscript-bytearray/bytearrayprototype.h",
     ],
     srcs = [
+        qt_moc_header("qtscript-bytearray/bytearrayclass.h"),
+        qt_moc_header("qtscript-bytearray/bytearrayprototype.h"),
         "qtscript-bytearray/bytearrayclass.cpp",
         "qtscript-bytearray/bytearrayprototype.cpp",
     ],
     deps = [
-        "@Qt5Core//:lib",
+        "@qt5//:headers",
+        #"@Qt5Core//:lib",
     ],
-    includes = ["qtscript-bytearray"],
+    includes = [".", "qtscript-bytearray"],
     visibility = ["//visibility:public"],
 )
 
@@ -128,7 +133,8 @@ cc_library(
         "reverb/basics.h",
     ],
     deps = [
-        "@Qt5Core//:lib",
+        #"@Qt5Core//:lib",
+        "@qt5//:Qt5Core",
     ],
     includes = ["reverb"],
     visibility = ["//visibility:public"],

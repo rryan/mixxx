@@ -10,7 +10,9 @@
 #include "controllers/controllermanager.h"
 #include "controllers/defs_controllers.h"
 #include "controllers/midi/midicontrollerpresetfilehandler.h"
+#ifdef __HID__
 #include "controllers/hid/hidcontrollerpresetfilehandler.h"
+#endif
 
 // static
 ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& pathOrFilename,
@@ -41,10 +43,17 @@ ControllerPresetPointer ControllerPresetFileHandler::loadPreset(const QString& p
     ControllerPresetFileHandler* pHandler = NULL;
     if (scriptPath.endsWith(MIDI_PRESET_EXTENSION, Qt::CaseInsensitive)) {
         pHandler = new MidiControllerPresetFileHandler();
-    } else if (scriptPath.endsWith(HID_PRESET_EXTENSION, Qt::CaseInsensitive) ||
-               scriptPath.endsWith(BULK_PRESET_EXTENSION, Qt::CaseInsensitive)) {
+    }
+#ifdef __HID__
+    else if (scriptPath.endsWith(HID_PRESET_EXTENSION, Qt::CaseInsensitive)) {
         pHandler = new HidControllerPresetFileHandler();
     }
+#endif
+#ifdef __BULK__
+    else if (scriptPath.endsWith(BULK_PRESET_EXTENSION, Qt::CaseInsensitive)) {
+        pHandler = new HidControllerPresetFileHandler();
+    }
+#endif
 
     if (pHandler == NULL) {
         qDebug() << "Preset" << scriptPath << "has an unrecognized extension.";
