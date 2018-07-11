@@ -1062,6 +1062,7 @@ class Optimize(Feature):
 
         if optimize_level == Optimize.LEVEL_OFF:
             self.status = self.build_status(optimize_level, "no optimization")
+            build.env.Append(CCFLAGS='-O0')
             return
 
         if build.toolchain_is_msvs:

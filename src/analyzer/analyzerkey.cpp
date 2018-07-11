@@ -3,7 +3,7 @@
 #include <QtDebug>
 #include <QVector>
 
-#include "src/proto/keys.pb.h"
+#include "proto/keys.pb.h"
 #include "track/key_preferences.h"
 #include "track/keyfactory.h"
 

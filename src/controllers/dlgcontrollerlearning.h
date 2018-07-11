@@ -19,7 +19,9 @@
 #ifdef __HID__
 #include "controllers/hid/hidcontroller.h"
 #endif
+#ifdef __BULK__
 #include "controllers/bulk/bulkcontroller.h"
+#endif
 #include "controllers/midi/midimessage.h"
 #include "controllers/controller.h"
 #include "controllers/controllervisitor.h"

@@ -1,0 +1,27 @@
+package(default_visibility=["//visibility:public"])
+
+cc_library(
+  name = "headers",
+  hdrs = glob(["qt/include/**"]),
+  includes = [
+    "qt/include",
+    %{includes}
+  ],
+)
+
+filegroup(
+  name = "moc",
+  srcs = ["qt/bin/moc"],
+)
+
+filegroup(
+  name = "uic",
+  srcs = ["qt/bin/uic"],
+)
+
+filegroup(
+  name = "rcc",
+  srcs = ["qt/bin/rcc"],
+)
+
+%{libraries}

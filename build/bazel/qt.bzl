@@ -1,9 +1,5 @@
 # Originally copied from https://github.com/bbreslauer/qt-bazel-example
 
-BUILD_TEMPLATE = """
-
-"""
-
 load(":pkg_config.bzl", "find_pkgconfig", "get_cflags", "get_linkopts", "extract_includes", "extract_defines")
 
 def _impl(ctx):
@@ -24,7 +20,6 @@ def _impl(ctx):
   rcc_path = bin_path.get_child('rcc')
 
   ctx.symlink(qtdir, 'qt')
-  #ctx.file("BUILD.bazel", BUILD_TEMPLATE)
 
   libraries = ""
 
@@ -39,10 +34,6 @@ def _impl(ctx):
 
   include_path = qtdir_path.get_child('include')
   includes = ', '.join(['"qt/include/%s"' % subdir.basename for subdir in include_path.readdir()])
-
-  #for module in qt_modules:
-  #  includes.append('"qt/include/%s"' % module)
-  #includes = ', '.join(includes)
 
   for module in qt_modules:
     pc_args = [pkg_config.value, module]

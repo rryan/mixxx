@@ -69,7 +69,6 @@ def _check_version(repo_ctx, pc_args):
     return success(True)
 
 def get_cflags(repo_ctx, pc_args):
-  print(pc_args)
   result = unwrap(repo_ctx).execute(pc_args + ["--cflags"])
   if result.return_code != 0:
     return _fail(repo_ctx, "Unable to determine cflags", result.stderr)

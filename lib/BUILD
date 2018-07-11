@@ -98,9 +98,11 @@ cc_library(
     ],
     deps = [
         "@qt5//:headers",
-        #"@Qt5Core//:lib",
     ],
-    includes = [".", "qtscript-bytearray"],
+    includes = [
+        ".",
+        "qtscript-bytearray"
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -133,7 +135,6 @@ cc_library(
         "reverb/basics.h",
     ],
     deps = [
-        #"@Qt5Core//:lib",
         "@qt5//:Qt5Core",
     ],
     includes = ["reverb"],
@@ -146,5 +147,126 @@ cc_library(
         "gtest-1.7.0/include/gtest/gtest_prod.h"
     ],
     includes = ["gtest-1.7.0/include"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "gtest",
+    hdrs = [
+        "gtest-1.7.0/include/gtest/gtest-death-test.h",
+        "gtest-1.7.0/include/gtest/gtest-message.h",
+        "gtest-1.7.0/include/gtest/gtest-param-test.h",
+        "gtest-1.7.0/include/gtest/gtest-printers.h",
+        "gtest-1.7.0/include/gtest/gtest-spi.h",
+        "gtest-1.7.0/include/gtest/gtest-test-part.h",
+        "gtest-1.7.0/include/gtest/gtest-typed-test.h",
+        "gtest-1.7.0/include/gtest/gtest.h",
+        "gtest-1.7.0/include/gtest/gtest_pred_impl.h",
+        "gtest-1.7.0/include/gtest/gtest_prod.h",
+    ],
+    srcs = [
+        "gtest-1.7.0/include/gtest/internal/gtest-death-test-internal.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-filepath.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-internal.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-linked_ptr.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-param-util-generated.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-param-util.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-port.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-string.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-tuple.h",
+        "gtest-1.7.0/include/gtest/internal/gtest-type-util.h",
+        "gtest-1.7.0/src/gtest.cc",
+        "gtest-1.7.0/src/gtest-death-test.cc",
+        "gtest-1.7.0/src/gtest-filepath.cc",
+        "gtest-1.7.0/src/gtest-internal-inl.h",
+        "gtest-1.7.0/src/gtest-port.cc",
+        "gtest-1.7.0/src/gtest-printers.cc",
+        "gtest-1.7.0/src/gtest-test-part.cc",
+        "gtest-1.7.0/src/gtest-typed-test.cc",
+    ],
+    includes = [
+        "gtest-1.7.0",
+        "gtest-1.7.0/include"
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "gmock",
+    hdrs = [
+        "gmock-1.7.0/include/gmock/gmock-actions.h",
+        "gmock-1.7.0/include/gmock/gmock-cardinalities.h",
+        "gmock-1.7.0/include/gmock/gmock-generated-actions.h",
+        "gmock-1.7.0/include/gmock/gmock-generated-function-mockers.h",
+        "gmock-1.7.0/include/gmock/gmock-generated-matchers.h",
+        "gmock-1.7.0/include/gmock/gmock-generated-nice-strict.h",
+        "gmock-1.7.0/include/gmock/gmock-matchers.h",
+        "gmock-1.7.0/include/gmock/gmock-more-actions.h",
+        "gmock-1.7.0/include/gmock/gmock-more-matchers.h",
+        "gmock-1.7.0/include/gmock/gmock-spec-builders.h",
+        "gmock-1.7.0/include/gmock/gmock.h",
+    ],
+    srcs = [
+        "gmock-1.7.0/include/gmock/internal/gmock-generated-internal-utils.h",
+        "gmock-1.7.0/include/gmock/internal/gmock-internal-utils.h",
+        "gmock-1.7.0/include/gmock/internal/gmock-port.h",
+        "gmock-1.7.0/src/gmock-cardinalities.cc",
+        "gmock-1.7.0/src/gmock-internal-utils.cc",
+        "gmock-1.7.0/src/gmock-matchers.cc",
+        "gmock-1.7.0/src/gmock-spec-builders.cc",
+        "gmock-1.7.0/src/gmock.cc",
+    ],
+    deps = [
+        ":gtest",
+    ],
+    includes = [
+        "gmock-1.7.0/include"
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "benchmark",
+    hdrs = [
+        "benchmark/include/benchmark/benchmark.h",
+        "benchmark/include/benchmark/benchmark_api.h",
+        "benchmark/include/benchmark/macros.h",
+        "benchmark/include/benchmark/reporter.h",
+    ],
+    srcs = [
+        "benchmark/src/arraysize.h",
+        "benchmark/src/benchmark.cc",
+        "benchmark/src/check.h",
+        "benchmark/src/colorprint.cc",
+        "benchmark/src/colorprint.h",
+        "benchmark/src/commandlineflags.cc",
+        "benchmark/src/commandlineflags.h",
+        "benchmark/src/console_reporter.cc",
+        "benchmark/src/csv_reporter.cc",
+        "benchmark/src/cycleclock.h",
+        "benchmark/src/internal_macros.h",
+        "benchmark/src/json_reporter.cc",
+        "benchmark/src/log.cc",
+        "benchmark/src/log.h",
+        "benchmark/src/mutex.h",
+        "benchmark/src/re.h",
+        "benchmark/src/re_std.cc",
+        "benchmark/src/reporter.cc",
+        "benchmark/src/sleep.cc",
+        "benchmark/src/sleep.h",
+        "benchmark/src/stat.h",
+        "benchmark/src/string_util.cc",
+        "benchmark/src/string_util.h",
+        "benchmark/src/sysinfo.cc",
+        "benchmark/src/sysinfo.h",
+        "benchmark/src/walltime.cc",
+        "benchmark/src/walltime.h",
+    ],
+    defines = [
+        "HAVE_STD_REGEX",
+        "HAVE_STEADY_CLOCK",
+        "HAVE_THREAD_SAFETY_ATTRIBUTES",  # TODO(rjryan): Clang only.
+    ],
+    includes = ["benchmark/include"],
     visibility = ["//visibility:public"],
 )

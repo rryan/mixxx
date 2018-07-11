@@ -122,9 +122,9 @@ MIXXX_LIB_HDRS = [
     "control/controlpushbutton.h",
     "control/controlttrotary.h",
     "control/controlvalue.h",
-    "controllers/bulk/bulkcontroller.h",
-    "controllers/bulk/bulkenumerator.h",
-    "controllers/bulk/bulksupported.h",
+    #"controllers/bulk/bulkcontroller.h",
+    #"controllers/bulk/bulkenumerator.h",
+    #"controllers/bulk/bulksupported.h",
     "controllers/controller.h",
     "controllers/controllerdebug.h",
     "controllers/controllerengine.h",
@@ -150,11 +150,11 @@ MIXXX_LIB_HDRS = [
     "controllers/dlgcontrollerlearning.h",
     "controllers/dlgprefcontroller.h",
     "controllers/dlgprefcontrollers.h",
-    "controllers/hid/hidblacklist.h",
-    "controllers/hid/hidcontroller.h",
+    #"controllers/hid/hidblacklist.h",
+    #"controllers/hid/hidcontroller.h",
     "controllers/hid/hidcontrollerpreset.h",
     "controllers/hid/hidcontrollerpresetfilehandler.h",
-    "controllers/hid/hidenumerator.h",
+    #"controllers/hid/hidenumerator.h",
     "controllers/keyboard/keyboardeventfilter.h",
     "controllers/learningutils.h",
     #"controllers/midi/hss1394controller.h",  # TODO(rjryan): build option
@@ -774,6 +774,7 @@ MIXXX_LIB_SRCS = [
     "controllers/dlgcontrollerlearning.cpp",
     "controllers/dlgprefcontroller.cpp",
     "controllers/dlgprefcontrollers.cpp",
+    "controllers/hid/hidcontrollerpresetfilehandler.cpp",
     "controllers/keyboard/keyboardeventfilter.cpp",
     "controllers/learningutils.cpp",
     "controllers/midi/midicontroller.cpp",
@@ -1340,11 +1341,16 @@ cc_binary(
 )
 
 cc_test(
-    name = "mixxx_test",
-    srcs = glob(["test/*.cpp"]),
+    name = "mixxx-test",
+    srcs = glob([
+        "test/*.cpp",
+        "test/*.h"
+    ]),
     deps = [
-        "//src:mixxx_lib",
-        #"@Qt5Test//:lib",
+        ":mixxx_lib",
+        "//lib:benchmark",
+        "//lib:gmock",
+        "//lib:gtest",
         "@qt5//:Qt5Test",
     ]
 )

@@ -1,0 +1,12 @@
+cc_library(
+    name = "lib",
+    hdrs = [
+        "portmidi/include/portmidi.h",
+        "portmidi/include/porttime.h",
+    ],
+    srcs = [
+        "portmidi/lib/libportmidi.dylib",
+    ],
+    includes = ["portmidi/include"],
+    visibility = ["//visibility:public"],
+)
