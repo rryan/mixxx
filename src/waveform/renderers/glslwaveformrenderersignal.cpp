@@ -64,11 +64,6 @@ bool GLSLWaveformRendererSignal::loadShaders() {
         return false;
     }
 
-    if (!m_frameShaderProgram->bind()) {
-        qDebug() << "GLWaveformRendererSignalShader::loadShaders - shaders binding failed";
-        return false;
-    }
-
     m_shadersValid = true;
     return true;
 }
