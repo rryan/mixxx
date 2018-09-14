@@ -9,7 +9,6 @@
 GLSLWaveformRendererSignal::GLSLWaveformRendererSignal(WaveformWidgetRenderer* waveformWidgetRenderer,
                                                        bool rgbShader)
         : WaveformRendererSignalBase(waveformWidgetRenderer),
-          m_unitQuadListId(-1),
           m_textureId(0),
           m_textureRenderedWaveformCompletion(0),
           m_bDumpPng(false),
@@ -127,44 +126,6 @@ bool GLSLWaveformRendererSignal::loadTexture() {
     return true;
 }
 
-void GLSLWaveformRendererSignal::createGeometry() {
-
-    if (m_unitQuadListId != -1) {
-        return;
-    }
-
-#ifndef __OPENGLES__
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-1.0, 1.0, -1.0, 1.0, -10.0, 10.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    m_unitQuadListId = glGenLists(1);
-    glNewList(m_unitQuadListId, GL_COMPILE);
-    {
-        glBegin(GL_QUADS);
-        {
-            glTexCoord2f(0.0,0.0);
-            glVertex3f(-1.0f,-1.0f,0.0f);
-
-            glTexCoord2f(1.0, 0.0);
-            glVertex3f(1.0f,-1.0f,0.0f);
-
-            glTexCoord2f(1.0,1.0);
-            glVertex3f(1.0f,1.0f, 0.0f);
-
-            glTexCoord2f(0.0,1.0);
-            glVertex3f(-1.0f,1.0f,0.0f);
-        }
-        glEnd();
-    }
-    glEndList();
-
-#endif
-}
-
 void GLSLWaveformRendererSignal::createFrameBuffers() {
     const float devicePixelRatio = m_waveformRenderer->getDevicePixelRatio();
     // We create a frame buffer that is 4x the size of the renderer itself to
@@ -191,7 +152,6 @@ bool GLSLWaveformRendererSignal::onInit() {
     if (!loadShaders()) {
         return false;
     }
-    createGeometry();
     if (!loadTexture()) {
         return false;
     }
@@ -344,7 +304,6 @@ void GLSLWaveformRendererSignal::draw(QPainter* painter, QPaintEvent* /*event*/)
 
         m_framebuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //glCallList(m_unitQuadListId);
 
         glBegin(GL_QUADS);
         {
