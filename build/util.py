@@ -1,4 +1,5 @@
 from SCons import Script
+import datetime
 import os
 import os.path
 import re
@@ -204,3 +205,32 @@ def get_osx_min_version():
     result_code = p.close()
     assert result_code is None, "Can't read macOS min version: %s" % min_version
     return min_version
+
+
+def write_rc_include_header(mixxx_version, vcs_revision, is_debug):
+    """Writes src/mixxx.rc.include."""
+    with open(File('#src/mixxx.rc.include').abspath, "w") as f:
+        str_list = []
+        str_list.append('#define VER_FILEVERSION             ')
+        # Remove anything after ~ or - in the version number and replace the
+        # dots with commas.
+        str_list.append(mixxx_version.partition('~')[0].partition('-')[0].replace('.',','))
+        if vcs_revision:
+            str_list.append(',' + str(vcs_revision))
+        str_list.append('\n')
+
+        str_list.append('#define VER_PRODUCTVERSION          ')
+        str_list.append(mixxx_version.partition('~')[0].partition('-')[0].replace('.',','))
+        if vcs_revision:
+            str_list.append(','+str(vcs_revision))
+        str_list.append('\n')
+
+        now = datetime.datetime.now()
+        str_list.append('#define CUR_YEAR                    "' + str(now.year) + '"\n\n')
+
+        if is_debug:
+            str_list.append('#define DEBUG                       1\n')
+        if 'pre' in mixxx_version.lower():
+            str_list.append('#define PRERELEASE                  1\n')
+
+        fo.write(''.join(str_list))
