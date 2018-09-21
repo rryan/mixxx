@@ -49,6 +49,10 @@ addons:
       - vamp-plugin-sdk
       - qtkeychain-dev
       - liblilv-dev
+  homebrew:
+    update: false
+    # Reads packages to install from Brewfile.
+    brewfile: true
 before_install:
   # Virtual X, needed for analyzer waveform tests
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export DISPLAY=:99.0         ; fi
@@ -57,8 +61,6 @@ before_install:
   # Homebrew uses Python 3 now, and portmidi depends on Python 2 which triggers this bug:
   # https://github.com/Homebrew/homebrew-core/issues/26358
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install scons portaudio libsndfile libogg libvorbis portmidi taglib libshout protobuf flac ffmpeg qt chromaprint rubberband fftw libmodplug libid3tag libmad mp4v2 faad2 wavpack opusfile lilv lame; fi
-
 install:
   ####
   # Common
