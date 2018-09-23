@@ -80,10 +80,14 @@ install:
   # Define QTDIR.
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export QTDIR=$(find /usr/local/Cellar/qt -d 1 | tail -n 1) ; fi
 
+  # Include /usr/local with -isystem to suppress warnings from system dependencies.
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CXXFLAGS="-isystem /usr/local/include" ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CFLAGS="-isystem /usr/local/include" ; fi
+
   # Workaround for bug in libopus's opus.h including <opus_multistream.h>
   # instead of <opus/opus_multistream.h>.
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CXXFLAGS="-isystem /usr/local/include/opus" ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CFLAGS="-isystem /usr/local/include/opus" ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CXXFLAGS="$CXXFLAGS -isystem /usr/local/include/opus" ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export CFLAGS="$CFLAGS -isystem /usr/local/include/opus" ; fi
 
   # NOTE(rryan): 2016-11-15 we are experiencing Travis timeouts for the OSX
   # build.  Turning off optimizations to see if that speeds up compile times.
