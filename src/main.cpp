@@ -74,6 +74,19 @@ int main(int argc, char * argv[]) {
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
+    // On Windows, Qt will try to load OpenGL graphics drivers first, then fall
+    // back to ANGLE which translates OpenGL to Direct3D if it cannot find
+    // suitable OpenGL drivers. However, ANGLE may also fail. In case ANGLE
+    // fails on a discrete GPU, it seems Qt will not try to fall back to an
+    // integrated GPU which could actually work with OpenGL. When we used the
+    // legacy QGLWidget API before the QOpenGLWidget API, Qt did not have this
+    // ANGLE fallback and we did not have many problems with drivers not
+    // supporting OpenGL, so force Qt not to use the ANGLE fallback. If OpenGL
+    // truly is not supported, WaveformWidgetFactory::detectOpenGLVersion will
+    // detect this and Mixxx will fall back to CPU rendering for waveforms.
+    // https://doc.qt.io/qt-5/windows-requirements.html#dynamically-loading-graphics-drivers
+    // https://mixxx.zulipchat.com/#narrow/stream/109171-development/topic/2.2E3.20planning.3A.20https.3A.2F.2Fgithub.2Ecom.2Fmixxxdj.2Fmixxx.2Fprojects.2F2/near/193862675
+    QApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
     WaveformWidgetFactory::setDefaultSurfaceFormat();
 
     // Setting the organization name results in a QDesktopStorage::DataLocation
